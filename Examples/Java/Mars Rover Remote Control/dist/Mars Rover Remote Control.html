@@ -1,0 +1,45 @@
+<html><head>
+  <SCRIPT src="./web-files/dtjava.js"></SCRIPT>
+<script>
+    function launchApplication(jnlpfile) {
+        dtjava.launch(            {
+                url : 'Mars Rover Remote Control.jnlp',
+                jnlp_content : 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPGpubHAgc3BlYz0iMS4wIiB4bWxuczpqZng9Imh0dHA6Ly9qYXZhZnguY29tIiBocmVmPSJNYXJzIFJvdmVyIFJlbW90ZSBDb250cm9sLmpubHAiPgogIDxpbmZvcm1hdGlvbj4KICAgIDx0aXRsZT5NYXJzIFJvdmVyIFJlbW90ZSBDb250cm9sPC90aXRsZT4KICAgIDx2ZW5kb3I+cmFudWxwYWxsZW11bGxlPC92ZW5kb3I+CiAgICA8ZGVzY3JpcHRpb24+bnVsbDwvZGVzY3JpcHRpb24+CiAgICA8b2ZmbGluZS1hbGxvd2VkLz4KICA8L2luZm9ybWF0aW9uPgogIDxyZXNvdXJjZXM+CiAgICA8ajJzZSB2ZXJzaW9uPSIxLjYrIiBocmVmPSJodHRwOi8vamF2YS5zdW4uY29tL3Byb2R1Y3RzL2F1dG9kbC9qMnNlIi8+CiAgICA8amFyIGhyZWY9ImxpYi9tb2NraXRvLWNvcmUtMi4yMy4zLmphciIgc2l6ZT0iNTY1MDE0IiBkb3dubG9hZD0iZWFnZXIiIC8+CiAgPC9yZXNvdXJjZXM+CiAgPGFwcGxldC1kZXNjICB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgbWFpbi1jbGFzcz0iY29tLmphdmFmeC5tYWluLk5vSmF2YUZYRmFsbGJhY2siICBuYW1lPSJNYXJzIFJvdmVyIFJlbW90ZSBDb250cm9sIiA+CiAgICA8cGFyYW0gbmFtZT0icmVxdWlyZWRGWFZlcnNpb24iIHZhbHVlPSI4LjArIi8+CiAgPC9hcHBsZXQtZGVzYz4KICA8amZ4OmphdmFmeC1kZXNjICB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgbWFpbi1jbGFzcz0ibWFycy5yb3Zlci5yZW1vdGUuY29udHJvbC5NYXJzUm92ZXJSZW1vdGVDb250cm9sIiAgbmFtZT0iTWFycyBSb3ZlciBSZW1vdGUgQ29udHJvbCIgLz4KICA8dXBkYXRlIGNoZWNrPSJhbHdheXMiLz4KPC9qbmxwPgo='
+            },
+            {
+                javafx : '8.0+'
+            },
+            {}
+        );
+        return false;
+    }
+</script>
+
+<script>
+    function javafxEmbedmars.rover.remote.control() {
+        dtjava.embed(
+            {
+                id : 'mars.rover.remote.control',
+                url : 'Mars Rover Remote Control.jnlp',
+                placeholder : 'javafx-app-placeholder',
+                width : '800',
+                height : '600',
+                jnlp_content : 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPGpubHAgc3BlYz0iMS4wIiB4bWxuczpqZng9Imh0dHA6Ly9qYXZhZnguY29tIiBocmVmPSJNYXJzIFJvdmVyIFJlbW90ZSBDb250cm9sLmpubHAiPgogIDxpbmZvcm1hdGlvbj4KICAgIDx0aXRsZT5NYXJzIFJvdmVyIFJlbW90ZSBDb250cm9sPC90aXRsZT4KICAgIDx2ZW5kb3I+cmFudWxwYWxsZW11bGxlPC92ZW5kb3I+CiAgICA8ZGVzY3JpcHRpb24+bnVsbDwvZGVzY3JpcHRpb24+CiAgICA8b2ZmbGluZS1hbGxvd2VkLz4KICA8L2luZm9ybWF0aW9uPgogIDxyZXNvdXJjZXM+CiAgICA8ajJzZSB2ZXJzaW9uPSIxLjYrIiBocmVmPSJodHRwOi8vamF2YS5zdW4uY29tL3Byb2R1Y3RzL2F1dG9kbC9qMnNlIi8+CiAgICA8amFyIGhyZWY9ImxpYi9tb2NraXRvLWNvcmUtMi4yMy4zLmphciIgc2l6ZT0iNTY1MDE0IiBkb3dubG9hZD0iZWFnZXIiIC8+CiAgPC9yZXNvdXJjZXM+CiAgPGFwcGxldC1kZXNjICB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgbWFpbi1jbGFzcz0iY29tLmphdmFmeC5tYWluLk5vSmF2YUZYRmFsbGJhY2siICBuYW1lPSJNYXJzIFJvdmVyIFJlbW90ZSBDb250cm9sIiA+CiAgICA8cGFyYW0gbmFtZT0icmVxdWlyZWRGWFZlcnNpb24iIHZhbHVlPSI4LjArIi8+CiAgPC9hcHBsZXQtZGVzYz4KICA8amZ4OmphdmFmeC1kZXNjICB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgbWFpbi1jbGFzcz0ibWFycy5yb3Zlci5yZW1vdGUuY29udHJvbC5NYXJzUm92ZXJSZW1vdGVDb250cm9sIiAgbmFtZT0iTWFycyBSb3ZlciBSZW1vdGUgQ29udHJvbCIgLz4KICA8dXBkYXRlIGNoZWNrPSJhbHdheXMiLz4KPC9qbmxwPgo='
+            },
+            {
+                javafx : '8.0+'
+            },
+            {}
+        );
+    }
+    <!-- Embed FX application into web page once page is loaded -->
+    dtjava.addOnloadCallback(javafxEmbedmars.rover.remote.control);
+</script>
+
+</head><body>
+<h2>Test page for <b>Mars Rover Remote Control</b></h2>
+  <b>Webstart:</b> <a href='Mars Rover Remote Control.jnlp' onclick="return launchApplication('Mars Rover Remote Control.jnlp');">click to launch this app as webstart</a><br><hr><br>
+
+  <!-- Applet will be inserted here -->
+  <div id='javafx-app-placeholder'></div>
+</body></html>
