@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="Mars Rover Remote Control.jnlp">
+  <information>
+    <title>Mars Rover Remote Control</title>
+    <vendor>ranulpallemulle</vendor>
+    <description>null</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="lib/mockito-core-2.23.3.jar" size="565014" download="eager" />
+  </resources>
+  <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="Mars Rover Remote Control" >
+    <param name="requiredFXVersion" value="8.0+"/>
+  </applet-desc>
+  <jfx:javafx-desc  width="800" height="600" main-class="mars.rover.remote.control.MarsRoverRemoteControl"  name="Mars Rover Remote Control" />
+  <update check="always"/>
+</jnlp>
