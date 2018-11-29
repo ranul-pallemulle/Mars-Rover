@@ -4,6 +4,7 @@ from decimal import Decimal
 from enum import Enum
 
 state_lock = Lock();
+value_lock = Lock();
 
 class State(Enum):
         CLOSED = 1
@@ -69,8 +70,9 @@ class Joystick:
                                 except Exception as e:
                                         print("Unknown command")
                                 else:        
-                                        if recv_num < 1 and recv_num > -1:
-                                                self.value = recv_num
+                                        if recv_num <= 1 and recv_num >= -1:
+                                                with value_lock:
+                                                        self.value = recv_num
                                         else:
                                                 reply = '|value| must be < 1\n'
                                                 self.conn.sendall(str.encode(reply))
@@ -101,8 +103,9 @@ class Joystick:
                 self.conn.close()
                 self.socket.close()
 
-        def get_value(self):
-                return self.value
+        def get_value(self):    # for external use only (avoid deadlock)
+                with value_lock:
+                        return self.value
 
         def get_state(self):    # for external use only (avoid deadlock)
                 with state_lock:
