@@ -1,0 +1,55 @@
+/*
+ * Empty Stylesheet file.
+ */
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 22-Oct-2018, 17:08:47
+    Author     : Ranul Pallemulle
+*/
+
+*{
+    -fx-theme-background-color: #edfbff;
+    -fx-theme-joy-color: #72b3ff;
+    -fx-theme-joy-hover-color: #afd4ff;
+    -fx-theme-joyback-color: #1984ff;
+    -fx-theme-label-color: #10427c;
+    -fx-theme-text-color: #10423c;
+}
+
+.root{
+    -fx-background-color: -fx-theme-background-color;
+}
+
+#DispLabelX{
+    -fx-fill: -fx-theme-label-color;
+}
+
+#DispLabelY{
+    -fx-fill: -fx-theme-label-color;
+}
+
+#DispJoyX{
+    -fx-fill: -fx-theme-text-color;
+}
+
+#DispJoyY{
+    -fx-fill: -fx-theme-text-color;
+}
+
+#JoyBack{
+    -fx-fill: -fx-theme-joyback-color;
+    -fx-stroke: #000000;
+}
+
+#Joy{
+    -fx-fill: -fx-theme-joy-color;
+    -fx-stroke: #000000;
+}
+
+#Joy:hover{
+    -fx-fill: -fx-theme-joy-hover-color;
+}
