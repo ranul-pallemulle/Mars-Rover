@@ -6,7 +6,7 @@
 import sys
 from coreutils.parser import parse, CommandTypes, CommandError
 from sockets.tcpsocket import TcpSocket, TcpSocketError
-import coreutils.launcher
+from coreutils.launcher import *
 
 def main(argv):
     if len(argv) != 2:
@@ -42,11 +42,15 @@ def main(argv):
 def call_action(arg_list):
     try:
         if arg_list[0] == CommandTypes.START_JOYSTICK:
-            coreutils.launcher.launch_joystick(arg_list)
+            launch_joystick(arg_list)
         elif arg_list[0] == CommandTypes.STOP_JOYSTICK:
-            coreutils.launcher.kill_joystick(arg_list)
+            kill_joystick(arg_list)
         elif arg_list[0] == CommandTypes.TOGGLE_JOYSTICK:
-            coreutils.launcher.toggle_joystick(arg_list)
+            toggle_joystick(arg_list)
+    except LauncherError as e:
+        print(str(e))
+        # send error to remote here
+        return
     except Exception as e:
         print(str(e))
         sys.exit(1)

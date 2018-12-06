@@ -1,10 +1,15 @@
 # Responsible for controlling the state of various individual parts.
 # Provides an interface for the main execution to control specific features
+import socket
 from joystick import joystick
+from sockets.tcpsocket import TcpSocketError
 from enum import Enum
 class State(Enum):
     RUNNING = 1
     STOPPED = 2
+
+class LauncherError(Exception):
+    pass
 
 joystick_state = State.STOPPED
 camera_state = State.STOPPED
@@ -19,14 +24,22 @@ def launch_joystick(arg_list):
         return
     
     if len(arg_list) != 2:
-        raise Exception
+        raise LauncherError('Incorrect number of args for launch_joystick')
     try:
         jstick_obj = joystick.Joystick(arg_list[1])
-    except Exception as e:
+    except (socket.error,ValueError,TcpSocketError) as e:
         print(str(e))
-        raise
-    jstick_obj.connect()
-    jstick_obj.begin()
+        raise LauncherError('Joystick failed to create socket')
+    try:
+        jstick_obj.connect()
+    except (socket.error,ValueError,joystick.JoystickError) as e:
+        print(str(e))
+        raise LauncherError('Joystick failed to connect to remote')
+    try:
+        jstick_obj.begin()
+    except joystick.JoystickError as e:
+        print(str(e))    
+        raise LauncherError('Joystick in invalid state for starting')
     joystick_state = State.RUNNING
     
 
@@ -36,9 +49,13 @@ def kill_joystick(arg_list):
     if joystick_state == State.STOPPED:
         return
     if len(arg_list) != 1:
-        raise Exception
-    jstick_obj.disconnect()
-    joystick_state = State.STOPPED
+        raise LauncherError('Incorrect number of args for kill_joystick')
+    try:
+        jstick_obj.disconnect()
+    except socket.error as e:
+        print(str(e))
+        raise LauncherError('Error running joystick disconnect()')
+        joystick_state = State.STOPPED
 
 def toggle_joystick(arg_list):
     pass
