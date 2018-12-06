@@ -1,4 +1,4 @@
-import joystick
+from joystick import Joystick, State
 from gpiozero import Motor
 
 class Rover:
@@ -10,11 +10,18 @@ class Rover:
         self.joystick.connect()
         self.joystick.begin()
 
+    def disconnect_joystick(self):
+        self.joystick.set_state(State.CLOSE_REQUESTED) # only works if joystick.begin() has been called
+
     def move(self):
         while True:
-            value = self.joystick.get_value()
-            if value >= 0:
-                self.led.forward(value)
-            else:
-                self.led.backward(-value)
+            joystick_state = self.joystick.get_state()
+            if self.joystick.state == State.CLOSED:
+                break
+            elif joystick_state == State.RUNNING:
+                value = self.joystick.get_value()
+                if value >= 0:
+                    self.led.forward(value)
+                else:
+                    self.led.backward(-value)
         
