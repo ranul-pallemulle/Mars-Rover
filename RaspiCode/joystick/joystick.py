@@ -62,9 +62,10 @@ class Joystick:
             try:
                 with sock_lock:
                     data = self.socket.read()
-            except (socket.error, socket.timeout,TcpSocketError):
+            except (socket.error,socket.timeout,OSError,TcpSocketError):
                 self.socket = None
-                raise
+                print("Joystick read error")
+                break
 #            data = data.decode()
             if data == 'KILL':
                 with state_lock:
@@ -87,18 +88,20 @@ class Joystick:
                         try:
                             with sock_lock:
                                 self.socket.reply(str.encode(reply))
-                        except socket.error:
+                        except (socket.error,socket.timeout,OSError):
                             self.socket = None
-                            raise
+                            print("Joystick reply error")
+                            break
                         else:
                             continue
                 reply = 'ACK'
                 try:
                     with sock_lock:
                         self.socket.reply(str.encode(reply))
-                except socket.error:
+                except (socket.error,socket.timeout,OSError):
                     self.socket = None
-                    raise
+                    print("Joystick reply error")
+                    break
         with state_lock:
             self.state = ConnState.CLOSED
 
@@ -117,9 +120,8 @@ class Joystick:
             self.state = ConnState.CLOSED
         try:
             self.socket.close()
-        except socket.error:
+        except (socket.error,AttributeError): # note, looks like this will always run because we have a read/reply error when we call this externally which sets socket to None so we get AttributeError
             self.socket = None
-            raise
 
     def get_xval(self):
         with value_lock:

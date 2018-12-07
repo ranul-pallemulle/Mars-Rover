@@ -31,40 +31,44 @@ class TcpSocket:
         if self.conn is not None:
             try:
                 data = self.conn.recv(self.max_recv_bytes)
-            except (socket.error, socket.timeout):
+            except (socket.error, socket.timeout,OSError):
                 self.conn = None
                 self.sock = None
                 raise
             if len(data) == 0:
-                self.close(self.conn)
-                self.close(self.sock)
-                self.conn = None
-                self.sock = None
+                try:
+                    self.conn.close()
+                    self.sock.close()
+                except socket.error:
+                    self.conn = None
+                    self.sock = None
                 raise TcpSocketError("Connection lost")
             data = data.decode()
             return data
-        self.close(self.sock)
-        self.sock = None
+        try:
+            self.sock.close()
+        except socket.error:
+            self.sock = None
         raise TcpSocketError('Connection not initialised')
 
     def reply(self, data):
         if self.conn is not None:
             try:
                self.conn.sendall(data)
-            except socket.error:
+            except (socket.error, socket.timeout,OSError):
                 self.conn = None
                 self.sock = None
                 raise
         else:
             raise TcpSocketError('Connection not initialised')
 
-    def close(self, sockobj):
-        if sockobj is not None:
-            try:
-                sockobj.close()
-            except socket.error:
-                self.conn = None
-                self.sock = None
+#    def close(self, sockobj):
+#        if sockobj is not None:
+#            try:
+#                sockobj.close()
+#            except socket.error:
+#                self.conn = None
+#                self.sock = None
 
     def close(self):
         if self.conn is not None:
@@ -73,21 +77,25 @@ class TcpSocket:
                 self.sock.close()
             except socket.error:
                 self.conn = None
-                self.sock = None
+                self.sock = None                
 
     def set_max_recv_bytes(self, numbytes):
         if numbytes < 0:
-            self.close(self.sock)
-            self.close(self.conn)
-            self.sock = None
-            self.conn = None
+            try:
+                self.conn.close()
+                self.sock.close()
+            except socket.error:
+                self.sock = None
+                self.conn = None
             raise TcpSocketError('max_recv_bytes needs to be positive')
         try:
             numbytes = int(numbytes)
         except ValueError:
-            self.close(self.sock)
-            self.close(self.conn)
-            self.sock = None
-            self.conn = None
+            try:
+                self.conn.close()
+                self.sock.close()
+            except socket.error:
+                self.sock = None
+                self.conn = None
             raise TcpSocketError('max_recv_bytes must be an integer')
         self.max_recv_bytes = numbytes

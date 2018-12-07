@@ -23,8 +23,8 @@ def launch_joystick(arg_list):
     if joystick_state == State.RUNNING:
         return
     
-    if len(arg_list) != 2:
-        raise LauncherError('Incorrect number of args for launch_joystick')
+ #   if len(arg_list) != 2:
+#        raise LauncherError('Incorrect number of args for launch_joystick')
     try:
         jstick_obj = joystick.Joystick(arg_list[1])
     except (socket.error,ValueError,TcpSocketError) as e:
@@ -48,13 +48,14 @@ def kill_joystick(arg_list):
     global joystick_state
     if joystick_state == State.STOPPED:
         return
-    if len(arg_list) != 1:
-        raise LauncherError('Incorrect number of args for kill_joystick')
+#    if len(arg_list) != 1:
+#        raise LauncherError('Incorrect number of args for kill_joystick')
     try:
         jstick_obj.disconnect()
     except socket.error as e:
         print(str(e))
         raise LauncherError('Error running joystick disconnect()')
+    finally:
         joystick_state = State.STOPPED
 
 def toggle_joystick(arg_list):
