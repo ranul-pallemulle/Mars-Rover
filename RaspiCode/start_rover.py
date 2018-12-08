@@ -36,11 +36,11 @@ def main(argv):
             print(str(e))
             sys.exit(1)
         except CommandError as e:
-            main_sock.reply(str.encode(str(e)))
+            main_sock.reply(str(e))
             print(str(e))
         else:
             reply = "ACK\n"
-            main_sock.reply(str.encode(reply))
+            main_sock.reply(reply)
             print(result)
             call_action(result)
 

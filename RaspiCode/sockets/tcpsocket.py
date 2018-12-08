@@ -18,7 +18,7 @@ class TcpSocket:
             self.sock.setblocking(1)
             self.sock.bind(('', port))
             self.sock.listen(1)
-        except socket.error as e:
+        except (socket.error, OverflowError, TypeError) as e:
             self.close()
             raise TcpSocketError(str(e))
         
@@ -52,7 +52,11 @@ class TcpSocket:
             raise TcpSocketError('Socket is uninitialised')
 
     def reply(self, data):
-        '''Write data to self.conn.'''
+        '''Write an encoded string to self.conn.'''
+        if type(data) is not str:
+            self.close()
+            raise TcpSocketError('Can only send string data')
+        data = str.encode(data)
         if self.conn is not None:
             try:
                self.conn.sendall(data)
@@ -83,7 +87,10 @@ class TcpSocket:
     def set_max_recv_bytes(self, numbytes):
         '''Set maximum number of bytes to receive.'''
         try:
-            numbytes = int(numbytes)
+            numbytes_int = int(numbytes)
+            rem = numbytes-numbytes_int
+            if rem > 0:
+                raise ValueError
         except ValueError:
             self.close()
             raise TcpSocketError('max_recv_bytes must be an integer')

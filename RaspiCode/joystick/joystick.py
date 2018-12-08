@@ -107,7 +107,7 @@ class Joystick:
                     reply = 'ERR:RANGE'
                 try:
                     with sock_lock:
-                        self.socket.reply(str.encode(reply))
+                        self.socket.reply(reply)
                 except TcpSocketError as e:
                     print(str(e))
                     self.disconnect_internal()
