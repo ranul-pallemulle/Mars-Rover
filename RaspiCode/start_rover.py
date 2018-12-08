@@ -9,6 +9,11 @@ from sockets.tcpsocket import TcpSocket, TcpSocketError
 from coreutils.launcher import *
 
 def main(argv):
+    '''
+    Rover operation starts here! 
+    Create a TcpSocket to communicate with remote computer. Parse
+    received commands and fed into call_action.
+    '''
     if len(argv) != 2:
         print("Usage: python3 start_rover.py <port>")
         sys.exit(1)
@@ -40,6 +45,8 @@ def main(argv):
             call_action(result)
 
 def call_action(arg_list):
+    '''First element of arg_list should be a command. Based on
+    command, do something.'''
     try:
         if arg_list[0] == CommandTypes.START_JOYSTICK:
             launch_joystick(arg_list)

@@ -1,62 +1,44 @@
 # Responsible for controlling the state of various individual parts.
 # Provides an interface for the main execution to control specific features
-import socket
-from joystick import joystick
-from sockets.tcpsocket import TcpSocketError
-from enum import Enum
-class State(Enum):
-    RUNNING = 1
-    STOPPED = 2
+from joystick.joystick import Joystick, JoystickError
 
 class LauncherError(Exception):
+    '''Exception class that will be raised by launch functions.'''
     pass
 
-joystick_state = State.STOPPED
-camera_state = State.STOPPED
-auto_state = State.STOPPED
-
+'''Global objects'''
 jstick_obj = None
 
 def launch_joystick(arg_list):
+    '''Start joystick operation if it is not running.'''
     global jstick_obj
-    global joystick_state
-    if joystick_state == State.RUNNING:
-        return
-    
- #   if len(arg_list) != 2:
-#        raise LauncherError('Incorrect number of args for launch_joystick')
-    try:
-        jstick_obj = joystick.Joystick(arg_list[1])
-    except (socket.error,ValueError,TcpSocketError) as e:
-        print(str(e))
-        raise LauncherError('Joystick failed to create socket')
+    if jstick_obj is None:
+        port = arg_list[1]      # need to check len(arg_list)
+        try:
+            jstick_obj = Joystick(port)
+        except JoystickError as e:
+            print(str(e))
+            jstick_obj = None
+            raise LauncherError('Failed to create Joystick object')
     try:
         jstick_obj.connect()
-    except (socket.error,ValueError,joystick.JoystickError) as e:
-        print(str(e))
-        raise LauncherError('Joystick failed to connect to remote')
-    try:
         jstick_obj.begin()
-    except joystick.JoystickError as e:
-        print(str(e))    
-        raise LauncherError('Joystick in invalid state for starting')
-    joystick_state = State.RUNNING
-    
+    except JoystickError as e:
+        print(str(e))
+        raise LauncherError('Failed to start Joystick')
 
 def kill_joystick(arg_list):
+    '''Stop joystick operation if it is running.'''
     global jstick_obj
-    global joystick_state
-    if joystick_state == State.STOPPED:
-        return
-#    if len(arg_list) != 1:
-#        raise LauncherError('Incorrect number of args for kill_joystick')
-    try:
-        jstick_obj.disconnect()
-    except socket.error as e:
-        print(str(e))
-        raise LauncherError('Error running joystick disconnect()')
-    finally:
-        joystick_state = State.STOPPED
+    if jstick_obj is not None:
+        try:
+            jstick_obj.disconnect()
+        except JoystickError as e:
+            print(str(e))
+            raise LauncherError('Joystick already closed')
+    else:
+        raise LauncherError('Joystick object not initialised')
+            
 
 def toggle_joystick(arg_list):
     pass

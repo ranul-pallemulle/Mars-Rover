@@ -1,48 +1,69 @@
 from threading import Thread, Lock
-import socket
 from sockets.tcpsocket import TcpSocket, TcpSocketError
 from enum import Enum
 
+'''Global locks to prevent race conditions.'''
 state_lock = Lock()
 value_lock = Lock()
 sock_lock = Lock()
 
 class ConnState(Enum):
+    '''Describe socket connection state.'''
     CLOSED = 1
-    READY = 2
-    CLOSE_REQUESTED = 3
-    RUNNING = 4
+    PENDING = 2
+    READY = 3
+    CLOSE_REQUESTED = 4
+    RUNNING = 5
 
 class JoystickError(Exception):
+    '''Exception class that will be raised by Joystick class'''
     pass
     
 class Joystick:
+    '''Make a socket connection and receive two numbers in a new thread.'''
     def __init__(self, port):
+        '''Make a Joystick object and set its port number. Initialise
+    connection state to closed'''
         self.xval = 0
         self.yval = 0
         try:
-            with sock_lock:
-                port = int(port)
-                self.socket = TcpSocket(port)
-                self.socket.set_max_recv_bytes(1024)
-        except (socket.error,ValueError, TcpSocketError):
-            self.socket = None
-            raise
-        self.state = ConnState.READY
+            port = int(port)
+            assert port > 0
+        except (ValueError, AssertionError) as e:
+            print(str(e))
+            raise JoystickError('Invalid value for port')
+        self.port = port
+        self.state = ConnState.CLOSED
+        self.socket = None
 
     def connect(self):
+        '''Create a new TcpSocket if connection state is closed. Wait
+        for a connection.'''
         with state_lock:
             if self.state == ConnState.CLOSED:
-                self.state = ConnState.READY
-            if self.state != ConnState.READY:
-                raise JoystickError('Not ready for a new connection')
+                self.state = ConnState.PENDING
+            else:
+                raise JoystickError('Socket open: cannot make new socket.')
+        try:
+            self.socket = TcpSocket(self.port)
+            self.socket.set_max_recv_bytes(1024)
+        except TcpSocketError as e:
+            print(str(e))
+            if self.socket is not None:
+                self.disconnect_internal()
+            raise JoystickError('Error creating TcpSocket object')
         try:
             self.socket.wait_for_connection();
-        except (socket.error, socket.timeout):
-            self.socket = None
-            raise
+        except TcpSocketError as e:
+            print(str(e))
+            self.disconnect_internal()
+            raise JoystickError('Error waiting for connection.')
+        with state_lock:
+            self.state = ConnState.READY
 
     def update_values(self):
+        '''Update xval and yval with values received in a loop and
+        send reply, while connection state is "running".'''
         while True:
             with state_lock:
                 current_state = self.state
@@ -52,60 +73,48 @@ class Joystick:
                     current_state = self.state
             elif current_state == ConnState.CLOSED:
                 break
-            elif current_state == ConnState.CLOSE_REQUESTED:
-                self.disconnect()
-                return
+            elif current_state == ConnState.CLOSE_REQUESTED or\
+                 current_state == ConnState.PENDING:
+                self.disconnect_internal()
+                break
             if current_state != ConnState.RUNNING:
-                self.socket = None
-                raise JoystickError('Invalid state (ConnState)')
-
+                print('Invalid value of current_state')
+                self.disconnect_internal()
+                break
             try:
                 with sock_lock:
                     data = self.socket.read()
-            except (socket.error,socket.timeout,OSError,TcpSocketError):
-                self.socket = None
-                print("Joystick read error")
+            except TcpSocketError as e:
+                print(str(e))
+                self.disconnect_internal()
                 break
-#            data = data.decode()
-            if data == 'KILL':
-                with state_lock:
-                    self.state = ConnState.CLOSE_REQUESTED
+            #data = data.decode()
+            data_arr = data.split(',')
+            try:
+                x = int(data_arr[0])
+                y = int(data_arr[1])
+            except ValueError as e:
+                print(str(e))
+                self.disconnect_internal()
+                break
             else:
-                data_arr = data.split(',')
-                try:
-                    x = int(data_arr[0])
-                    y = int(data_arr[1])
-                except ValueError:
-                    self.socket = None
-                    raise
+                if x<=100 and x>=-100 and y<=100 and y>=-100:
+                    with value_lock:
+                        self.x = x
+                        self.y = y
+                    reply = 'ACK'
                 else:
-                    if x<=100 and x>=-100 and y<=100 and y>=-100:
-                        with value_lock:
-                            self.x = x
-                            self.y = y
-                    else:
-                        reply = 'ERR:RANGE'
-                        try:
-                            with sock_lock:
-                                self.socket.reply(str.encode(reply))
-                        except (socket.error,socket.timeout,OSError):
-                            self.socket = None
-                            print("Joystick reply error")
-                            break
-                        else:
-                            continue
-                reply = 'ACK'
+                    reply = 'ERR:RANGE'
                 try:
                     with sock_lock:
                         self.socket.reply(str.encode(reply))
-                except (socket.error,socket.timeout,OSError):
-                    self.socket = None
-                    print("Joystick reply error")
+                except TcpSocketError as e:
+                    print(str(e))
+                    self.disconnect_internal()
                     break
-        with state_lock:
-            self.state = ConnState.CLOSED
 
     def begin(self):
+        '''Run update_values in a new thread, if connection state is ready.'''
         with state_lock:
             if self.state == ConnState.READY:
                 thread = Thread(target=self.update_values, args=())
@@ -113,24 +122,35 @@ class Joystick:
             else:
                 raise JoystickError('State not valid for thread start')
 
-    def disconnect(self):
+    def disconnect_internal(self):
+        '''Close the socket and set the connection state to closed'''
         if self.state == ConnState.CLOSED:
             return
         with state_lock:
             self.state = ConnState.CLOSED
-        try:
+        with sock_lock:
             self.socket.close()
-        except (socket.error,AttributeError): # note, looks like this will always run because we have a read/reply error when we call this externally which sets socket to None so we get AttributeError
-            self.socket = None
+        self.socket = None
+
+    def disconnect(self):
+        '''Externally set connection state to a requested close to
+        stop the update_value loop.'''
+        if self.state == ConnState.CLOSED:
+            raise JoystickError('Joystick already closed')
+        with state_lock:
+            self.state = ConnState.CLOSE_REQUESTED
 
     def get_xval(self):
+        '''Get xval for external use.'''
         with value_lock:
             return self.xval
 
     def get_yval(self):
+        '''Get yval for external use.'''
         with value_lock:
             return self.yval
 
     def get_state(self):
+        '''Get current connection state for external use.'''
         with state_lock:
             return self.state
