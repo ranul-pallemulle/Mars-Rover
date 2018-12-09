@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
 import socket
+import select
 from sockets import tcpsocket
 
 class TestTcpSocket(unittest.TestCase):
@@ -44,11 +45,15 @@ class TestTcpSocket(unittest.TestCase):
         self.assertIsNone(self.testtcp.sock)
 
     def test_read(self):
-        self.mock_conn = Mock(spec_set=socket.socket)
-        self.mock_conn.return_value.recv.return_value = str.encode('19')
-        self.testtcp.conn = self.mock_conn.return_value
         self.testtcp.close = method_call_logger(self.testtcp.close)
-        self.assertEqual(self.testtcp.read(),'19')
+        with patch('sockets.tcpsocket.select.select') as mock_select:
+            self.mock_conn = Mock(spec_set=socket.socket)
+            #self.mock_select = Mock(spec_set=select.select)
+     
+            self.mock_conn.return_value.recv.return_value = str.encode('19')
+            self.testtcp.conn = self.mock_conn.return_value
+            mock_select.return_value = [[self.testtcp.conn],[],[]]
+            self.assertEqual(self.testtcp.read(),'19')
         assert(not self.testtcp.close.was_called)
         self.assertIsNotNone(self.testtcp.sock)
         self.assertIsNotNone(self.testtcp.conn)

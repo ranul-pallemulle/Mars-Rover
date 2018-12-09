@@ -1,4 +1,5 @@
 import socket
+import select
 
 class TcpSocketError(Exception):
     '''Exception class that will be raised by TcpSocket class.'''
@@ -11,13 +12,15 @@ class TcpSocket:
     max_recv_bytes = 128
     
     def __init__(self, port):
-        '''Set up a server socket that listens for one connection on port.'''
+        '''Set up a server socket that listens for one connection on port. 
+        Create a socketpair to enable the user to unblock read() from outside'''
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.sock.setblocking(1)
             self.sock.bind(('', port))
             self.sock.listen(1)
+            self.disconn_listener, self.disconn_sender = socket.socketpair()
         except (socket.error, OverflowError, TypeError) as e:
             self.close()
             raise TcpSocketError(str(e))
@@ -25,11 +28,17 @@ class TcpSocket:
     def wait_for_connection(self):
         '''Block until a connection is made from outside.'''
         if self.sock is not None:
-            try:
-                self.conn,_ = self.sock.accept()
-            except (socket.error, socket.timeout) as e:
+            inputs = [self.sock, self.disconn_listener]
+            readable,_,_ = select.select(inputs,[],[])
+            if self.sock in readable:
+                try:
+                    self.conn,_ = self.sock.accept()
+                except (socket.error, socket.timeout) as e:
+                    self.close()
+                    raise TcpSocketError(str(e))
+            elif self.disconn_listener in readable:
                 self.close()
-                raise TcpSocketError(str(e))
+                raise TcpSocketError('Socket closed before connection was made.')
         else:
             self.close()
             raise TcpSocketError('Socket is uninitialised')
@@ -37,14 +46,22 @@ class TcpSocket:
     def read(self):
         '''Block until self.max_recv_bytes or less is received.'''
         if self.conn is not None:
-            try:
-                data = self.conn.recv(self.max_recv_bytes)
-            except (socket.error, socket.timeout,OSError) as e:
+            # select() checks conn for data, and disconn_listener for
+            # a disconnect request (sent through disconn_sender).
+            inputs = [self.conn, self.disconn_listener]
+            readable,_,_ = select.select(inputs,[],[]) 
+            if self.conn in readable:
+                try:
+                    data = self.conn.recv(self.max_recv_bytes)
+                except (socket.error, socket.timeout,OSError) as e:
+                    self.close()
+                    raise TcpSocketError(str(e))
+            elif self.disconn_listener in readable:
                 self.close()
-                raise TcpSocketError(str(e))
+                return None
             if len(data) == 0:
                 self.close()
-                raise TcpSocketError("Connection lost")
+                return None
             data = data.decode()
             return data
         else:
@@ -82,7 +99,11 @@ class TcpSocket:
             except socket.error:
                 pass
             finally:
-                self.sock = None                
+                self.sock = None
+
+    def unblock(self):
+        '''Force read() to return with None to indicate broken connection.'''
+        self.disconn_sender.sendall(str.encode('d'))
 
     def set_max_recv_bytes(self, numbytes):
         '''Set maximum number of bytes to receive.'''

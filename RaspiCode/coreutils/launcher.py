@@ -9,23 +9,30 @@ class LauncherError(Exception):
 '''Global objects'''
 jstick_obj = None
 
+def release_all():
+    '''Close all resources so that shutdown can be done.'''
+    try:
+        kill_joystick([])
+        kill_camera([])
+        kill_auto([])
+    except LauncherError:
+        pass
+
 def launch_joystick(arg_list):
     '''Start joystick operation if it is not running.'''
     global jstick_obj
     if jstick_obj is None:
-        port = arg_list[1]      # need to check len(arg_list)
         try:
-            jstick_obj = Joystick(port)
+            jstick_obj = Joystick()
         except JoystickError as e:
-            print(str(e))
             jstick_obj = None
-            raise LauncherError('Failed to create Joystick object')
+            raise LauncherError('Failed to create Joystick object: '+str(e))
+    port = arg_list[1]      # need to check len(arg_list)
     try:
-        jstick_obj.connect()
+        jstick_obj.connect(port)
         jstick_obj.begin()
     except JoystickError as e:
-        print(str(e))
-        raise LauncherError('Failed to start Joystick')
+        raise LauncherError('Failed to start Joystick: '+str(e))
 
 def kill_joystick(arg_list):
     '''Stop joystick operation if it is running.'''
@@ -34,8 +41,7 @@ def kill_joystick(arg_list):
         try:
             jstick_obj.disconnect()
         except JoystickError as e:
-            print(str(e))
-            raise LauncherError('Joystick already closed')
+            raise LauncherError(str(e))
     else:
         raise LauncherError('Joystick object not initialised')
             

@@ -6,13 +6,13 @@
 import sys
 from coreutils.parser import parse, CommandTypes, CommandError
 from sockets.tcpsocket import TcpSocket, TcpSocketError
-from coreutils.launcher import *
+from coreutils import launcher
 
 def main(argv):
     '''
     Rover operation starts here! 
     Create a TcpSocket to communicate with remote computer. Parse
-    received commands and fed into call_action.
+    received commands and feed into call_action.
     '''
     if len(argv) != 2:
         print("Usage: python3 start_rover.py <port>")
@@ -31,6 +31,10 @@ def main(argv):
     while(True):
         try:
             comm_str = main_sock.read()
+            if comm_str is None:
+                print("Connection lost")
+                launcher.release_all()
+                sys.exit(1)
             result = parse(comm_str)
         except TcpSocketError as e:
             print(str(e))
@@ -49,12 +53,12 @@ def call_action(arg_list):
     command, do something.'''
     try:
         if arg_list[0] == CommandTypes.START_JOYSTICK:
-            launch_joystick(arg_list)
+            launcher.launch_joystick(arg_list)
         elif arg_list[0] == CommandTypes.STOP_JOYSTICK:
-            kill_joystick(arg_list)
+            launcher.kill_joystick(arg_list)
         elif arg_list[0] == CommandTypes.TOGGLE_JOYSTICK:
-            toggle_joystick(arg_list)
-    except LauncherError as e:
+            launcher.toggle_joystick(arg_list)
+    except launcher.LauncherError as e:
         print(str(e))
         # send error to remote here
         return
