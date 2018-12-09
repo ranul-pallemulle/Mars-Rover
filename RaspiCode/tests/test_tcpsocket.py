@@ -14,7 +14,11 @@ class TestTcpSocket(unittest.TestCase):
         pass
     
     def test_init(self):
-        pass
+        self.mock_sock = Mock(spec_set=socket.socket)
+        with patch('socket.socket') as self.mock_sock:
+            self.mock_sock.side_effect = OverflowError
+            with self.assertRaises(tcpsocket.TcpSocketError):
+                self.testtcp = tcpsocket.TcpSocket(4560)
 
     def test_wait_for_connection_accept_error(self):
         self.mock_sock.return_value.accept.return_value = Mock(),Mock()

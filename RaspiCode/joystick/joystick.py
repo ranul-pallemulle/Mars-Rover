@@ -27,12 +27,14 @@ class Joystick:
         self.xval = 0
         self.yval = 0
         try:
-            port = int(port)
-            assert port > 0
+            port_int = int(port)
+            if port - port_int > 0:
+                raise ValueError
+            assert port_int > 0
         except (ValueError, AssertionError) as e:
             print(str(e))
             raise JoystickError('Invalid value for port')
-        self.port = port
+        self.port = port_int
         self.state = ConnState.CLOSED
         self.socket = None
 
@@ -88,7 +90,7 @@ class Joystick:
                 print(str(e))
                 self.disconnect_internal()
                 break
-            #data = data.decode()
+            
             data_arr = data.split(',')
             try:
                 x = int(data_arr[0])
@@ -100,8 +102,8 @@ class Joystick:
             else:
                 if x<=100 and x>=-100 and y<=100 and y>=-100:
                     with value_lock:
-                        self.x = x
-                        self.y = y
+                        self.xval = x
+                        self.yval = y
                     reply = 'ACK'
                 else:
                     reply = 'ERR:RANGE'
