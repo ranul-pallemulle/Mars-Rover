@@ -7,6 +7,7 @@ import sys
 from coreutils.parser import parse, CommandTypes, CommandError
 from sockets.tcpsocket import TcpSocket, TcpSocketError
 from coreutils import launcher
+from threading import Thread
 
 def main(argv):
     '''
@@ -38,6 +39,7 @@ def main(argv):
             result = parse(comm_str)
         except TcpSocketError as e:
             print(str(e))
+            launcher.release_all()
             sys.exit(1)
         except CommandError as e:
             main_sock.reply(str(e))
@@ -45,8 +47,8 @@ def main(argv):
         else:
             reply = "ACK\n"
             main_sock.reply(reply)
-            print(result)
-            call_action(result)
+            action_thread = Thread(target=call_action,args=[result])
+            action_thread.start()
 
 def call_action(arg_list):
     '''First element of arg_list should be a command. Based on
@@ -60,7 +62,6 @@ def call_action(arg_list):
             launcher.toggle_joystick(arg_list)
     except launcher.LauncherError as e:
         print(str(e))
-        # send error to remote here
         return
     except Exception as e:
         print(str(e))

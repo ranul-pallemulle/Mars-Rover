@@ -21,12 +21,14 @@ class TestTcpSocket(unittest.TestCase):
             with self.assertRaises(tcpsocket.TcpSocketError):
                 self.testtcp = tcpsocket.TcpSocket(4560)
 
-    def test_wait_for_connection_accept_error(self):
+    @patch('sockets.tcpsocket.select.select')
+    def test_wait_for_connection_accept_error(self,mock_select):
         self.mock_sock.return_value.accept.return_value = Mock(),Mock()
         self.mock_sock.return_value.accept.side_effect = socket.error
         self.testtcp.close = method_call_logger(self.testtcp.close)
         assert(not self.testtcp.close.was_called)
         self.assertIsNotNone(self.testtcp.sock)
+        mock_select.return_value = [[self.testtcp.sock],[],[]]
         with patch('socket.socket') as self.mock_sock:
             with self.assertRaises(tcpsocket.TcpSocketError):
                 self.testtcp.wait_for_connection()
@@ -44,34 +46,47 @@ class TestTcpSocket(unittest.TestCase):
         assert(self.testtcp.close.was_called)
         self.assertIsNone(self.testtcp.sock)
 
-    def test_read(self):
+    @patch('sockets.tcpsocket.select.select')
+    def test_read(self,mock_select):
         self.testtcp.close = method_call_logger(self.testtcp.close)
-        with patch('sockets.tcpsocket.select.select') as mock_select:
-            self.mock_conn = Mock(spec_set=socket.socket)
-            #self.mock_select = Mock(spec_set=select.select)
-     
-            self.mock_conn.return_value.recv.return_value = str.encode('19')
-            self.testtcp.conn = self.mock_conn.return_value
-            mock_select.return_value = [[self.testtcp.conn],[],[]]
-            self.assertEqual(self.testtcp.read(),'19')
+        self.mock_conn = Mock(spec_set=socket.socket)
+        self.mock_conn.return_value.recv.return_value = str.encode('19')
+        self.testtcp.conn = self.mock_conn.return_value
+        mock_select.return_value = [[self.testtcp.conn],[],[]]
+        self.assertEqual(self.testtcp.read(),'19')
         assert(not self.testtcp.close.was_called)
         self.assertIsNotNone(self.testtcp.sock)
         self.assertIsNotNone(self.testtcp.conn)
-        
+
+    @patch('sockets.tcpsocket.select.select')
+    def test_read_EOF(self,mock_select):
+        self.mock_conn = Mock(spec_set=socket.socket)
         self.mock_conn.return_value.recv.return_value = str.encode('')
         self.testtcp.conn = self.mock_conn.return_value
         self.testtcp.close = method_call_logger(self.testtcp.close)
-        with self.assertRaises(tcpsocket.TcpSocketError):
-            self.testtcp.read()
+        mock_select.return_value = [[self.testtcp.conn],[],[]]
+        self.assertEqual(self.testtcp.read(), None)
         assert(self.testtcp.close.was_called)
         self.assertIsNone(self.testtcp.sock)
         self.assertIsNone(self.testtcp.conn)
 
-    def test_read_recv_error(self):
+    @patch('sockets.tcpsocket.select.select')
+    def test_read_disconn(self,mock_select):
+        self.testtcp.conn = Mock()
+        mock_select.return_value = [[self.testtcp.disconn_listener],[],[]]
+        self.testtcp.close = method_call_logger(self.testtcp.close)
+        self.assertEqual(self.testtcp.read(), None)
+        assert(self.testtcp.close.was_called)
+        self.assertIsNone(self.testtcp.sock)
+        self.assertIsNone(self.testtcp.conn)
+        
+    @patch('sockets.tcpsocket.select.select')
+    def test_read_recv_error(self,mock_select):
         self.mock_conn = Mock(spec_set=socket.socket)
         self.mock_conn.return_value.recv.return_value = str.encode('19')
         self.mock_conn.return_value.recv.side_effect = OSError
         self.testtcp.conn = self.mock_conn.return_value
+        mock_select.return_value = [[self.testtcp.conn],[],[]]
         self.testtcp.close = method_call_logger(self.testtcp.close)
         assert(not self.testtcp.close.was_called)
         self.assertIsNotNone(self.testtcp.sock)

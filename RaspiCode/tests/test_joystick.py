@@ -6,35 +6,33 @@ from sockets.tcpsocket import TcpSocket, TcpSocketError
 class TestJoystick(unittest.TestCase):
 
     def setUp(self):
-        self.testjstick = joystick.Joystick(9700)
+        self.testjstick = joystick.Joystick()
 
     def tearDown(self):
         pass
-
-    def test_init(self):
-        with self.assertRaises(joystick.JoystickError):
-            testjstick2 = joystick.Joystick('string')
-        with self.assertRaises(joystick.JoystickError):
-            testjstick2 = joystick.Joystick(-5)
-        with self.assertRaises(joystick.JoystickError):
-            testjstick2 = joystick.Joystick(4400.5)
-        
-        testjstick2 = joystick.Joystick(4500)
-        self.assertEqual(testjstick2.port, 4500)
-        self.assertEqual(testjstick2.state, joystick.ConnState.CLOSED)
-        self.assertIsNone(testjstick2.socket)
 
     def test_connect_closed(self):
         self.testjstick.state = joystick.ConnState.CLOSED
         self.mock_tcpsock = Mock(spec_set=TcpSocket)
         with patch('joystick.joystick.TcpSocket') as self.mock_tcpsock:
-            self.testjstick.connect()
+            self.testjstick.connect(9700)
             self.mock_tcpsock.assert_called_with(9700)
             self.mock_tcpsock.return_value.set_max_recv_bytes.\
             assert_called_with(1024)
             self.mock_tcpsock.return_value.wait_for_connection.\
             assert_called_with()
         self.assertEqual(self.testjstick.state, joystick.ConnState.READY)
+
+    def test_connect_closed_bad_port(self):
+        self.testjstick.state = joystick.ConnState.CLOSED
+        with self.assertRaises(joystick.JoystickError):
+            self.testjstick.connect('string')
+        with self.assertRaises(joystick.JoystickError):
+            self.testjstick.connect(-5)
+        with self.assertRaises(joystick.JoystickError):
+            self.testjstick.connect(4400.5)
+        self.assertEqual(self.testjstick.state,joystick.ConnState.CLOSED)
+        self.assertIsNone(self.testjstick.socket)
 
     def test_connect_closed_tcp_create_error(self):
         self.testjstick.disconnect_internal = method_call_logger(\
@@ -44,28 +42,28 @@ class TestJoystick(unittest.TestCase):
         with patch('joystick.joystick.TcpSocket') as self.mock_tcpsock:
             self.mock_tcpsock.side_effect = TcpSocketError
             with self.assertRaises(joystick.JoystickError):
-                self.testjstick.connect()
-            assert(not self.testjstick.disconnect_internal.was_called)
+                self.testjstick.connect(9700)
+            assert(self.testjstick.disconnect_internal.was_called)
 
     def test_connect_other_state(self):
         self.testjstick.state = joystick.ConnState.RUNNING
         with self.assertRaises(joystick.JoystickError):
-            self.testjstick.connect()
+            self.testjstick.connect(9700)
         self.assertEqual(self.testjstick.state,joystick.ConnState.RUNNING)
         
         self.testjstick.state = joystick.ConnState.CLOSE_REQUESTED
         with self.assertRaises(joystick.JoystickError):
-            self.testjstick.connect()
+            self.testjstick.connect(9700)
         self.assertEqual(self.testjstick.state,joystick.ConnState.CLOSE_REQUESTED)
         
         self.testjstick.state = joystick.ConnState.PENDING
         with self.assertRaises(joystick.JoystickError):
-            self.testjstick.connect()
+            self.testjstick.connect(9700)
         self.assertEqual(self.testjstick.state,joystick.ConnState.PENDING)
         
         self.testjstick.state = joystick.ConnState.READY
         with self.assertRaises(joystick.JoystickError):
-            self.testjstick.connect()
+            self.testjstick.connect(9700)
         self.assertEqual(self.testjstick.state,joystick.ConnState.READY)
 
     def test_connect_closed_tcp_wait_error(self):
@@ -77,7 +75,7 @@ class TestJoystick(unittest.TestCase):
             self.mock_tcpsock.return_value.wait_for_connection.side_effect =\
                 TcpSocketError
             with self.assertRaises(joystick.JoystickError):
-                self.testjstick.connect()
+                self.testjstick.connect(9700)
             assert(self.testjstick.disconnect_internal.was_called)
         self.assertEqual(self.testjstick.state,joystick.ConnState.CLOSED)
 

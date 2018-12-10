@@ -43,6 +43,7 @@ class Joystick:
             assert port_int > 0
         except (ValueError, AssertionError) as e:
             print(str(e))
+            self.disconnect_internal()
             raise JoystickError('Invalid value for port')
         self.port = port_int
         
