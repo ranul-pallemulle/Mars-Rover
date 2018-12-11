@@ -1,8 +1,9 @@
 from enum import Enum
 class CommandTypes(Enum):
     START_JOYSTICK = 1
-    TOGGLE_JOYSTICK = 2
-    STOP_JOYSTICK = 3
+    STOP_JOYSTICK = 2
+    START_ARM = 3
+    STOP_ARM = 4
 
 class CommandError(Exception):
     pass

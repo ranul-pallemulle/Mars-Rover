@@ -5,7 +5,7 @@
 # stdout and stderr visible through journalctl
 import sys
 from coreutils.parser import parse, CommandTypes, CommandError
-from sockets.tcpsocket import TcpSocket, TcpSocketError
+from coreutils.tcpsocket import TcpSocket, TcpSocketError
 from coreutils import launcher
 from threading import Thread
 
@@ -63,6 +63,10 @@ def call_action(arg_list):
             launcher.launch_joystick(arg_list)
         elif arg_list[0] == CommandTypes.STOP_JOYSTICK:
             launcher.kill_joystick(arg_list)
+        elif arg_list[0] == CommandTypes.START_ARM:
+            launcher.launch_arm(arg_list)
+        elif arg_list[0] == CommandTypes.STOP_ARM:
+            launcher.kill_arm(arg_list)
     except launcher.LauncherError as e:
         print(str(e))
         return

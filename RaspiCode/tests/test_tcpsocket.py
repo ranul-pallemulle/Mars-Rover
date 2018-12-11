@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, Mock
 import socket
 import select
-from sockets import tcpsocket
+from coreutils import tcpsocket
 from threading import Thread
 
 class TestTcpSocket(unittest.TestCase):
@@ -42,7 +42,7 @@ class TestTcpSocket(unittest.TestCase):
             testtcp2 = tcpsocket.TcpSocket(-4)
             self.assertIsNone(testtcp2.sock)            
 
-    @patch('sockets.tcpsocket.select.select')
+    @patch('coreutils.tcpsocket.select.select')
     def test_wait_for_connection_accept_error(self,mock_select):
         self.mock_sock.return_value.accept.return_value = Mock(),Mock()
         self.mock_sock.return_value.accept.side_effect = socket.error
@@ -56,7 +56,7 @@ class TestTcpSocket(unittest.TestCase):
             assert(self.testtcp.close.was_called)
             self.assertIsNone(self.testtcp.sock)
 
-    @patch('sockets.tcpsocket.select.select')
+    @patch('coreutils.tcpsocket.select.select')
     def test_wait_for_connecton_disconn(self,mock_select):
         self.testtcp.close = method_call_logger(self.testtcp.close)
         assert(not self.testtcp.close.was_called)
@@ -79,7 +79,7 @@ class TestTcpSocket(unittest.TestCase):
         assert(self.testtcp.close.was_called)
         self.assertIsNone(self.testtcp.sock)
 
-    @patch('sockets.tcpsocket.select.select')
+    @patch('coreutils.tcpsocket.select.select')
     def test_read(self,mock_select):
         self.testtcp.close = method_call_logger(self.testtcp.close)
         self.mock_conn = Mock(spec_set=socket.socket)
@@ -91,7 +91,7 @@ class TestTcpSocket(unittest.TestCase):
         self.assertIsNotNone(self.testtcp.sock)
         self.assertIsNotNone(self.testtcp.conn)
 
-    @patch('sockets.tcpsocket.select.select')
+    @patch('coreutils.tcpsocket.select.select')
     def test_read_EOF(self,mock_select):
         self.mock_conn = Mock(spec_set=socket.socket)
         self.mock_conn.return_value.recv.return_value = str.encode('')
@@ -105,7 +105,7 @@ class TestTcpSocket(unittest.TestCase):
         self.assertIsNone(self.testtcp.sock)
         self.assertIsNone(self.testtcp.conn)
 
-    @patch('sockets.tcpsocket.select.select')
+    @patch('coreutils.tcpsocket.select.select')
     def test_read_disconn(self,mock_select):
         self.testtcp.conn = Mock()
         mock_select.return_value = [[self.testtcp.disconn_listener],[],[]]
@@ -117,7 +117,7 @@ class TestTcpSocket(unittest.TestCase):
         self.assertIsNone(self.testtcp.sock)
         self.assertIsNone(self.testtcp.conn)
         
-    @patch('sockets.tcpsocket.select.select')
+    @patch('coreutils.tcpsocket.select.select')
     def test_read_recv_error(self,mock_select):
         self.mock_conn = Mock(spec_set=socket.socket)
         self.mock_conn.return_value.recv.return_value = str.encode('19')

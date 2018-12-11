@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from threading import Thread, Lock
-from sockets.tcpsocket import TcpSocket, TcpSocketError
+from coreutils.tcpsocket import TcpSocket, TcpSocketError
 from enum import Enum
 
 '''Global locks to prevent race conditions.'''
@@ -14,11 +14,11 @@ class ConnState(Enum):
     CLOSE_REQUESTED = 4
     RUNNING = 5
 
-class ControllerError(Exception):
-    '''Exception class that will be raised by classes implementing Controller'''
+class ReceiverError(Exception):
+    '''Exception class that will be raised by classes implementing Receiver'''
     pass
 
-class Controller:
+class Receiver:
     __metaclass__ = ABCMeta
 
     def __init__(self):
@@ -32,7 +32,7 @@ class Controller:
             if self.state == ConnState.CLOSED:
                 self.state = ConnState.PENDING
             else:
-                raise ControllerError('Socket open: cannot make new socket.')
+                raise ReceiverError('Socket open: cannot make new socket.')
         try:
             port_int = int(port)
             if float(port) - port_int > 0:
@@ -41,7 +41,7 @@ class Controller:
         except (ValueError, AssertionError) as e:
             print(str(e))
             self.disconnect_internal()
-            raise ControllerError('Invalid value for port')
+            raise ReceiverError('Invalid value for port')
         self.port = port_int
         
         try:
@@ -50,13 +50,13 @@ class Controller:
         except TcpSocketError as e:
             print(str(e))
             self.disconnect_internal()
-            raise ControllerError('Error creating TcpSocket object')
+            raise ReceiverError('Error creating TcpSocket object')
         try:
             self.socket.wait_for_connection();
         except TcpSocketError as e:
             print(str(e))
             self.disconnect_internal()
-            raise ControllerError('Error waiting for connection.')
+            raise ReceiverError('Error waiting for connection.')
         with state_lock:
             self.state = ConnState.READY
 
@@ -92,7 +92,7 @@ class Controller:
                 break
             if data is None:
                 self.disconnect_internal()
-                print('Controller disconnected') # find a way to specify which controller
+                print('Receiver disconnected') # find a way to specify which receiver
                 break
             data_arr = data.split(',')
             reply = self.store_received(data_arr)
@@ -113,7 +113,7 @@ class Controller:
                 thread = Thread(target=self.update_values, args=())
                 thread.start()
             else:
-                raise ControllerError('State not valid for thread start')
+                raise ReceiverError('State not valid for thread start')
 
     def disconnect_internal(self):
         '''Close the socket and set the connection state to closed'''
@@ -131,7 +131,7 @@ class Controller:
         stop the update_value loop.'''
         with state_lock:
             if self.state == ConnState.CLOSED:
-                raise ControllerError('Controller already closed') # find a way to specify which controller
+                raise ReceiverError('Receiver already closed') # find a way to specify which receiver
         self.socket.unblock()
                 
     def get_state(self):
