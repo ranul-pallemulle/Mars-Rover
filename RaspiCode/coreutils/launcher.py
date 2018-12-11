@@ -1,6 +1,7 @@
 # Responsible for controlling the state of various individual parts.
 # Provides an interface for the main execution to control specific features
-from joystick.joystick import Joystick, JoystickError
+from joystick.controller import ControllerError
+from joystick.joystick import Joystick
 
 class LauncherError(Exception):
     '''Exception class that will be raised by launch functions.'''
@@ -24,14 +25,14 @@ def launch_joystick(arg_list):
     if jstick_obj is None:
         try:
             jstick_obj = Joystick()
-        except JoystickError as e:
+        except ControllerError as e:
             jstick_obj = None
             raise LauncherError('Failed to create Joystick object: '+str(e))
     port = arg_list[1]      # need to check len(arg_list)
     try:
         jstick_obj.connect(port)
         jstick_obj.begin()
-    except JoystickError as e:
+    except ControllerError as e:
         raise LauncherError('Failed to start Joystick: '+str(e))
 
 def kill_joystick(arg_list):
@@ -40,7 +41,7 @@ def kill_joystick(arg_list):
     if jstick_obj is not None:
         try:
             jstick_obj.disconnect()
-        except JoystickError as e:
+        except ControllerError as e:
             raise LauncherError(str(e))
     else:
         raise LauncherError('Joystick object not initialised')
