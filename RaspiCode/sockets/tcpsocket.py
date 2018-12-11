@@ -15,12 +15,19 @@ class TcpSocket:
         '''Set up a server socket that listens for one connection on port. 
         Create a socketpair to enable the user to unblock read() from outside'''
         try:
+            port_int = int(port)
+            if float(port) - port_int > 0:
+                raise ValueError
+            assert port_int > 0
+        except (ValueError, AssertionError) as e:
+            raise TcpSocketError(str(e))
+        self.disconn_listener, self.disconn_sender = socket.socketpair()
+        try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.sock.setblocking(1)
-            self.sock.bind(('', port))
+            self.sock.bind(('', port_int))
             self.sock.listen(1)
-            self.disconn_listener, self.disconn_sender = socket.socketpair()
         except (socket.error, OverflowError, TypeError) as e:
             self.close()
             raise TcpSocketError(str(e))
@@ -49,7 +56,7 @@ class TcpSocket:
             # select() checks conn for data, and disconn_listener for
             # a disconnect request (sent through disconn_sender).
             inputs = [self.conn, self.disconn_listener]
-            readable,_,_ = select.select(inputs,[],[]) 
+            readable,_,_ = select.select(inputs,[],[])
             if self.conn in readable:
                 try:
                     data = self.conn.recv(self.max_recv_bytes)
@@ -100,6 +107,8 @@ class TcpSocket:
                 pass
             finally:
                 self.sock = None
+        self.disconn_listener.close()
+        self.disconn_sender.close()
 
     def unblock(self):
         '''Force read() to return with None to indicate broken connection.'''

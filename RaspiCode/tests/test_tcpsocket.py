@@ -3,6 +3,7 @@ from unittest.mock import patch, Mock
 import socket
 import select
 from sockets import tcpsocket
+from threading import Thread
 
 class TestTcpSocket(unittest.TestCase):
 
@@ -13,13 +14,33 @@ class TestTcpSocket(unittest.TestCase):
          
     def tearDown(self):
         pass
-    
+
     def test_init(self):
         self.mock_sock = Mock(spec_set=socket.socket)
         with patch('socket.socket') as self.mock_sock:
-            self.mock_sock.side_effect = OverflowError
-            with self.assertRaises(tcpsocket.TcpSocketError):
-                self.testtcp = tcpsocket.TcpSocket(4560)
+            testtcp2 = tcpsocket.TcpSocket(4560)
+            self.mock_sock.return_value.setblocking.assert_called_with(1)
+            self.mock_sock.return_value.bind.assert_called_with(('',4560))
+            self.assertIsNotNone(testtcp2.sock)
+
+    @patch('socket.socket')
+    def test_init_addr_in_use(self,mocked_socket):
+#        self.mock_sock = Mock(spec_set=socket.socket)
+        mocked_socket.return_value.bind.side_effect = OverflowError
+        with self.assertRaises(tcpsocket.TcpSocketError):
+            testtcp2 = tcpsocket.TcpSocket(4560)
+            self.assertIsNone(testtcp2.sock)
+
+    def test_init_bad_port(self):
+        with self.assertRaises(tcpsocket.TcpSocketError):
+            testtcp2 = tcpsocket.TcpSocket('something')
+            self.assertIsNone(testtcp2.sock)
+        with self.assertRaises(tcpsocket.TcpSocketError):
+            testtcp2 = tcpsocket.TcpSocket(12.5)
+            self.assertIsNone(testtcp2.sock)            
+        with self.assertRaises(tcpsocket.TcpSocketError):
+            testtcp2 = tcpsocket.TcpSocket(-4)
+            self.assertIsNone(testtcp2.sock)            
 
     @patch('sockets.tcpsocket.select.select')
     def test_wait_for_connection_accept_error(self,mock_select):
@@ -34,6 +55,18 @@ class TestTcpSocket(unittest.TestCase):
                 self.testtcp.wait_for_connection()
             assert(self.testtcp.close.was_called)
             self.assertIsNone(self.testtcp.sock)
+
+    @patch('sockets.tcpsocket.select.select')
+    def test_wait_for_connecton_disconn(self,mock_select):
+        self.testtcp.close = method_call_logger(self.testtcp.close)
+        assert(not self.testtcp.close.was_called)
+        self.assertIsNotNone(self.testtcp.sock)
+        self.testtcp.disconn_listener = Mock(spec_set=socket.socket)
+        mock_select.return_value = [[self.testtcp.disconn_listener],[],[]]
+        with self.assertRaises(tcpsocket.TcpSocketError):
+            self.testtcp.wait_for_connection()
+        assert(self.testtcp.close.was_called)
+        self.assertIsNone(self.testtcp.sock)
 
     def test_wait_for_connection_sock_none(self):
         self.mock_sock.return_value.accept.return_value = Mock(),Mock()
@@ -65,6 +98,8 @@ class TestTcpSocket(unittest.TestCase):
         self.testtcp.conn = self.mock_conn.return_value
         self.testtcp.close = method_call_logger(self.testtcp.close)
         mock_select.return_value = [[self.testtcp.conn],[],[]]
+        assert(not self.testtcp.close.was_called)
+        self.assertIsNotNone(self.testtcp.conn)
         self.assertEqual(self.testtcp.read(), None)
         assert(self.testtcp.close.was_called)
         self.assertIsNone(self.testtcp.sock)
@@ -75,6 +110,8 @@ class TestTcpSocket(unittest.TestCase):
         self.testtcp.conn = Mock()
         mock_select.return_value = [[self.testtcp.disconn_listener],[],[]]
         self.testtcp.close = method_call_logger(self.testtcp.close)
+        assert(not self.testtcp.close.was_called)
+        self.assertIsNotNone(self.testtcp.conn)
         self.assertEqual(self.testtcp.read(), None)
         assert(self.testtcp.close.was_called)
         self.assertIsNone(self.testtcp.sock)
@@ -204,6 +241,15 @@ class TestTcpSocket(unittest.TestCase):
         assert(self.testtcp.close.was_called)
         self.assertIsNone(self.testtcp.sock)
         self.assertIsNone(self.testtcp.conn)
+
+    def test_concurrent_access(self):
+        real_tcp = tcpsocket.TcpSocket(4580)
+        thread = Thread(target=real_tcp.wait_for_connection,args=())
+        thread.start()
+        real_tcp.unblock()
+        thread.join()
+        self.assertIsNone(real_tcp.sock)
+        self.assertIsNone(real_tcp.conn)
 
 class method_call_logger(object):
     def __init__(self, meth):

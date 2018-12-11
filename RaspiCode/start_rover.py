@@ -46,7 +46,12 @@ def main(argv):
             print(str(e))
         else:
             reply = "ACK\n"
-            main_sock.reply(reply)
+            try:
+                main_sock.reply(reply)
+            except TcpSocketError as e:
+                print(str(e))
+                launcher.release_all()
+                sys.exit(1)
             action_thread = Thread(target=call_action,args=[result])
             action_thread.start()
 
@@ -58,8 +63,6 @@ def call_action(arg_list):
             launcher.launch_joystick(arg_list)
         elif arg_list[0] == CommandTypes.STOP_JOYSTICK:
             launcher.kill_joystick(arg_list)
-        elif arg_list[0] == CommandTypes.TOGGLE_JOYSTICK:
-            launcher.toggle_joystick(arg_list)
     except launcher.LauncherError as e:
         print(str(e))
         return

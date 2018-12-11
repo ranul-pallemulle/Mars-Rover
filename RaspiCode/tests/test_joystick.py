@@ -11,6 +11,11 @@ class TestJoystick(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_init(self):
+        testjstick2 = joystick.Joystick()
+        self.assertEqual(testjstick2.state, joystick.ConnState.CLOSED)
+        self.assertIsNone(testjstick2.socket)
+
     def test_connect_closed(self):
         self.testjstick.state = joystick.ConnState.CLOSED
         self.mock_tcpsock = Mock(spec_set=TcpSocket)

@@ -44,10 +44,6 @@ def kill_joystick(arg_list):
             raise LauncherError(str(e))
     else:
         raise LauncherError('Joystick object not initialised')
-            
-
-def toggle_joystick(arg_list):
-    pass
 
 def launch_camera(arg_list):
     pass

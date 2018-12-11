@@ -5,7 +5,6 @@ from enum import Enum
 '''Global locks to prevent race conditions.'''
 state_lock = Lock()
 value_lock = Lock()
-sock_lock = Lock()
 
 class ConnState(Enum):
     '''Describe socket connection state.'''
@@ -84,8 +83,7 @@ class Joystick:
                 self.disconnect_internal()
                 break
             try:
-                with sock_lock:
-                    data = self.socket.read()
+                data = self.socket.read()
             except TcpSocketError as e:
                 print(str(e))
                 self.disconnect_internal()
@@ -112,8 +110,7 @@ class Joystick:
                 else:
                     reply = 'ERR:RANGE'
                 try:
-                    with sock_lock:
-                        self.socket.reply(reply)
+                    self.socket.reply(reply)
                 except TcpSocketError as e:
                     print(str(e))
                     self.disconnect_internal()
@@ -130,20 +127,21 @@ class Joystick:
 
     def disconnect_internal(self):
         '''Close the socket and set the connection state to closed'''
-        if self.state == ConnState.CLOSED:
-            return
+        with state_lock:
+            if self.state == ConnState.CLOSED:
+                return
         with state_lock:
             self.state = ConnState.CLOSED
         if self.socket is not None:
-            with sock_lock:
-                self.socket.close()
+            self.socket.close()
             self.socket = None
 
     def disconnect(self):
         '''Externally set connection state to a requested close to
         stop the update_value loop.'''
-        if self.state == ConnState.CLOSED:
-            raise JoystickError('Joystick already closed')
+        with state_lock:
+            if self.state == ConnState.CLOSED:
+                raise JoystickError('Joystick already closed')
         self.socket.unblock()
 
     def get_xval(self):
