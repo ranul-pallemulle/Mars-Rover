@@ -1,13 +1,16 @@
 from interfaces.receiver import Receiver, ReceiverError
+from interfaces.actuator import Actuator, ActuatorError
 from threading import Lock
 
-class Joystick(Receiver):
+class Joystick(Receiver,Actuator):
 
     xval = 0
     yval = 0
     value_lock = Lock()
 
     def store_received(self, recvd_list):
+        if len(recvd_list) != 2:
+            return None
         try:
             x = int(recvd_list[0])
             y = int(recvd_list[1])
@@ -22,6 +25,9 @@ class Joystick(Receiver):
                 return 'ACK'
             else:
                 return 'ERR:RANGE'
+
+    def get_values(self, motor_set):
+        return (self.xval, self.yval)
 
     def get_xval(self):
         with self.value_lock:

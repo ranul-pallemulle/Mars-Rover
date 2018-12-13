@@ -9,6 +9,8 @@ class RoboticArm(Receiver):
     value_lock = Lock()
 
     def store_received(self, recvd_list):
+        if len(recvd_list) != 3:
+            return None
         try:
             thet_1 = int(recvd_list[0])
             thet_2 = int(recvd_list[1])

@@ -19,6 +19,8 @@ class ReceiverError(Exception):
     pass
 
 class Receiver:
+    '''Receive values via a TcpSocket on a separate thread. Valid format
+of received values is determined by store_received.'''
     __metaclass__ = ABCMeta
 
     def __init__(self):
