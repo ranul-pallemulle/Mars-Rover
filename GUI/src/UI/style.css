@@ -12,23 +12,55 @@ and open the template in the editor.
 */
 
 *{
-    -fx-theme-background-color: #edfbff;
-    -fx-theme-joy-color: #72b3ff;
-    -fx-theme-joy-hover-color: #afd4ff;
-    -fx-theme-joyback-color: #1984ff;
-    -fx-theme-label-color: #10427c;
-    -fx-theme-text-color: #10423c;
+    -fx-theme-background-color: #FFFFFF;/*#edfbff;*/
+    -fx-theme-joy-color: #555555;/*#72b3ff;*/
+    -fx-theme-joy-hover-color: #777777;/*#afd4ff;*/
+    -fx-theme-joyback-color: #AAAAAA;/*#1984ff;*/
+    -fx-theme-label-color: #000000;/*#10427c;*/
+    -fx-theme-text-color: #000000;/*#10423c;*/
+    -fx-theme-button-color: #555555;/*#72b3ff;*/
+    -fx-theme-button-hover-color: #777777;/*#afd4ff;*/
 }
 
 .root{
     -fx-background-color: -fx-theme-background-color;
 }
 
-#DispLabelX{
+#button1{
+    -fx-fill: -fx-theme-button-color;
+    -fx-stroke: #000000;
+}
+
+#button1:hover{
+    -fx-fill: -fx-theme-button-hover-color;
+}
+
+#button2{
+    -fx-fill: -fx-theme-button-color;
+    -fx-stroke: #000000;
+}
+
+#button2:hover{
+    -fx-fill: -fx-theme-button-hover-color;
+}
+
+#buttonArm{
+    -fx-fill: -fx-theme-hover-color;
+    -fx-stroke: #000000;
+}
+
+#buttonArm:hover{
+    -fx-fill: -fx-theme-button-color;
+}
+
+#DispARM{
+    -fx-fill: #FFFF33;
+}
+#DispJoyLabelX{
     -fx-fill: -fx-theme-label-color;
 }
 
-#DispLabelY{
+#DispJoyLabelY{
     -fx-fill: -fx-theme-label-color;
 }
 
