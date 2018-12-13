@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="300.0" prefWidth="600.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.FXMLController">
+    <children>
+<!--        <VBox id="VBox" alignment="CENTER" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+            <HBox id="HBox" alignment="CENTER" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">-->
+                <Circle radius="150" fx:id="JoyBack" centerX="250.0" centerY="250.0"/>
+                <Circle radius="50" fx:id="Joy" centerX="250.0" centerY="250.0" onMouseReleased="#snapback" onMouseDragged="#updatelocation"/>
+                <Circle radius="20" fx:id="buttonArm" centerX="450.0" centerY="450.0" onMouseClicked="#openArm"/>
+                <!--<Circle radius="20" fx:id="button1" centerX="400.0" centerY="450.0"/>-->
+                <Circle radius="20" fx:id="button2" centerX="350.0" centerY="450.0"/>
+                <Text fx:id="DispJoyLabelX" x="10" y="20" text="X:"/>
+                <Text fx:id="DispJoyLabelY" x="10" y="40" text="Y:"/>
+                <Text fx:id="DispJoyX" x="30" y="20" text="0.0"/>
+                <Text fx:id="DispJoyY" x="30" y="40" text="0.0"/>
+                <!--<Button fx:id="connectButton" text="Connect" prefHeight="35" prefWidth="150" onAction="#handleConnectButtonPress"/>-->
+<!--            </HBox> 
+        </VBox>-->
+        
+    </children>
+</AnchorPane>

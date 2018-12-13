@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="300.0" prefWidth="600.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.FXMLController">
+    <children>
+<!--        <VBox id="VBox" alignment="CENTER" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+            <HBox id="HBox" alignment="CENTER" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">-->
+                <Text fx:id="DispARM" x="250" y="250" text="ARM">
+                    <font>
+                        <Font name="Arial Black" size="24.0" />
+                    </font> 
+                </Text>
+                <Circle radius="20" fx:id="button1" centerX="400.0" centerY="450.0" onMouseClicked="#openArm"/>
+                <!--<Button fx:id="connectButton" text="Connect" prefHeight="35" prefWidth="150" onAction="#handleConnectButtonPress"/>-->
+<!--            </HBox> 
+        </VBox>-->
+        
+    </children>
+</AnchorPane>
