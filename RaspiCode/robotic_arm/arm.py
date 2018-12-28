@@ -1,12 +1,17 @@
 from interfaces.receiver import Receiver, ReceiverError
+from interfaces.actuator import Actuator, ActuatorError
 from threading import Lock
 
-class RoboticArm(Receiver):
+class RoboticArm(Receiver, Actuator):
 
     angle_1 = 0
     angle_2 = 0
     angle_3 = 0
     value_lock = Lock()
+
+    def __init__(self, resource_manager):
+        Receiver.__init__(self)
+        Actuator.__init__(self, resource_manager)
 
     def store_received(self, recvd_list):
         if len(recvd_list) != 3:
@@ -30,6 +35,9 @@ class RoboticArm(Receiver):
             else:
                 return 'ERR:RANGE'
 
+    def get_values(self, motor_set):
+        return (self.angle_1, self.angle_2, self. angle_3)
+
     def get_angle_1(self):
         with self.value_lock:
             return self.angle_1
@@ -41,3 +49,7 @@ class RoboticArm(Receiver):
     def get_angle_3(self):
         with self.value_lock:
             return self.angle_3
+
+    def stop(self):
+        self.disconnect()
+        self.release_motors()

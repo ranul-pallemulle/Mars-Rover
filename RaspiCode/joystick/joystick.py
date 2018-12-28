@@ -8,6 +8,10 @@ class Joystick(Receiver,Actuator):
     yval = 0
     value_lock = Lock()
 
+    def __init__(self, resource_manager):
+        Receiver.__init__(self)
+        Actuator.__init__(self, resource_manager)
+        
     def store_received(self, recvd_list):
         if len(recvd_list) != 2:
             return None
@@ -36,3 +40,7 @@ class Joystick(Receiver,Actuator):
     def get_yval(self):
         with self.value_lock:
             return self.yval
+
+    def stop(self):
+        self.disconnect()
+        self.release_motors()
