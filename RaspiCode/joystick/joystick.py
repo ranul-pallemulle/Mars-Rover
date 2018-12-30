@@ -31,15 +31,16 @@ class Joystick(Receiver,Actuator):
                 return 'ERR:RANGE'
 
     def get_values(self, motor_set):
-        return (self.xval, self.yval)
-
-    def get_xval(self):
         with self.value_lock:
-            return self.xval
+            return (self.xval, self.yval)
 
-    def get_yval(self):
-        with self.value_lock:
-            return self.yval
+    # def get_xval(self):
+    #     with self.value_lock:
+    #         return self.xval
+
+    # def get_yval(self):
+    #     with self.value_lock:
+    #         return self.yval
 
     def stop(self):
         self.disconnect()

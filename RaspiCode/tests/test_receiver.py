@@ -99,35 +99,19 @@ class TestReceiver(unittest.TestCase):
             assert(self.testImpl.disconnect_internal.was_called)
         self.assertEqual(self.testImpl.state, recvr.ConnState.CLOSED)
 
-    # def test_update_values_ready_state_reply_error(self):
-    #     self.testImpl.disconnect_internal = method_call_logger(\
-    #     self.testImpl.disconnect_internal)
-    #     self.testImpl.state = recvr.ConnState.READY
-    #     self.mock_tcpsock = Mock(spec_set=TcpSocket)
-    #     self.testImpl.socket = self.mock_tcpsock.return_value
-    #     self.mock_tcpsock.return_value.read.return_value='40,35'
-    #     self.mock_tcpsock.return_value.reply.side_effect = TcpSocketError
-    #     self.testImpl.update_values()
-    #     assert(self.testImpl.disconnect_internal.was_called)
-    #     self.mock_tcpsock.return_value.reply.assert_called_with('ACK')
-    #     self.assertEqual(self.testImpl.get_xval(),40)
-    #     self.assertEqual(self.testImpl.get_yval(),35)
-
-    # def test_update_values_ready_state_reply_error2(self):
-    #     self.testImpl.xval = 42
-    #     self.testImpl.yval = 12
-    #     self.testImpl.disconnect_internal = method_call_logger(\
-    #     self.testImpl.disconnect_internal)
-    #     self.testImpl.state = recvr.ConnState.READY
-    #     self.mock_tcpsock = Mock(spec_set=TcpSocket)
-    #     self.testImpl.socket = self.mock_tcpsock.return_value
-    #     self.mock_tcpsock.return_value.read.return_value='101,35'
-    #     self.mock_tcpsock.return_value.reply.side_effect = TcpSocketError
-    #     self.testImpl.update_values()
-    #     assert(self.testImpl.disconnect_internal.was_called)
-    #     self.mock_tcpsock.return_value.reply.assert_called_with('ERR:RANGE')
-    #     self.assertEqual(self.testImpl.get_xval(),42)
-    #     self.assertEqual(self.testImpl.get_yval(),12)
+    def test_update_values_ready_state_reply_error(self):
+        self.testImpl.disconnect_internal = method_call_logger(\
+        self.testImpl.disconnect_internal)
+        self.testImpl.state = recvr.ConnState.READY
+        self.mock_tcpsock = Mock(spec_set=TcpSocket)
+        mock_store_received = Mock()
+        self.testImpl.socket = self.mock_tcpsock.return_value
+        self.testImpl.store_received = mock_store_received
+        self.mock_tcpsock.return_value.read.return_value = '40,35'
+        self.mock_tcpsock.return_value.reply.side_effect = TcpSocketError
+        self.testImpl.update_values()
+        self.testImpl.store_received.assert_called_with(['40','35'])
+        assert(self.testImpl.disconnect_internal.was_called)
 
     def test_update_values_ready_state_non_int_read(self):
         self.testImpl.disconnect_internal = method_call_logger(\
@@ -159,28 +143,18 @@ class TestReceiver(unittest.TestCase):
         self.testImpl.update_values()
         assert(self.testImpl.disconnect_internal.was_called)
 
-    # def test_update_values_other_state(self):
-    #     self.testImpl.xval = 42
-    #     self.testImpl.yval = 13
-    #     self.testImpl.disconnect_internal = method_call_logger(\
-    #     self.testImpl.disconnect_internal)
-    #     self.testImpl.state = recvr.ConnState.CLOSED
-    #     self.testImpl.update_values()
-    #     assert(not self.testImpl.disconnect_internal.was_called)
-    #     self.assertEqual(self.testImpl.get_xval(),42)
-    #     self.assertEqual(self.testImpl.get_yval(),13)
+    def test_update_values_other_state(self):
+        self.testImpl.disconnect_internal = method_call_logger(\
+        self.testImpl.disconnect_internal)
+        self.testImpl.state = recvr.ConnState.CLOSED
+        self.testImpl.update_values()
+        assert (not self.testImpl.disconnect_internal.was_called)
 
-    #     self.testImpl.state = recvr.ConnState.CLOSE_REQUESTED
-    #     self.mock_tcpsock = Mock(spec_set=TcpSocket)
-    #     self.testImpl.socket = self.mock_tcpsock.return_value
-    #     self.testImpl.update_values()
-    #     assert(self.testImpl.disconnect_internal.was_called)
-
-    #     self.testImpl.state = 'Some random thing'
-    #     self.mock_tcpsock = Mock(spec_set=TcpSocket)
-    #     self.testImpl.socket = self.mock_tcpsock.return_value
-    #     self.testImpl.update_values()
-    #     assert(self.testImpl.disconnect_internal.was_called)
+        self.testImpl.state = recvr.ConnState.CLOSE_REQUESTED
+        self.mock_tcpsock = Mock(spec_set = TcpSocket)
+        self.testImpl.socket = self.mock_tcpsock.return_value
+        self.testImpl.update_values()
+        assert(self.testImpl.disconnect_internal.was_called)
 
     def test_disconnect_internal(self):
         self.testImpl.state = recvr.ConnState.CLOSE_REQUESTED
