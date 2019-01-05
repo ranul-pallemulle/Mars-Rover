@@ -64,24 +64,23 @@ class Actuator:
         '''Remove unique access to a set of motors so that they may be used
 elsewhere.'''
         num_motors = 0
+        motors = None
         with list_lock:
-            motors = self.motor_list.pop(motor_set)
-        self.mgr.release(motor_set)
-        print("RETURNING")
+            if motor_set in self.motor_list:
+                motors = self.motor_list.pop(motor_set)
+        if motors is not None:
+            self.mgr.release(motor_set)
+        else:
+            print("Warning (actuator): release_motors called on resource not acquired.")
         return
-    
+
+    def have_acquired(self, motor_set):
+        '''Check if actuator has acquired the specified motors. Useful for use
+        by classes inheriting from actuator as they don't need to know
+        about the motor_list or locking.'''
         with list_lock:
-            num_motors = len(self.motor_list)
-            print("NUM_MOTORS IS {}".format(num_motors))
-        if num_motors > 0:
-            print("CAME TO RELEASE_MOTORS")
-            try:
-                with list_lock:
-                    idx = self.motor_list.index(motor_set)
-            except IndexError as e:
-                print(str(e))
-                raise ActuatorError("Can't release motors not acquired.")
-            with list_lock:
-                motors = self.motor_list.pop(idx)
-            self.mgr.release(motors)
-            
+            if motor_set in self.motor_list:
+                return True
+            else:
+                return False
+    

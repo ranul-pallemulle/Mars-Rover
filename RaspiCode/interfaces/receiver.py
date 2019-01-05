@@ -66,6 +66,10 @@ of received values is determined by store_received.'''
     def store_received(self,recvd_list):
         pass
 
+    @abstractmethod
+    def run_on_connection_interrupted(self):
+        pass
+
     def update_values(self):
         '''Update a list of values, received in a loop and send reply, while
         connection state is "running".'''
@@ -81,31 +85,37 @@ of received values is determined by store_received.'''
             elif current_state == ConnState.CLOSE_REQUESTED or\
                  current_state == ConnState.PENDING:
                 self.disconnect_internal()
+                self.run_on_connection_interrupted()
                 break
             if current_state != ConnState.RUNNING:
                 print('Invalid value of current_state')
                 self.disconnect_internal()
+                self.run_on_connection_interrupted()
                 break
             try:
                 data = self.socket.read()
             except TcpSocketError as e:
                 print(str(e))
                 self.disconnect_internal()
+                self.run_on_connection_interrupted()
                 break
             if data is None:
                 self.disconnect_internal()
+                self.run_on_connection_interrupted()
                 print('Receiver disconnected') # find a way to specify which receiver
                 break
             data_arr = data.split(',')
             reply = self.store_received(data_arr)
             if reply is None:
                 self.disconnect_internal()
+                self.run_on_connection_interrupted()
                 break
             try:
                 self.socket.reply(reply)
             except TcpSocketError as e:
                 print(str(e))
                 self.disconnect_internal()
+                self.run_on_connection_interrupted()
                 break
                 
     def begin_receive(self):

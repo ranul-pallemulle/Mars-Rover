@@ -14,6 +14,7 @@ class Joystick(Receiver,Actuator):
         Actuator.__init__(self, resource_manager)
         
     def store_received(self, recvd_list):
+        '''Store values received from remote, after checking that they are of the right format. Return a reply in the form of a string to be sent back.'''
         if len(recvd_list) != 2:
             return None
         try:
@@ -47,4 +48,9 @@ motors so we don't need to query motor_set.'''
     def stop(self):
         self.release_motors(Motors.WHEELS)
         self.disconnect()
+
+    def run_on_connection_interrupted(self):
+        '''Runs if connection to remote is interrupted.'''
+        if self.have_acquired(Motors.WHEELS):
+            self.release_motors(Motors.WHEELS)
 
