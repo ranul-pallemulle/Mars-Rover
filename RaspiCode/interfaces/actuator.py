@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from threading import Thread, Lock
+from threading import Thread, Lock, Condition
 
 list_lock = Lock()
 
@@ -15,6 +15,8 @@ class Actuator:
         ''' Make empty list of motor objects.'''
         self.motor_list = dict()
         self.mgr = resource_manager
+        self.condition = Condition()
+        self.release_was_called = False
     
     def begin_actuate(self):
         '''Run update_motors in a new thread, if the motor_list is not empty.'''
@@ -36,44 +38,59 @@ class Actuator:
         except ResourceError as e:
             print(str(e))
             raise ActuatorError('Could not get access to motors.')
+
+        
     def update_motors(self):
-        ''' Send values received to motors. '''
-        num_motors = 0
+        '''Send values received to motors. Assumes that all acquisitions
+        (calls to acquire_motors()) have been done. Checking of each
+        list member for modification is not done due to speed
+        considerations. Therefore make sure to acquire all motors
+        needed before calling begin_actuate and do not acquire or
+        reacquire anything after the call. If any motor in the list is
+        found to have been released, it is assumed that actuation
+        cannot function as normal anymore and all the other motors
+        will be released as well.
+
+        '''
         with list_lock:
-            num_motors = len(self.motor_list)
-        if num_motors == 0:
-            return
-        elif num_motors == 1: # speed up most common case
-            motor_set = None
-            with list_lock:
-                motor_set = list(self.motor_list.values())[0]
-            while num_motors > 0:
-                print(num_motors)
-                values = self.get_values(motor_set)
-                motor_set.set_values(values)
-                with list_lock:
-                    num_motors = len(self.motor_list)
-            return
-        else:
-            while self.motor_list:
-                for motor_set in self.motor_list.values():
+            if len(self.motor_list) == 0:
+                return
+
+        while True:
+            with self.condition:
+                self.condition.wait() # block until values
+                                      # available or
+                                      # release_motors is called
+
+                if self.release_was_called: # release everything
+                    with list_lock:
+                        for motor_set in self.motor_list.keys():
+                            self.release_motors(motor_set)
+                    self.release_was_called = False
+                    return
+
+            with list_lock: # prevent release_motors from
+                            # modifying the list until values
+                            # (already received) are updated.
+                for motor_set in self.motor_list.keys():
                     values = self.get_values(motor_set)
-                    motor_set.set_values(values)
+                    self.motor_list[motor_set].set_values(values)
+
 
     def release_motors(self, motor_set):
         '''Remove unique access to a set of motors so that they may be used
 elsewhere.'''
-        num_motors = 0
-        motors = None
         with list_lock:
             if motor_set in self.motor_list:
-                motors = self.motor_list.pop(motor_set)
-        if motors is not None:
-            self.mgr.release(motor_set)
-        else:
-            print("Warning (actuator): release_motors called on resource not acquired.")
-        return
+                self.motor_list.pop(motor_set)
+                self.mgr.release(motor_set)
+                with self.condition:
+                    self.release_was_called = True
+                    self.condition.notify()
+            else:
+                print("Warning (actuator): release_motors called on resource not acquired.")
 
+                
     def have_acquired(self, motor_set):
         '''Check if actuator has acquired the specified motors. Useful for use
         by classes inheriting from actuator as they don't need to know

@@ -1,13 +1,11 @@
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.actuator import Actuator, ActuatorError
 from coreutils.resource_manager import Motors
-from threading import Lock
 
 class Joystick(Receiver,Actuator):
 
     xval = 0
     yval = 0
-    value_lock = Lock()
 
     def __init__(self, resource_manager):
         Receiver.__init__(self)
@@ -25,9 +23,11 @@ class Joystick(Receiver,Actuator):
             return None
         else:
             if x<=100 and x>=-100 and y<=100 and y>=-100:
-                with self.value_lock:
+                with self.condition:
                     self.xval = x
                     self.yval = y
+                    self.condition.notify() # tell actuation thread
+                                            # that values are ready
                 return 'ACK'
             else:
                 return 'ERR:RANGE'
@@ -37,7 +37,7 @@ class Joystick(Receiver,Actuator):
 (wheel, arm, etc) and is used only if we have multiple types of motors
 being controlled simultaneously. In this case, there's only the wheel
 motors so we don't need to query motor_set.'''
-        with self.value_lock:
+        with self.condition:    # simply lock
             return (self.xval, self.yval)
 
     def start(self):
@@ -46,7 +46,8 @@ motors so we don't need to query motor_set.'''
         self.begin_actuate()
         
     def stop(self):
-        self.release_motors(Motors.WHEELS)
+        if self.have_acquired(Motors.WHEELS):
+            self.release_motors(Motors.WHEELS)
         self.disconnect()
 
     def run_on_connection_interrupted(self):
