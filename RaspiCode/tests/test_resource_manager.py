@@ -3,6 +3,8 @@ from unittest.mock import patch, Mock
 import socket
 import select
 import coreutils.resource_manager as mgr
+from coreutils.resource_manager import Motors
+from coreutils.resource_manager import Camera
 
 class TestResourceManager(unittest.TestCase):
     
@@ -17,22 +19,22 @@ class TestResourceManager(unittest.TestCase):
     @patch('coreutils.resource_manager.camera.Camera')
     def test_init(self,mocked_cam,mocked_arm,mocked_wheels):
         new_mgr = mgr.ResourceManager()
-        self.assertEqual(new_mgr.resources['wheels'], new_mgr.FREE)
-        self.assertEqual(new_mgr.resources['arm'], new_mgr.FREE)
-        self.assertEqual(new_mgr.resources['camera'], 0)
+        self.assertEqual(new_mgr.resources[Motors.WHEELS], new_mgr.FREE)
+        self.assertEqual(new_mgr.resources[Motors.ARM], new_mgr.FREE)
+        self.assertEqual(new_mgr.resources[Camera.FEED], 0)
 
     def test_get_unique(self):
-        self.assertEqual(self.manager.resources['wheels'],self.manager.FREE)        
-        wheels = self.manager.get_unique(mgr.Motors.WHEELS)
+        self.assertEqual(self.manager.resources[Motors.WHEELS],self.manager.FREE)        
+        wheels = self.manager.get_unique(Motors.WHEELS)
         self.assertIsNotNone(wheels)
-        self.assertEqual(self.manager.resources['wheels'],self.manager.ACQUIRED)
-        self.assertEqual(self.manager.resources['camera'],0)
+        self.assertEqual(self.manager.resources[Motors.WHEELS],self.manager.ACQUIRED)
+        self.assertEqual(self.manager.resources[Camera.FEED],0)
         with self.assertRaises(mgr.ResourceError):
-            camera = self.manager.get_unique(mgr.Camera.FEED)
+            camera = self.manager.get_unique(Camera.FEED)
 
     def test_get_shared(self):
-        self.assertEqual(self.manager.resources['camera'],0)
-        camera = self.manager.get_shared(mgr.Camera.FEED)
-        self.assertEqual(self.manager.resources['camera'],1)
+        self.assertEqual(self.manager.resources[Camera.FEED],0)
+        camera = self.manager.get_shared(Camera.FEED)
+        self.assertEqual(self.manager.resources[Camera.FEED],1)
         
             

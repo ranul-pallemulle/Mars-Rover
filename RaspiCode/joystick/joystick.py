@@ -1,5 +1,6 @@
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.actuator import Actuator, ActuatorError
+from coreutils.resource_manager import Motors
 from threading import Lock
 
 class Joystick(Receiver,Actuator):
@@ -31,17 +32,19 @@ class Joystick(Receiver,Actuator):
                 return 'ERR:RANGE'
 
     def get_values(self, motor_set):
+        '''Overriden from actuator. motor_set specifies the type of motors
+(wheel, arm, etc) and is used only if we have multiple types of motors
+being controlled simultaneously. In this case, there's only the wheel
+motors so we don't need to query motor_set.'''
         with self.value_lock:
             return (self.xval, self.yval)
 
-    # def get_xval(self):
-    #     with self.value_lock:
-    #         return self.xval
-
-    # def get_yval(self):
-    #     with self.value_lock:
-    #         return self.yval
-
+    def start(self):
+        self.begin_receive()
+        self.acquire_motors(Motors.WHEELS)
+        self.begin_actuate()
+        
     def stop(self):
+        self.release_motors(Motors.WHEELS)
         self.disconnect()
-        self.release_motors()
+

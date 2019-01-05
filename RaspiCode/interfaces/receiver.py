@@ -108,7 +108,7 @@ of received values is determined by store_received.'''
                 self.disconnect_internal()
                 break
                 
-    def begin(self):
+    def begin_receive(self):
         '''Run update_values in a new thread, if connection state is ready.'''
         with state_lock:
             if self.state == ConnState.READY:

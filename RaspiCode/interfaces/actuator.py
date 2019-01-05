@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from threading import Thread, Lock
 
+list_lock = Lock()
+
 class ActuatorError(Exception):
     '''Exception class that will be raised by classes implementing Actuator.'''
     pass
@@ -11,10 +13,10 @@ class Actuator:
 
     def __init__(self, resource_manager):
         ''' Make empty list of motor objects.'''
-        self.motor_list = []
+        self.motor_list = dict()
         self.mgr = resource_manager
     
-    def start_motors(self):
+    def begin_actuate(self):
         '''Run update_motors in a new thread, if the motor_list is not empty.'''
         thread = Thread(target=self.update_motors, args=())
         thread.start()
@@ -27,34 +29,59 @@ class Actuator:
 
     def acquire_motors(self, motor_type):
         '''Get unique access to a set of motors such as wheel motors or
-robotic arm motors.'''
+        robotic arm motors.'''
         try:
-            self.motor_list.append(self.mgr.get_unique(motor_type))
+            with list_lock:
+                self.motor_list[motor_type] = self.mgr.get_unique(motor_type)
         except ResourceError as e:
             print(str(e))
             raise ActuatorError('Could not get access to motors.')
     def update_motors(self):
         ''' Send values received to motors. '''
-        if len(self.motor_list) == 1:
-            motor_set = self.motor_list[0]
-            while True:
+        num_motors = 0
+        with list_lock:
+            num_motors = len(self.motor_list)
+        if num_motors == 0:
+            return
+        elif num_motors == 1: # speed up most common case
+            motor_set = None
+            with list_lock:
+                motor_set = list(self.motor_list.values())[0]
+            while num_motors > 0:
+                print(num_motors)
                 values = self.get_values(motor_set)
                 motor_set.set_values(values)
+                with list_lock:
+                    num_motors = len(self.motor_list)
+            return
         else:
-            while True:
-                for motor_set in self.motor_list:
+            while self.motor_list:
+                for motor_set in self.motor_list.values():
                     values = self.get_values(motor_set)
                     motor_set.set_values(values)
 
     def release_motors(self, motor_set):
         '''Remove unique access to a set of motors so that they may be used
 elsewhere.'''
-        if self.motor_list:
+        num_motors = 0
+        with list_lock:
+            motors = self.motor_list.pop(motor_set)
+        self.mgr.release(motor_set)
+        print("RETURNING")
+        return
+    
+        with list_lock:
+            num_motors = len(self.motor_list)
+            print("NUM_MOTORS IS {}".format(num_motors))
+        if num_motors > 0:
+            print("CAME TO RELEASE_MOTORS")
             try:
-                idx = self.motor_list.index(motor_set)
+                with list_lock:
+                    idx = self.motor_list.index(motor_set)
             except IndexError as e:
                 print(str(e))
                 raise ActuatorError("Can't release motors not acquired.")
-            motors = self.motor_list.pop(idx)
-            motors.release()
+            with list_lock:
+                motors = self.motor_list.pop(idx)
+            self.mgr.release(motors)
             

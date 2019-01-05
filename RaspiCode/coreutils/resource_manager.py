@@ -20,21 +20,18 @@ class ResourceManager:
         self.wheels = motors.WheelMotors()
         self.arm = motors.ArmMotors()
         self.camera = camera.Camera()
-        self.resources = {'wheels':self.FREE, 'arm':self.FREE,
-                          'camera':0}
+        self.resources = {
+            Motors.WHEELS : self.FREE,
+            Motors.ARM    : self.FREE,
+            Camera.FEED   : 0} # use count
         
     def get_unique(self, typename):
         '''Provide unique access to a resource.'''
-        if typename == Motors.WHEELS:
-            if self.resources['wheels'] == self.FREE:
-                self.resources['wheels'] = self.ACQUIRED
-                return self.wheels
-            else:
-                return None
-        if typename == Motors.ARM:
-            if self.resources['arm'] == self.FREE:
-                self.resources['arm'] = self.ACQUIRED
-                return self.arm
+        if typename == Motors.WHEELS or typename == Motors.ARM:
+            if self.resources[typename] == self.FREE:
+                self.resources[typename] = self.ACQUIRED
+                print("RESOURCE MANAGER: {} was acquired".format(typename))
+                return self._provide_resource(typename)
             else:
                 return None
         else:
@@ -43,9 +40,31 @@ class ResourceManager:
     def get_shared(self, typename):
         '''Provide shared access to a resource.'''
         if typename == Camera.FEED:
-            count = self.resources['camera']
-            self.resources['camera'] = count + 1
-            return self.camera
+            count = self.resources[typename]
+            self.resources[typename] = count + 1
+            return self._provide_resource(typename)
         else:
             raise ResourceError('No such resource or unable to provide unique access to it.')
-        
+
+    def _provide_resource(self, typename):
+        '''Return object corresponding to resource. This is a private method.'''
+        if typename == Motors.WHEELS:
+            return self.wheels
+        elif typename == Motors.ARM:
+            return self.arm
+        elif typename == Camera.FEED:
+            return self.camera
+
+    def release(self, typename):
+        '''Deallocate a resource.'''
+        if typename == Motors.WHEELS or typename == Motors.ARM:
+            if self.resources[typename] == self.FREE:
+                raise ResourceError('Cannot release resource: resource was already free.')
+            elif self.resources[typename] == self.ACQUIRED:
+                self.resources[typename] = self.FREE
+                print("RESOURCE MANAGER: {} was freed".format(typename))
+        elif typename == Camera.FEED:
+            count = self.resources[typename]
+            self.resources[typename] = count - 1
+        else:
+            raise ResourceError('release called on unknown resource.')

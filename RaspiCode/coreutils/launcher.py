@@ -36,7 +36,7 @@ def launch_joystick(arg_list):
     port = arg_list[1]      # need to check len(arg_list)
     try:
         jstick_obj.connect(port)
-        jstick_obj.begin()
+        jstick_obj.start()
     except ReceiverError as e:
         raise LauncherError('Failed to start Joystick: '+str(e))
 
