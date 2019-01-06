@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from threading import Thread, Lock, Condition
+import coreutils.resource_manager as mgr
 
 list_lock = Lock()
 
@@ -11,10 +12,9 @@ class Actuator:
     '''Actuates motors on a separate thread.'''
     __metaclass__ = ABCMeta
 
-    def __init__(self, resource_manager):
+    def __init__(self):
         ''' Make empty list of motor objects.'''
         self.motor_list = dict()
-        self.mgr = resource_manager
         self.condition = Condition()
         self.release_was_called = False
     
@@ -34,7 +34,11 @@ class Actuator:
         robotic arm motors.'''
         try:
             with list_lock:
-                self.motor_list[motor_type] = self.mgr.get_unique(motor_type)
+                motor_set = mgr.global_resources.get_unique(motor_type)
+                if motor_set is not None:
+                    self.motor_list[motor_type] = motor_set
+                else:
+                    print("Warning (acquire_motors): could not get unique access to {}".format(motor_type))
         except ResourceError as e:
             print(str(e))
             raise ActuatorError('Could not get access to motors.')
@@ -83,7 +87,7 @@ elsewhere.'''
         with list_lock:
             if motor_set in self.motor_list:
                 self.motor_list.pop(motor_set)
-                self.mgr.release(motor_set)
+                mgr.global_resources.release(motor_set)
                 with self.condition:
                     self.release_was_called = True
                     self.condition.notify()

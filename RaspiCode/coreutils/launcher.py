@@ -3,14 +3,13 @@
 from interfaces.receiver import ReceiverError
 from joystick.joystick import Joystick
 from robotic_arm.arm import RoboticArm
-from coreutils import resource_manager
+import coreutils.resource_manager as mgr
 
 class LauncherError(Exception):
     '''Exception class that will be raised by launch functions.'''
     pass
 
 '''Global objects'''
-rsc_manager = resource_manager.ResourceManager()
 jstick_obj = None
 arm_obj = None
 
@@ -29,7 +28,7 @@ def launch_joystick(arg_list):
     global jstick_obj
     if jstick_obj is None:
         try:
-            jstick_obj = Joystick(rsc_manager)
+            jstick_obj = Joystick()
         except ReceiverError as e:
             jstick_obj = None
             raise LauncherError('Failed to create Joystick object: '+str(e))
@@ -63,7 +62,7 @@ def launch_arm(arg_list):
     port = arg_list[1]
     try:
         arm_obj.connect(port)
-        arm_obj.begin()
+        arm_obj.start()
     except ReceiverError as e:
         raise LauncherError('Failed to start Robotic Arm '+str(e))
 
@@ -71,7 +70,7 @@ def kill_arm(arg_list):
     global arm_obj
     if arm_obj is not None:
         try:
-            arm_obj.disconnect()
+            arm_obj.stop()
         except ReceiverError as e:
             raise LauncherError(str(e))
     else:

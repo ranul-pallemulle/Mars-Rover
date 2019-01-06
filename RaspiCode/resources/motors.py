@@ -8,3 +8,6 @@ class WheelMotors:
 class ArmMotors:
     def __init__(self):
         pass
+
+    def set_values(self, values):
+        print("arm motors got values: {}, {}, {}".format(values[0], values[1], values[2]))

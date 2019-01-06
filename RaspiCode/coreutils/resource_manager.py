@@ -62,9 +62,11 @@ class ResourceManager:
                 raise ResourceError('Cannot release resource: resource was already free.')
             elif self.resources[typename] == self.ACQUIRED:
                 self.resources[typename] = self.FREE
-                print("RESOURCE MANAGER: {} was freed".format(typename))
+                print("RESOURCE MANAGER: {} was released".format(typename))
         elif typename == Camera.FEED:
             count = self.resources[typename]
             self.resources[typename] = count - 1
         else:
             raise ResourceError('release called on unknown resource.')
+
+global_resources = ResourceManager()

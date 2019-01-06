@@ -1,15 +1,15 @@
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.actuator import Actuator, ActuatorError
-from coreutils.resource_manager import Motors
+import coreutils.resource_manager as mgr
 
 class Joystick(Receiver,Actuator):
 
     xval = 0
     yval = 0
 
-    def __init__(self, resource_manager):
+    def __init__(self):
         Receiver.__init__(self)
-        Actuator.__init__(self, resource_manager)
+        Actuator.__init__(self)
         
     def store_received(self, recvd_list):
         '''Store values received from remote, after checking that they are of the right format. Return a reply in the form of a string to be sent back.'''
@@ -42,16 +42,18 @@ motors so we don't need to query motor_set.'''
 
     def start(self):
         self.begin_receive()
-        self.acquire_motors(Motors.WHEELS)
+        self.acquire_motors(mgr.Motors.WHEELS)
+        if not self.have_acquired(mgr.Motors.WHEELS):
+            self.stop()
         self.begin_actuate()
         
     def stop(self):
-        if self.have_acquired(Motors.WHEELS):
-            self.release_motors(Motors.WHEELS)
+        if self.have_acquired(mgr.Motors.WHEELS):
+            self.release_motors(mgr.Motors.WHEELS)
         self.disconnect()
 
     def run_on_connection_interrupted(self):
         '''Runs if connection to remote is interrupted.'''
-        if self.have_acquired(Motors.WHEELS):
-            self.release_motors(Motors.WHEELS)
+        if self.have_acquired(mgr.Motors.WHEELS):
+            self.release_motors(mgr.Motors.WHEELS)
 
