@@ -3,9 +3,6 @@ from threading import Thread, Lock
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
 from enum import Enum
 
-'''Global locks to prevent race conditions.'''
-state_lock = Lock()
-
 class ConnState(Enum):
     '''Describe socket connection state.'''
     CLOSED = 1
@@ -26,11 +23,12 @@ of received values is determined by store_received.'''
     def __init__(self):
         self.state = ConnState.CLOSED
         self.socket = None
+        self.state_lock = Lock()
 
     def connect(self,port):
         '''Create a new TcpSocket if connection state is closed. Wait
         for a connection on specified port.'''
-        with state_lock:
+        with self.state_lock:
             if self.state == ConnState.CLOSED:
                 self.state = ConnState.PENDING
             else:
@@ -59,7 +57,7 @@ of received values is determined by store_received.'''
             print(str(e))
             self.disconnect_internal()
             raise ReceiverError('Error waiting for connection.')
-        with state_lock:
+        with self.state_lock:
             self.state = ConnState.READY
 
     @abstractmethod
@@ -74,10 +72,10 @@ of received values is determined by store_received.'''
         '''Update a list of values, received in a loop and send reply, while
         connection state is "running".'''
         while True:
-            with state_lock:
+            with self.state_lock:
                 current_state = self.state
             if current_state == ConnState.READY:
-                with state_lock:
+                with self.state_lock:
                     self.state = ConnState.RUNNING
                     current_state = self.state
             elif current_state == ConnState.CLOSED:
@@ -102,7 +100,7 @@ of received values is determined by store_received.'''
             if data is None:
                 self.disconnect_internal()
                 self.run_on_connection_interrupted()
-                print('Receiver disconnected') # find a way to specify which receiver
+                print('{} controller disconnected'.format(self.__class__.__name__))
                 break
             data_arr = data.split(',')
             reply = self.store_received(data_arr)
@@ -120,7 +118,7 @@ of received values is determined by store_received.'''
                 
     def begin_receive(self):
         '''Run update_values in a new thread, if connection state is ready.'''
-        with state_lock:
+        with self.state_lock:
             if self.state == ConnState.READY:
                 thread = Thread(target=self.update_values, args=())
                 thread.start()
@@ -129,10 +127,10 @@ of received values is determined by store_received.'''
 
     def disconnect_internal(self):
         '''Close the socket and set the connection state to closed'''
-        with state_lock:
+        with self.state_lock:
             if self.state == ConnState.CLOSED:
                 return
-        with state_lock:
+        with self.state_lock:
             self.state = ConnState.CLOSED
         if self.socket is not None:
             self.socket.close()
@@ -141,12 +139,12 @@ of received values is determined by store_received.'''
     def disconnect(self):
         '''Externally set connection state to a requested close to
         stop the update_value loop.'''
-        with state_lock:
+        with self.state_lock:
             if self.state == ConnState.CLOSED:
-                raise ReceiverError('Receiver already closed') # find a way to specify which receiver
+                raise ReceiverError('{} controller already closed'.format(self.__class__.__name__))
         self.socket.unblock()
                 
     def get_state(self):
         '''Get current connection state for external use.'''
-        with state_lock:
+        with self.state_lock:
             return self.state

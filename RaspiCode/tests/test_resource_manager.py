@@ -37,4 +37,20 @@ class TestResourceManager(unittest.TestCase):
         camera = self.manager.get_shared(Camera.FEED)
         self.assertEqual(self.manager.resources[Camera.FEED],1)
         
+    def test_release(self):
+        self.assertEqual(self.manager.resources[Camera.FEED],0)
+        camera = self.manager.get_shared(Camera.FEED)
+        self.assertEqual(self.manager.resources[Camera.FEED],1)
+        camera2 = self.manager.get_shared(Camera.FEED)
+        self.assertEqual(self.manager.resources[Camera.FEED],2)
+        self.manager.release(Camera.FEED)
+        self.assertEqual(self.manager.resources[Camera.FEED],1)
+        self.manager.release(Camera.FEED)
+        self.assertEqual(self.manager.resources[Camera.FEED],0)
+        with self.assertRaises(mgr.ResourceError):
+            self.manager.release(Motors.ARM) # unacquired
+        with self.assertRaises(mgr.ResourceError):
+            self.manager.release(Motors.WHEELS) # unacquired
+        with self.assertRaises(mgr.ResourceError):
+            self.manager.release(22) # unknown
             

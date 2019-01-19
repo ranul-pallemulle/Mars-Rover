@@ -4,12 +4,11 @@ import coreutils.resource_manager as mgr
 
 class Joystick(Receiver,Actuator):
 
-    xval = 0
-    yval = 0
-
     def __init__(self):
         Receiver.__init__(self)
         Actuator.__init__(self)
+        self.xval = 0
+        self.yval = 0        
         
     def store_received(self, recvd_list):
         '''Store values received from remote, after checking that they are of the right format. Return a reply in the form of a string to be sent back.'''
@@ -45,6 +44,7 @@ motors so we don't need to query motor_set.'''
         self.acquire_motors(mgr.Motors.WHEELS)
         if not self.have_acquired(mgr.Motors.WHEELS):
             self.stop()
+            return
         self.begin_actuate()
         
     def stop(self):

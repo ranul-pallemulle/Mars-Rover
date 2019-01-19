@@ -7,17 +7,13 @@ class RecvrImpl(recvr.Receiver):
     '''An implementation of Receiver.'''
     xval = 0
     yval = 0
+    
     def __init__(self):
         recvr.Receiver.__init__(self)
         
     def store_received(self, recvd_list):
         pass
-    
-    def get_values(self, motor_set):
-        pass
 
-    def stop(self):
-        pass
 
 class TestReceiver(unittest.TestCase):
 

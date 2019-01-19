@@ -3,6 +3,7 @@
 from interfaces.receiver import ReceiverError
 from joystick.joystick import Joystick
 from robotic_arm.arm import RoboticArm
+from coreutils.parser import CommandTypes
 import coreutils.resource_manager as mgr
 
 class LauncherError(Exception):
@@ -16,15 +17,36 @@ arm_obj = None
 def release_all():
     '''Close all resources so that shutdown can be done.'''
     try:
-        kill_joystick([])
-        kill_arm([])
+        kill_joystick([CommandTypes.STOP_JOYSTICK])
+    except LauncherError as e:
+        print('Release all warning: '+str(e))
+    try:
+        kill_arm([CommandTypes.STOP_ARM])
+    except LauncherError as e:
+        print('Release all warning: '+str(e))        
+    try:
         kill_camera([])
+    except LauncherError as e:
+        print('Release all warning: '+str(e))
+    try:
         kill_auto([])
-    except LauncherError:
-        pass
+    except LauncherError as e:
+        print('Release all warning: '+str(e))
 
 def launch_joystick(arg_list):
     '''Start joystick operation if it is not running.'''
+    if len(arg_list) < 2:
+        raise LauncherError('Wrong number of arguments to start Joystick:\
+        need "START_JOYSTICK <port>"')
+    if arg_list[0] != CommandTypes.START_JOYSTICK:
+        raise LauncherError('Incorrect command received for starting joystick:\
+        need "START_JOYSTICK <port>"')
+    port = arg_list[1]
+    try:
+        port = int(port)
+    except ValueError:
+        raise LauncherError('Failed to start Joystick: specified port value\
+        must be an integer')
     global jstick_obj
     if jstick_obj is None:
         try:
@@ -32,7 +54,7 @@ def launch_joystick(arg_list):
         except ReceiverError as e:
             jstick_obj = None
             raise LauncherError('Failed to create Joystick object: '+str(e))
-    port = arg_list[1]      # need to check len(arg_list)
+
     try:
         jstick_obj.connect(port)
         jstick_obj.start()
@@ -41,6 +63,10 @@ def launch_joystick(arg_list):
 
 def kill_joystick(arg_list):
     '''Stop joystick operation if it is running.'''
+    if len(arg_list) == 0:
+        raise LauncherError('Empty command received, cannot process.')
+    if arg_list[0] != CommandTypes.STOP_JOYSTICK:
+        raise LauncherError('Incorrect command received for stopping Joystick')
     global jstick_obj
     if jstick_obj is not None:
         try:
@@ -52,6 +78,18 @@ def kill_joystick(arg_list):
 
 def launch_arm(arg_list):
     '''Start robotic arm operation if it is not running.'''
+    if len(arg_list) < 2:
+        raise LauncherError('Wrong number of arguments to start RoboticArm:\
+        try "START_ARM <port>"')
+    if arg_list[0] != CommandTypes.START_ARM:
+        raise LauncherError('Incorrect command received for starting RoboticArm:\
+        need "START_ARM <port>"')
+    port = arg_list[1]
+    try:
+        port = int(port)
+    except ValueError:
+        raise LauncherError('Failed to start RoboticArm: specified port value\
+        must be an integer')    
     global arm_obj
     if arm_obj is None:
         try:
@@ -59,7 +97,7 @@ def launch_arm(arg_list):
         except ReceiverError as e:
             arm_obj = None
             raise LauncherError('Failed to create RoboticArm object: '+str(e))
-    port = arg_list[1]
+
     try:
         arm_obj.connect(port)
         arm_obj.start()
@@ -67,6 +105,10 @@ def launch_arm(arg_list):
         raise LauncherError('Failed to start Robotic Arm '+str(e))
 
 def kill_arm(arg_list):
+    if len(arg_list) == 0:
+        raise LauncherError('Empty command received, cannot process.')
+    if arg_list[0] != CommandTypes.STOP_ARM:
+        raise LauncherError('Incorrect command received for stopping RoboticArm')
     global arm_obj
     if arm_obj is not None:
         try:

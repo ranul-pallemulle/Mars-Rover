@@ -4,13 +4,12 @@ import coreutils.resource_manager as mgr
 
 class RoboticArm(Receiver, Actuator):
 
-    angle_1 = 0
-    angle_2 = 0
-    angle_3 = 0
-
     def __init__(self):
         Receiver.__init__(self)
         Actuator.__init__(self)
+        self.angle_1 = 0
+        self.angle_2 = 0
+        self.angle_3 = 0
 
     def store_received(self, recvd_list):
         if len(recvd_list) != 3:
@@ -44,6 +43,7 @@ class RoboticArm(Receiver, Actuator):
         self.acquire_motors(mgr.Motors.ARM)
         if not self.have_acquired(mgr.Motors.ARM):
             self.stop()
+            return
         self.begin_actuate()
     
     def stop(self):

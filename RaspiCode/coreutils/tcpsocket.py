@@ -7,13 +7,13 @@ class TcpSocketError(Exception):
 
 class TcpSocket:
     '''Wrapper around Python socket API. To be used as a server socket.'''
-    sock = None
-    conn = None
     max_recv_bytes = 128
     
     def __init__(self, port):
         '''Set up a server socket that listens for one connection on port. 
         Create a socketpair to enable the user to unblock read() from outside'''
+        self.sock = None
+        self.conn = None
         try:
             port_int = int(port)
             if float(port) - port_int > 0:

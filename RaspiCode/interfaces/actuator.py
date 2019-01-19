@@ -1,8 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from threading import Thread, Lock, Condition
+from threading import Thread, RLock, Condition
 import coreutils.resource_manager as mgr
-
-list_lock = Lock()
 
 class ActuatorError(Exception):
     '''Exception class that will be raised by classes implementing Actuator.'''
@@ -17,6 +15,7 @@ class Actuator:
         self.motor_list = dict()
         self.condition = Condition()
         self.release_was_called = False
+        self.list_lock = RLock()
     
     def begin_actuate(self):
         '''Run update_motors in a new thread, if the motor_list is not empty.'''
@@ -33,15 +32,15 @@ class Actuator:
         '''Get unique access to a set of motors such as wheel motors or
         robotic arm motors.'''
         try:
-            with list_lock:
+            with self.list_lock:
                 motor_set = mgr.global_resources.get_unique(motor_type)
                 if motor_set is not None:
                     self.motor_list[motor_type] = motor_set
                 else:
-                    print("Warning (acquire_motors): could not get unique access to {}".format(motor_type))
-        except ResourceError as e:
+                    print("{}: warning (acquire_motors): could not get unique access to {}".format(self.__class__.__name__,motor_type))
+        except mgr.ResourceError as e:
             print(str(e))
-            raise ActuatorError('Could not get access to motors.')
+            raise ActuatorError('{}: Could not get access to motors.'.format(self.__class__.__name__))
 
         
     def update_motors(self):
@@ -50,13 +49,8 @@ class Actuator:
         list member for modification is not done due to speed
         considerations. Therefore make sure to acquire all motors
         needed before calling begin_actuate and do not acquire or
-        reacquire anything after the call. If any motor in the list is
-        found to have been released, it is assumed that actuation
-        cannot function as normal anymore and all the other motors
-        will be released as well.
-
-        '''
-        with list_lock:
+        reacquire anything after the call.'''
+        with self.list_lock:
             if len(self.motor_list) == 0:
                 return
 
@@ -65,15 +59,10 @@ class Actuator:
                 self.condition.wait() # block until values
                                       # available or
                                       # release_motors is called
-
-                if self.release_was_called: # release everything
-                    with list_lock:
-                        for motor_set in self.motor_list.keys():
-                            self.release_motors(motor_set)
+                if self.release_was_called:
                     self.release_was_called = False
                     return
-
-            with list_lock: # prevent release_motors from
+            with self.list_lock: # prevent release_motors from
                             # modifying the list until values
                             # (already received) are updated.
                 for motor_set in self.motor_list.keys():
@@ -84,7 +73,7 @@ class Actuator:
     def release_motors(self, motor_set):
         '''Remove unique access to a set of motors so that they may be used
 elsewhere.'''
-        with list_lock:
+        with self.list_lock:
             if motor_set in self.motor_list:
                 self.motor_list.pop(motor_set)
                 mgr.global_resources.release(motor_set)
@@ -99,7 +88,7 @@ elsewhere.'''
         '''Check if actuator has acquired the specified motors. Useful for use
         by classes inheriting from actuator as they don't need to know
         about the motor_list or locking.'''
-        with list_lock:
+        with self.list_lock:
             if motor_set in self.motor_list:
                 return True
             else:
