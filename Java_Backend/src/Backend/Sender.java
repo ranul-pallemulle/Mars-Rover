@@ -47,20 +47,77 @@ public class Sender {
         SuccessInit = false;
     }
     
-    public void sendData(double trynum){
+    public void sendData(double trynum){ //used as a test send
         try{
             String sendingstr = Double.toString(trynum);
             byte[] sendingByte= sendingstr.getBytes();
             if(SuccessInit){
                 output.write(sendingByte);
-                System.out.println("Hi");
+                System.out.println("Sent");
                 String response;
-                if((response = input.readLine())!=null) {
-                    
+                if((response = input.readLine())!=null) {                
                     System.out.println(response);
                     System.out.println(this.IP);
                 }
             }
+        }
+        catch(IOException ex){
+            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);   
+        }
+    }
+    
+    public void sendData(double x_vel, double y_vel){  //used to send controls to motor speeds
+        try{
+            String sendingstr = Double.toString(x_vel) + "," + Double.toString(y_vel);
+            byte[] sendingByte= sendingstr.getBytes();
+            if(SuccessInit){
+                output.write(sendingByte);
+                System.out.println("Sent");
+                String response;
+                if((response = input.readLine())!=null) {
+                    System.out.println(response);
+                    System.out.println(this.IP);
+                }
+            }
+        }
+        catch(IOException ex){
+            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);   
+        }
+    }
+    
+    public void sendData(double base_angle, double joint_angle, double arm_angle){  //used to send controls to motor speeds
+        try{
+            String sendingstr = Double.toString(base_angle) + "," + Double.toString(joint_angle) + "," + Double.toString(arm_angle);
+            byte[] sendingByte= sendingstr.getBytes();
+            if(SuccessInit){
+                output.write(sendingByte);
+                System.out.println("Sent");
+                String response;
+                if((response = input.readLine())!=null) {
+                    System.out.println(response);
+                    System.out.println(this.IP);
+                }
+            }
+        }
+        catch(IOException ex){
+            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);   
+        }
+    }
+    
+    public void startPiApp(String Application, int port_num){
+        try{
+            String sendingstr = "START_" + String.Application + " " + Integer.toString(port_num);
+            byte[] sendingByte= sendingstr.getBytes();
+            if(SuccessInit){
+                output.write(sendingByte);
+                System.out.println("Sent");
+                String response;
+                if((response = input.readLine())!=null) {
+                    System.out.println(response);
+                    System.out.println(this.IP);
+                }
+            }
+            
         }
         catch(IOException ex){
             Logger.getLogger(SendDataToRover.class.getName()).log(Level.SEVERE, null, ex);   
