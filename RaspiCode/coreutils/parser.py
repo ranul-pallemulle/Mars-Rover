@@ -11,6 +11,7 @@ class CommandError(Exception):
 def parse(command_string):
     '''Parse commands received from remote computer. 
     Commands have the form "command_type <optional_arg1> <optional_arg2"'''
+    command_string = command_string.rstrip('\r\n')
     parsed_list = []
     arg_list = command_string.split(' ')
     if arg_list.count('') > 0:
@@ -19,7 +20,7 @@ def parse(command_string):
         if arg_list[0] == x.name:
             parsed_list.append(x)
     if len(parsed_list) != 1:
-        raise CommandError("Invalid command")
+        raise CommandError("Invalid command: "+command_string)
     arglen = len(arg_list)
     if arglen > 1:
         parsed_list.append(arg_list[1])

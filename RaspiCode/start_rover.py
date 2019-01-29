@@ -42,7 +42,7 @@ def main(argv):
             launcher.release_all()
             sys.exit(1)
         except CommandError as e:
-            main_sock.reply(str(e))
+            main_sock.reply(str(e)+'\n')
             print(str(e))
         else:
             reply = "ACK\n"
