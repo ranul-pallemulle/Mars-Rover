@@ -26,41 +26,48 @@ and open the template in the editor.
     -fx-background-color: -fx-theme-background-color;
 }
 
-#button1{
+#freearm:hover{
+    -fx-stroke: #000000;
+}
+
+#buttonarm3:hover{
+    -fx-stroke: #000000;
+}
+
+#ButtonArmStart:hover{
+    -fx-stroke: #000000;
+}
+
+#ButtonMain:hover{
+    -fx-stroke: #000000;
+}
+
+#ButtonVid:hover{
+    -fx-stroke: #000000;
+}
+
+#ButtonArm{
     -fx-fill: -fx-theme-button-color;
     -fx-stroke: #000000;
 }
 
-#button1:hover{
+#ButtonArm:hover{
     -fx-fill: -fx-theme-button-hover-color;
 }
 
-#button2{
+#ButtonVid{
     -fx-fill: -fx-theme-button-color;
     -fx-stroke: #000000;
 }
 
-#button2:hover{
+#ButtonVid:hover{
     -fx-fill: -fx-theme-button-hover-color;
-}
-
-#buttonArm{
-    -fx-fill: -fx-theme-hover-color;
-    -fx-stroke: #000000;
-}
-
-#buttonArm:hover{
-    -fx-fill: -fx-theme-button-color;
 }
 
 #DispARM{
     -fx-fill: #FFFF33;
 }
-#DispJoyLabelX{
-    -fx-fill: -fx-theme-label-color;
-}
-
-#DispJoyLabelY{
+#DispJoyLabel{
     -fx-fill: -fx-theme-label-color;
 }
 
@@ -77,11 +84,59 @@ and open the template in the editor.
     -fx-stroke: #000000;
 }
 
-#Joy{
+#JoyButton{
     -fx-fill: -fx-theme-joy-color;
     -fx-stroke: #000000;
 }
 
-#Joy:hover{
+#JoyButton:hover{
     -fx-fill: -fx-theme-joy-hover-color;
+}
+
+#rover{
+    -fx-fill: #AAAAAA;
+    -fx-stroke: #000000;
+}
+
+#ground{
+    -fx-fill: #cc7722
+}
+
+#armseg1{
+    -fx-fill: #ffaa55;
+    -fx-stroke: #000000;
+}
+
+#armseg1:hover{
+    -fx-fill: #dd8833;
+}
+
+#armseg2{
+    -fx-fill: #ffaa55;
+    -fx-stroke: #000000;
+}
+
+#armseg2:hover{
+    -fx-fill: #dd8833;
+}
+
+#armseg3{
+    -fx-fill: #ff8855;
+    -fx-stroke: #000000;
+}
+
+#armseg3:hover{
+    -fx-fill: #dd8833;
+}
+
+#lineseg1{
+    -fx-stroke: #dd9955;
+}
+
+#lineseg2{
+    -fx-stroke: #dd9955;
+}
+
+#lineseg3{
+    -fx-stroke: #dd9955;
 }
