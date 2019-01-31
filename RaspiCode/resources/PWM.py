@@ -12,16 +12,16 @@ for this purposes of the project.
 
 from PCA9685 import PWM #(?)
 import RPi.GPIO as GPIO
-import smbus
+#import smbus
 #import time
 
 # for RPI version 1, use "bus = smbus.SMBus(0)"
-bus = smbus.SMbus(1)
-
-#Slave Address 1
-address_1 = 0x01
-#Slave Address 2
-address_2 = 0x02
+#bus = smbus.SMbus(1)
+#
+##Slave Address 1
+#address_1 = 0x01
+##Slave Address 2
+#address_2 = 0x02
 
 #not sure how to set up the slave address
 SERVO_PIN = 17
@@ -34,9 +34,9 @@ GPIO.setwarnings(False)
 #Number of Motors
 n_motors = 6
 
-servo = GPIO.PWM(SERVO_PIN,GPIO.OUT)
-servo.start(0)
-#Do we use BUS or PWM? to set the values. 
+#servo = GPIO.PWM(SERVO_PIN,GPIO.OUT)
+#servo.start(0)
+##Do we use BUS or PWM? to set the values. 
 
 class motor:
     def __init__(self):
@@ -66,7 +66,9 @@ class motor:
 #def set_duty_cycle(self,values):
 #    pwm.set_duty_cycle(values)
 #    print(values)
-#    
-
-
+            
+            
+#TODO
+#set speed left set speed right. 
+#have a function called set_values to get the values. 
 

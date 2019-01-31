@@ -3,15 +3,54 @@ import busio
 from adafruit_servokit import ServoKit
 import adafruit_pca9685
 
-i2c = busio.I2C(board.SCL,board.SDA)
 
-servo = adafruit_pca9685.PCA9685(i2c)
+class Robotic_Arm:
+    """
+    Robotic Arm Control, in order to control the 3 servo motors
+    """
+    def __init__(self,grab_PIN = 11,middle_PIN = 12,bottom_PIN = 13):
+        self.i2c = busio.I2C(board.SCL,board.SDA)
+        self.kit = ServoKit(channels=16)
+        self.servo = adafruit_pca9685.PCA9685(i2c)
+        
+        #3 Servos, defines PIN numbers
+        self.servo_grab = self.servo[grab_PIN]
+        self.servo_middle = self.servo[middle_PIN]
+        self.servo_bottom = self.servo[bottom_PIN]
+        
+        #Max Rotation Range
+        self.kit.servo_grab.actuation_range = 10
+        self.kit.servo_middle.actuation_range = 90
+        self.kit.servo_bottom.actuation_range = 90
+        
+    def get_values(self,fname):
+        """
+        Obtains values from joystick output
+        """
+        file = open(fname,"r")
+        lines= file.readlines()
+        self.angle_grab=[]
+        self.angle_middle=[]
+        self.angle_bottom=[]
+        for line in range(len(lines)):
+            self.angle_grab.append(int(lines[line].split()[0]))
+            self.angle_middle.append(int(lines[line].split()[1]))
+            self.angle_bottom.append(int(lines[line].split()[2]))
+        
+    def set_angle(self):
+        self.kit.servo_grab.angle = self.angle_grab
+        self.kit.servo_middle.angle = self.angle_middle
+        self.kit.servo_bottom.angle = self.angle_bottom
+        
+if __name__ == "__main__":
+    
+    fname = "test_data.txt"
 
-kit = ServoKit(channels=16)
+    grab_PIN = 11
+    middle_PIN = 12
+    bottom_PIN = 13
 
-kit.servo[12].angle = 120
-
-#kit.servo[11].angle = 180
-#kit.servo[11].angle = 0
-
-kit.servo[13].angle= 100
+    arm = Robotic_Arm(grab_PIN,middle_PIN,bottom_PIN)
+    arm.get_values(fname)
+        
+    arm.set_angle    
