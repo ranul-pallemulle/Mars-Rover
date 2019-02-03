@@ -94,8 +94,9 @@ class Servo(_BaseServo):
          the servo mechanism may hit the end stops, buzz, and draw extra current as it stalls.
          Test carefully to find the safe minimum and maximum.
     """
-    def __init__(self, pwm_out, *, actuation_range=180, min_pulse=750, max_pulse=2250):
+    def __init__(self, pwm_out, *,minimum_range=0, actuation_range=180, min_pulse=750, max_pulse=2250):
         super().__init__(pwm_out, min_pulse=min_pulse, max_pulse=max_pulse)
+        self.minimum_range = minimum_range
         self.actuation_range = actuation_range
         """The physical range of motion of the servo in degrees."""
         self._pwm = pwm_out
@@ -107,7 +108,7 @@ class Servo(_BaseServo):
 
     @angle.setter
     def angle(self, new_angle):
-        if new_angle < 0 or new_angle > self.actuation_range:
+        if new_angle < self.minimum_range or new_angle > self.actuation_range:
             raise ValueError("Angle out of range")
         self.fraction = new_angle / self.actuation_range
 

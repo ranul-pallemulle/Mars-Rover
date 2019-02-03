@@ -17,11 +17,14 @@ class Robotic_Arm:
         self.servo_grab = self.kit.servo[grab_PIN]
         self.servo_middle = self.kit.servo[middle_PIN]
         self.servo_bottom = self.kit.servo[bottom_PIN]
+        self.servo_grab.set_pulse_width_range(163,585)
+        self.servo_middle.set_pulse_width_range(163,585)
+        self.servo_bottom.set_pulse_width_range(163,585)
         
         #Max Rotation Range
         self.servo_grab.actuation_range = 10
-        self.servo_middle.actuation_range = 90
-        self.servo_bottom.actuation_range = 90
+        self.servo_middle.actuation_range = 180
+        self.servo_bottom.actuation_range = 180
         
     def get_values(self,fname):
         """
@@ -38,26 +41,29 @@ class Robotic_Arm:
             self.angle_bottom.append(int(lines[line].split()[2]))
             print(self.angle_middle)
         
-    def set_angle(self):
-        self.servo_grab.angle = self.angle_grab[0]
-        self.servo_middle.angle = self.angle_middle[0]
-        self.servo_bottom.angle = self.angle_bottom[0]
-        print(self.angle_bottom[0])
+    def set_angle(self,grab = 0,middle = 0, bottom = 0):
+        self.servo_grab.angle = grab #self.angle_grab[0]
+        self.servo_middle.angle = middle #self.angle_middle[0]
+        self.servo_bottom.angle = bottom #self.angle_bottom[0]
+#        print(self.angle_bottom[0])
         
 if __name__ == "__main__":
     
-    fname = "test_data.txt"
+#    fname = "test_data.txt"
+#    
+#    grab_PIN = 12
+#    middle_PIN = 1 
+#    bottom_PIN = 13
+#
+    arm = Robotic_Arm(bottom_PIN=13)
+#    
     
-    grab_PIN = 12
-    middle_PIN = 13 
-    bottom_PIN = 14
-
-    arm = Robotic_Arm(grab_PIN,middle_PIN,bottom_PIN)
-    
+     
     while 1:
-        arm.get_values(fname)
+#        arm.get_values(fname)
         print("Getting Values")
+        arm.set_angle(bottom = 0)
         time.sleep(1)
-            
-        arm.set_angle()    
+        arm.set_angle(bottom = 50)    
+        time.sleep(1)
 

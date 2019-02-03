@@ -141,16 +141,16 @@ class _Servo:
         self.kit = kit
 
     def __getitem__(self, servo_channel):
-        import adafruit_motor.servo
+        import servopackage
         num_channels = self.kit._channels
         if servo_channel >= num_channels or servo_channel < 0:
             raise ValueError("servo must be 0-{}!".format(num_channels - 1))
         servo = self.kit._items[servo_channel]
         if servo is None:
-            servo = adafruit_motor.servo.Servo(self.kit._pca.channels[servo_channel])
+            servo = servopackage.Servo(self.kit._pca.channels[servo_channel])
             self.kit._items[servo_channel] = servo
             return servo
-        if isinstance(self.kit._items[servo_channel], adafruit_motor.servo.Servo):
+        if isinstance(self.kit._items[servo_channel], servopackage.Servo):
             return servo
         raise ValueError("Channel {} is already in use.".format(servo_channel))
 
@@ -164,16 +164,16 @@ class _ContinuousServo:
         self.kit = kit
 
     def __getitem__(self, servo_channel):
-        import adafruit_motor.servo
+        import servopackage
         num_channels = self.kit._channels
         if servo_channel >= num_channels or servo_channel < 0:
             raise ValueError("servo must be 0-{}!".format(num_channels - 1))
         servo = self.kit._items[servo_channel]
         if servo is None:
-            servo = adafruit_motor.servo.ContinuousServo(self.kit._pca.channels[servo_channel])
+            servo = servopackage.ContinuousServo(self.kit._pca.channels[servo_channel])
             self.kit._items[servo_channel] = servo
             return servo
-        if isinstance(self.kit._items[servo_channel], adafruit_motor.servo.ContinuousServo):
+        if isinstance(self.kit._items[servo_channel], servopackage.ContinuousServo):
             return servo
         raise ValueError("Channel {} is already in use.".format(servo_channel))
 
