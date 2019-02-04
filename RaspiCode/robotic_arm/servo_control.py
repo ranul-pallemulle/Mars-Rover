@@ -17,12 +17,12 @@ class Robotic_Arm:
         self.servo_grab = self.kit.servo[grab_PIN]
         self.servo_middle = self.kit.servo[middle_PIN]
         self.servo_bottom = self.kit.servo[bottom_PIN]
-        self.servo_grab.set_pulse_width_range(163,585)
-        self.servo_middle.set_pulse_width_range(163,585)
-        self.servo_bottom.set_pulse_width_range(163,585)
-        
+        self.servo_grab.set_pulse_width_range(700,2600)
+        self.servo_middle.set_pulse_width_range(700,2600)
+        self.servo_bottom.set_pulse_width_range(700,2600)
+#        
         #Max Rotation Range
-        self.servo_grab.actuation_range = 10
+        self.servo_grab.actuation_range = 180
         self.servo_middle.actuation_range = 180
         self.servo_bottom.actuation_range = 180
         
@@ -42,11 +42,21 @@ class Robotic_Arm:
             print(self.angle_middle)
         
     def set_angle(self,grab = 0,middle = 0, bottom = 0):
-        self.servo_grab.angle = grab #self.angle_grab[0]
+        for i in  range len(self.angle_grab):
+            if self.angle_middle < 0 or self.angle_middle > 180:
+                raise Exception( 'Middle servo angle out of range, the  value  was: {}'.format(self.angle_middle[i])
+
+            if self.angle_bottom < 0 or self.angle_middle > 180:
+                raise Exception( 'Bottom servo angle out of range, the  value  was: {}'.format(self.angle_bottom[i])
+
         self.servo_middle.angle = middle #self.angle_middle[0]
-        self.servo_bottom.angle = bottom #self.angle_bottom[0]
-#        print(self.angle_bottom[0])
+        self.servo_bottom.angle = bottom 
+	
+
+        self.servo_grab.angle = grab 
         
+
+
 if __name__ == "__main__":
     
 #    fname = "test_data.txt"
@@ -64,6 +74,12 @@ if __name__ == "__main__":
         print("Getting Values")
         arm.set_angle(bottom = 0)
         time.sleep(1)
-        arm.set_angle(bottom = 50)    
+        arm.set_angle(bottom = 45)    
+        time.sleep(1)
+        arm.set_angle(bottom = 90)    
+        time.sleep(1)
+        arm.set_angle(bottom = 135)    
+        time.sleep(1)
+        arm.set_angle(bottom = 180)    
         time.sleep(1)
 
