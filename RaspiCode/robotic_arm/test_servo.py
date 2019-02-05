@@ -18,6 +18,8 @@ kit = ServoKit(channels=16)
 
 PIN = int(input("Which servo would you like to test?: \n:Bottom - 12\n:Middle - 13 \n:Grabber - 14 \n"))
 
+kit.servo[PIN].set_pulse_width_range(700,2600)
+
 if PIN == 12:
     for i in range (5):
         kit.servo[PIN].angle = 45. * i
