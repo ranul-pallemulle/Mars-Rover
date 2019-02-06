@@ -17,9 +17,9 @@ class Robotic_Arm:
         self.servo_grab = self.kit.servo[grab_PIN]
         self.servo_middle = self.kit.servo[middle_PIN]
         self.servo_bottom = self.kit.servo[bottom_PIN]
-        self.servo_grab.set_pulse_width_range(700,2600)
-        self.servo_middle.set_pulse_width_range(700,2600)
-        self.servo_bottom.set_pulse_width_range(700,2600)
+        self.servo_grab.set_pulse_width_range(750,2250)
+        self.servo_middle.set_pulse_width_range(750,2250)
+        self.servo_bottom.set_pulse_width_range(750,2250)
 #        
         #Max Rotation Range
         self.servo_grab.actuation_range = 180

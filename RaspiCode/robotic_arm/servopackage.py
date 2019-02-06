@@ -43,7 +43,7 @@ class _BaseServo: # pylint: disable-msg=too-few-public-methods
     def __init__(self, pwm_out, *, min_pulse=750, max_pulse=2250):
         self._pwm_out = pwm_out
         self.set_pulse_width_range(min_pulse, max_pulse)
-        print(self._pwm_out)
+        
     def set_pulse_width_range(self, min_pulse=750, max_pulse=2250):
         """Change min and max pulse widths."""
         self._min_duty = int((min_pulse * self._pwm_out.frequency) / 1000000 * 0xffff)
