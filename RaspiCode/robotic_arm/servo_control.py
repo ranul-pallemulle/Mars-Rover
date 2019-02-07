@@ -17,6 +17,7 @@ class Robotic_Arm:
         self.servo_grab = self.kit.servo[grab_PIN]
         self.servo_middle = self.kit.servo[middle_PIN]
         self.servo_bottom = self.kit.servo[bottom_PIN]
+
         self.servo_grab.set_pulse_width_range(750,2250)
         self.servo_middle.set_pulse_width_range(750,2250)
         self.servo_bottom.set_pulse_width_range(750,2250)
@@ -42,26 +43,21 @@ class Robotic_Arm:
         
     def set_angle(self):
         for i in  range (len(self.angle_grab)):
-#            if self.angle_middle[i] < 0 or self.angle_middle[i] > 90:
-#                raise Exception( 'Middle servo angle out of range, the  value  was: {}'.format(self.angle_middle[i]))
-#
-#            if self.angle_bottom[i] < 0 or self.angle_bottom[i] > 180:
-#                raise Exception( 'Bottom servo angle out of range, the  value  was: {}'.format(self.angle_bottom[i]))
-#            self.servo_grab.angle = self.angle_grab[i]
+            if self.angle_middle[i] < 0 or self.angle_middle[i] > 90:
+                raise Exception( 'Middle servo angle out of range, the  value  was: {}'.format(self.angle_middle[i]))
+
+            if self.angle_bottom[i] < 0 or self.angle_bottom[i] > 180:
+                raise Exception( 'Bottom servo angle out of range, the  value  was: {}'.format(self.angle_bottom[i]))
+            
+            if self.angle_grab[i] < 0 or self.angle_grab[i] > 90
+                raise Exception ( 'Grabbing servo angle out of range, the  value  was: {}'.format(self.angle_grab[i]))
+
+            self.servo_grab.angle = self.angle_grab[i]
             self.servo_middle.angle = self.angle_middle[i]
             self.servo_bottom.angle = self.angle_bottom[i]
-            print(self.angle_middle[i],self.angle_bottom[i])
-            time.sleep(5)
-#        arm.set_angle(bottom = 0)
-#        time.sleep(1)
-#        arm.set_angle(bottom = 45)    
-#        time.sleep(1)
-#        arm.set_angle(bottom = 90)    
-#        time.sleep(1)
-#        arm.set_angle(bottom = 135)    
-#        time.sleep(1)
-#        arm.set_angle(bottom = 180)    
-#        time.sleep(1)
+            
+#            print(self.angle_middle[i],self.angle_bottom[i])
+            time.sleep(1)
 
 
 
