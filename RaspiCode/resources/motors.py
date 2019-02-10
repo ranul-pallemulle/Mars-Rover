@@ -1,5 +1,6 @@
 import sys
 import time
+import coreutils.configure as cfg
 import RPi.GPIO as GPIO
 
 import board
@@ -7,14 +8,27 @@ import busio
 from adafruit_servokit import ServoKit
 import adafruit_pca9685
 
+motor_config = cfg.MotorConfiguration()
+
+pwm_hardware = cfg.global_config.pwm_hardware_setting()
+
+if pwm_hardware == "ONBOARD":
+    print("All pwm done through RPi.GPIO")
+elif pwm_hardware == "EXTERNAL":
+    print("All pwm done through external chip communicated with via I2C")
 
 class WheelMotors:
-    def __init__(self,values):
+    def __init__(self):
+        left_pwm_pin = motor_config.get_pwm_pin("Wheels", "Left")
+        left_digital_pin = motor_config.get_digital_pin("Wheels", "Left")
+        right_pwm_pin = motor_config.get_pwm_pin("Wheels", "Right")
+        right_digital_pin = motor_config.get_digital_pin("Wheels", "Right")
+        
         self.mode = GPIO.getmode()
         GPIO.setmode(GPIO.BOARD)
         GPIO.setwarnings(False)
         
-        self.motor_1 = [motor_1_pin_1,motor_1_pin_2]
+        self.motor_1 = [motor_1_pin_1,motor_1_pin_2] # replace with settings from motor_config
         self.motor_2 = [motor_2_pin_1,motor_2_pin_2]
         GPIO.setup(self.motor_1,GPIO.OUT)
         
@@ -55,7 +69,16 @@ class WheelMotors:
     
 
 class ArmMotors:
-    def __init__(self,values):
+    def __init__(self):
+        servo1_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo1")
+        servo1_digital_pin = motor_config.get_digital_pin("Arm", "Servo1")
+        servo2_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo2")
+        servo2_digital_pin = motor_config.get_digital_pin("Arm", "Servo2")
+        servo3_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo3")
+        servo3_digital_pin = motor_config.get_digital_pin("Arm", "Servo3")
+        gripper_pwm_pin = motor_config.get_pwm_pin("Arm", "Gripper")
+        gripper_digital_pin = motor_config.get_digital_pin("Arm", "Gripper")
+        
         self.i2c = busio.I2C(board.SCL,board.SDA)
         self.servo = adafruit_pca9685.PCA9685(self.i2c)
         self.kit = ServoKit(channels=16)
@@ -82,7 +105,7 @@ class ArmMotors:
                 raise Exception( 'Bottom servo angle out of range, the  value  was: {}'.format(self.angle_bottom[i]))
             
             #Good angle range is 30 - 80 degrees
-            if self.angle_grab[i] < 0 or self.angle_grab[i] > 90
+            if self.angle_grab[i] < 0 or self.angle_grab[i] > 90:
                 raise Exception ( 'Grabbing servo angle out of range, the  value  was: {}'.format(self.angle_grab[i]))
 
             self.servo_grab.angle = self.angle_grab[i]

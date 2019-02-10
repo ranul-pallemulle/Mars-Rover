@@ -71,6 +71,10 @@ class OverallConfiguration(Configuration):
     def __init__(self):
         Configuration.__init__(self)
 
+    def operation_mode(self):
+        return self.top_level_element_value("MODE")
+
     def pwm_hardware_setting(self):
         return self.top_level_element_value("PWMHARDWARE")
 
+global_config = OverallConfiguration()

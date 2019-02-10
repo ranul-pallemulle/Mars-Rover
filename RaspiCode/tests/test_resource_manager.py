@@ -8,15 +8,16 @@ from coreutils.resource_manager import Camera
 
 class TestResourceManager(unittest.TestCase):
     
-    @patch('coreutils.resource_manager.motors.WheelMotors')
-    @patch('coreutils.resource_manager.motors.ArmMotors')
+    @patch('coreutils.resource_manager.MotorInterface.WheelMotors')
+    @patch('coreutils.resource_manager.MotorInterface.ArmMotors')
     @patch('coreutils.resource_manager.camera.Camera')
     def setUp(self,mocked_cam,mocked_arm,mocked_wheels):
         self.manager = mgr.ResourceManager()
         
-    @patch('coreutils.resource_manager.motors.WheelMotors')
-    @patch('coreutils.resource_manager.motors.ArmMotors')
-    @patch('coreutils.resource_manager.camera.Camera')
+
+    @patch('coreutils.resource_manager.MotorInterface.WheelMotors')
+    @patch('coreutils.resource_manager.MotorInterface.ArmMotors')
+    @patch('coreutils.resource_manager.camera.Camera')    
     def test_init(self,mocked_cam,mocked_arm,mocked_wheels):
         new_mgr = mgr.ResourceManager()
         self.assertEqual(new_mgr.resources[Motors.WHEELS], new_mgr.FREE)

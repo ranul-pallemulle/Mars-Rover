@@ -1,6 +1,6 @@
 from enum import Enum
-from resources import motors
 from resources import camera
+from resources.motors_interface import MotorInterface
 
 class Motors(Enum):
     '''Typenames to be used for resource_manager functions.'''
@@ -17,8 +17,9 @@ class ResourceManager:
     FREE = 0
     ACQUIRED = 1
     def __init__(self):
-        self.wheels = motors.WheelMotors()
-        self.arm = motors.ArmMotors()
+        MI = MotorInterface()
+        self.wheels = MI.WheelMotors()
+        self.arm = MI.ArmMotors()
         self.camera = camera.Camera()
         self.resources = {
             Motors.WHEELS : self.FREE,

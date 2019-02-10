@@ -43,10 +43,10 @@ def main(argv):
             launcher.release_all()
             sys.exit(1)
         except CommandError as e:
-            main_sock.reply(str(e)+'\n')
+            main_sock.reply(str(e))
             print(str(e))
         else:
-            reply = "ACK\n"
+            reply = "ACK"
             try:
                 main_sock.reply(reply)
             except TcpSocketError as e:

@@ -80,7 +80,7 @@ class TcpSocket:
         if type(data) is not str:
             self.close()
             raise TcpSocketError('Can only send string data')
-        data = str.encode(data)
+        data = str.encode(data + '\n')
         if self.conn is not None:
             try:
                self.conn.sendall(data)
