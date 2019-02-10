@@ -1,0 +1,8 @@
+*~
+#*#
+__pycache__
+
+/GUI/nbproject/private/
+/GUI/build/
+/GUI/dist/
+*DS_Store*

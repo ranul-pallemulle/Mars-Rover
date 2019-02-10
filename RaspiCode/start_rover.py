@@ -4,6 +4,7 @@
 # Note that when run on boot, this runs as a service under systemd.
 # stdout and stderr visible through journalctl
 import sys
+import coreutils.resource_manager as mgr
 from coreutils.parser import parse, CommandTypes, CommandError
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
 from coreutils import launcher
