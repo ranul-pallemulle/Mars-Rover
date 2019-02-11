@@ -56,8 +56,8 @@ io.setwarnings(False)
 
 # --- START KONFIGURATION GPIO Adressen ---
 ##ENA = 20
-IN1 = 6
-IN2 = 13
+IN1 = 20
+IN2 = 21
 IN3 = 19
 IN4 = 26
 ##ENB = 21
@@ -191,7 +191,7 @@ def setMotorLeft(power):
       setMotorMode("leftmotor", "stopp")
       pwm = 0
    ##leftmotorpwm.ChangeDutyCycle(pwm)
-   PCA9685_pwm.set_pwm(0, 0, pwm)
+   PCA9685_pwm.set_pwm(12, 0, pwm)
 # Die Funktion setMotorRight(power) setzt die Geschwindigkeit der 
 # rechten Motoren. Die Geschwindigkeit wird als Wert zwischen -1 
 # und 1 uebergeben. Bei einem negativen Wert sollen sich die Motoren 
@@ -226,7 +226,7 @@ def setMotorRight(power):
       setMotorMode("rightmotor", "stopp")
       pwm = 0
    ##rightmotorpwm.ChangeDutyCycle(pwm)
-   PCA9685_pwm.set_pwm(1, 0, pwm)
+   PCA9685_pwm.set_pwm(13, 0, pwm)
 # Die Funktion exit() setzt die Ausgaenge die den Motor Treiber 
 # steuern auf False. So befindet sich der Motor Treiber nach dem 
 # Aufruf derFunktion in einem gesicherten Zustand und die Motoren 
