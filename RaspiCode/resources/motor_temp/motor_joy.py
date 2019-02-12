@@ -1,34 +1,21 @@
-import sys
-import time
-import coreutils.configure as cfg
 import RPi.GPIO as io
-
-import board
-import busio
-from adafruit_servokit import ServoKit
-import PCA9685_servo
-import PCA9685_motor
-
-motor_config = cfg.MotorConfiguration()
-
-pwm_hardware = cfg.global_config.pwm_hardware_setting()
-
-if pwm_hardware == "ONBOARD":
-    print("All pwm done through RPi.GPIO")
-elif pwm_hardware == "EXTERNAL":
-    print("All pwm done through external chip communicated with via I2C")
+import PCA9685 as Adafruit_PCA9685
+import time
 
 
-class WheelMotors:
-    def __init__(self, values):
-        left_pwm_pin = motor_config.get_pwm_pin("Wheels", "Left")
-        left_digital_pin = motor_config.get_digital_pin("Wheels", "Left")
-        right_pwm_pin = motor_config.get_pwm_pin("Wheels", "Right")
-        right_digital_pin = motor_config.get_digital_pin("Wheels", "Right")
+class Wheel_Motors:
+    """
+    Class to handle moving of motors:
+
+    Takes input values from a joystick, in x-y values.
+    If x or y are negative values, sets motor mode in reverse by swapping
+    GPIO outputs, then applies PWM to change speeds. 
+    """
+
+    def __init__(self, values):  # IN1, IN2, IN3, IN4, ENA, ENB, D
 
         self._ymax = 100
         self._xmax = 100
-
         self.leftmotor_in1_pin = IN1
         self.leftmotor_in2_pin = IN2
         self.rightmotor_in1_pin = IN3
@@ -37,7 +24,6 @@ class WheelMotors:
         self.ENB_right = ENB
 
         io.setmode(io.BCM)
-
         io.setup(self.leftmotor_in1_pin, io.OUT)
         io.setup(self.leftmotor_in2_pin, io.OUT)
         io.setup(self.rightmotor_in1_pin, io.OUT)
@@ -51,7 +37,7 @@ class WheelMotors:
         io.setwarnings(False)
 
         self.duty_cycle = 4095
-        PCA9685_pwm = PCA9685_motor.PCA9685()
+        PCA9685_pwm = Adafruit_PCA9685.PCA9685()
         PCA9685_pwm.set_pwm_freq(60)
 
     def set_values(self, values):
@@ -165,50 +151,3 @@ class WheelMotors:
             _setMotorMode("leftmotor", "stop")
             pwm = 0
         PCA9685_pwm.set_pwm(self.ENA_left, 0, pwm)
-
-
-class ArmMotors:
-    def __init__(self):
-        servo1_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo1")
-        servo1_digital_pin = motor_config.get_digital_pin("Arm", "Servo1")
-        servo2_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo2")
-        servo2_digital_pin = motor_config.get_digital_pin("Arm", "Servo2")
-        servo3_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo3")
-        servo3_digital_pin = motor_config.get_digital_pin("Arm", "Servo3")
-        gripper_pwm_pin = motor_config.get_pwm_pin("Arm", "Gripper")
-        gripper_digital_pin = motor_config.get_digital_pin("Arm", "Gripper")
-
-        self.i2c = busio.I2C(board.SCL, board.SDA)
-        self.servo = PCA9685_servo.PCA9685(self.i2c)
-        self.kit = ServoKit(channels=16)
-
-        # 3 Servos, defines PIN numbers
-        self.servo_grab = self.kit.servo[grab_PIN]
-        self.servo_middle = self.kit.servo[middle_PIN]
-        self.servo_bottom = self.kit.servo[bottom_PIN]
-
-        self.servo_grab.set_pulse_width_range(750, 2250)
-        self.servo_middle.set_pulse_width_range(750, 2250)
-        self.servo_bottom.set_pulse_width_range(750, 2250)
-        pass
-
-    def set_values(self, values):
-        print("arm motors got values: {}, {}, {}".format(values[0], values[1], values[2]))
-
-    def set_angle(self):
-        for i in range(len(self.angle_grab)):
-            if self.angle_middle[i] < 0 or self.angle_middle[i] > 90:
-                raise Exception('Middle servo angle out of range, the  value  was: {}'.format(self.angle_middle[i]))
-
-            if self.angle_bottom[i] < 0 or self.angle_bottom[i] > 180:
-                raise Exception('Bottom servo angle out of range, the  value  was: {}'.format(self.angle_bottom[i]))
-
-            # Good angle range is 30 - 80 degrees
-            if self.angle_grab[i] < 0 or self.angle_grab[i] > 90:
-                raise Exception('Grabbing servo angle out of range, the  value  was: {}'.format(self.angle_grab[i]))
-
-            self.servo_grab.angle = self.angle_grab[i]
-            self.servo_middle.angle = self.angle_middle[i]
-            self.servo_bottom.angle = self.angle_bottom[i]
-
-            time.sleep(1)

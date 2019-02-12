@@ -5,15 +5,6 @@
 # Version:   2.0
 # Homepage:   http://custom-build-robots.com
 
-# Dieses Programm wurde fuer die Ansteuerung der linken und rechten
-# Motoren des Roboter-Autos entwickelt. Es geht dabei davon aus,
-# dass eine L298N H-Bruecke als Motortreiber eingesetzt wird.
-
-# Dieses Programm muss von einem uebergeordneten Programm aufgerufen 
-# werden, dass die Steuerung des Programmes L298NHBridge übernimmt.
-
-# Es wird die Klasse RPi.GPIO importiert, die die Ansteuerung
-# der GPIO Pins des Raspberry Pi ermoeglicht.
 from __future__ import division
 import RPi.GPIO as io
 io.setmode(io.BCM)
@@ -21,7 +12,6 @@ io.setmode(io.BCM)
 
 import time
 
-# Importiere die Adafruit PCA9685 Bibliothek
 # import Adafruit_PCA9685
 import PCA9685 as Adafruit_PCA9685
 
@@ -55,12 +45,12 @@ io.setwarnings(False)
 # Treiber bekannten Pins die GPIO Adressen zugewiesen.
 
 # --- START KONFIGURATION GPIO Adressen ---
-##ENA = 20
+ENA_pin = 12
 IN1 = 20
 IN2 = 21
 IN3 = 19
 IN4 = 26
-##ENB = 21
+ENB_pin = 13
 # --- ENDE KONFIGURATION GPIO Adressen ---
 
 # Der Variable leftmotor_in1_pin wird die Varibale IN1 zugeorndet. 
@@ -93,8 +83,8 @@ io.output(rightmotor_in2_pin, False)
 
 # Der Variable leftmotorpwm_pin wird die Varibale ENA zugeorndet.
 # Der Variable rightmotorpwm_pin wird die Varibale ENB zugeorndet.
-##leftmotorpwm_pin = ENA
-##rightmotorpwm_pin = ENB
+# leftmotorpwm_pin = ENA
+# rightmotorpwm_pin = ENB
 
 # Die Beide Variablen leftmotorpwm_pin und rightmotorpwm_pin werden 
 # als Ausgaenge "OUT" definiert. Mit den beiden Variablen wird die
@@ -191,7 +181,7 @@ def setMotorLeft(power):
       setMotorMode("leftmotor", "stopp")
       pwm = 0
    ##leftmotorpwm.ChangeDutyCycle(pwm)
-   PCA9685_pwm.set_pwm(12, 0, pwm)
+   PCA9685_pwm.set_pwm(ENA_pin, 0, pwm)
 # Die Funktion setMotorRight(power) setzt die Geschwindigkeit der 
 # rechten Motoren. Die Geschwindigkeit wird als Wert zwischen -1 
 # und 1 uebergeben. Bei einem negativen Wert sollen sich die Motoren 
@@ -226,7 +216,7 @@ def setMotorRight(power):
       setMotorMode("rightmotor", "stopp")
       pwm = 0
    ##rightmotorpwm.ChangeDutyCycle(pwm)
-   PCA9685_pwm.set_pwm(13, 0, pwm)
+   PCA9685_pwm.set_pwm(ENB_pin, 0, pwm)
 # Die Funktion exit() setzt die Ausgaenge die den Motor Treiber 
 # steuern auf False. So befindet sich der Motor Treiber nach dem 
 # Aufruf derFunktion in einem gesicherten Zustand und die Motoren 

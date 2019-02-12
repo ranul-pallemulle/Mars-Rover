@@ -51,7 +51,7 @@ Implementation Notes
 
 import board
 import busio
-from adafruit_pca9685 import PCA9685
+from PCA9685_servo import PCA9685
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ServoKit.git"
@@ -77,6 +77,7 @@ class ServoKit:
                                          Default reference clock speed is ``25000000``.
 
     """
+
     def __init__(self, *, channels, address=0x40, reference_clock_speed=25000000):
         if channels not in [8, 16]:
             raise ValueError("servo_channels must be 8 or 16!")
