@@ -1,6 +1,6 @@
 from enum import Enum
 from resources import camera
-from resources.motors_interface import MotorInterface
+from resources.motors_interface import MotorInterface, MotorInterfaceError
 
 class Motors(Enum):
     '''Typenames to be used for resource_manager functions.'''
@@ -17,21 +17,29 @@ class ResourceManager:
     FREE = 0
     ACQUIRED = 1
     def __init__(self):
-        MI = MotorInterface()
-        self.wheels = MI.WheelMotors()
-        self.arm = MI.ArmMotors()
-        self.camera = camera.Camera()
+        self.wheels = None
+        self.arm = None
+        self.camera = None
         self.resources = {
             Motors.WHEELS : self.FREE,
             Motors.ARM    : self.FREE,
             Camera.FEED   : 0} # use count
         
+    def initialise(self):
+        try:
+            MI = MotorInterface()
+            self.wheels = MI.WheelMotors()
+            self.arm = MI.ArmMotors()
+            self.camera = camera.Camera()
+        except MotorInterfaceError as e:
+            raise ResourceError(str(e))
+
     def get_unique(self, typename):
         '''Provide unique access to a resource.'''
         if typename == Motors.WHEELS or typename == Motors.ARM:
             if self.resources[typename] == self.FREE:
                 self.resources[typename] = self.ACQUIRED
-                print("RESOURCE MANAGER: {} was acquired".format(typename))
+                print("Resource Manager: {} was acquired".format(typename))
                 return self._provide_resource(typename)
             else:
                 return None
@@ -63,7 +71,7 @@ class ResourceManager:
                 raise ResourceError('Cannot release resource: resource was already free.')
             elif self.resources[typename] == self.ACQUIRED:
                 self.resources[typename] = self.FREE
-                print("RESOURCE MANAGER: {} was released".format(typename))
+                print("Resource Manager: {} was released".format(typename))
         elif typename == Camera.FEED:
             count = self.resources[typename]
             self.resources[typename] = count - 1

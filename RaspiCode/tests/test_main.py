@@ -40,7 +40,7 @@ class TestStartRover(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 start_rover.main(['start_rover.py','2409'])
             mock_parser.assert_called_with('STOP_JOYSTICK')
-            mock_sock.return_value.reply.assert_called_with('ACK\n')
+            mock_sock.return_value.reply.assert_called_with('ACK')
 
     def test_call_action(self):
         with patch('start_rover.launcher') as mock_launcher:

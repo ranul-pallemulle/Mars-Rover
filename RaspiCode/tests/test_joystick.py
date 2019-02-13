@@ -75,7 +75,9 @@ class TestJoystick(unittest.TestCase):
         self.testjstick.have_acquired = method_call_logger(self.testjstick.have_acquired)
         self.testjstick.release_motors = method_call_logger(self.testjstick.release_motors)
         self.testjstick.disconnect = method_call_logger(self.testjstick.disconnect)
+        self.testjstick.is_running = method_call_logger(self.testjstick.is_running)
 
+        self.testjstick.is_running.set_return_value(True)
         self.testjstick.have_acquired.set_return_value(True)
 
         self.testjstick.stop()

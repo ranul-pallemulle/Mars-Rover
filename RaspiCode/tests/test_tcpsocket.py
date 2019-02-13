@@ -152,7 +152,7 @@ class TestTcpSocket(unittest.TestCase):
         self.testtcp.conn = self.mock_conn.return_value
         self.testtcp.close = method_call_logger(self.testtcp.close)
         self.testtcp.reply('12')
-        self.testtcp.conn.sendall.assert_called_with(str.encode('12'))
+        self.testtcp.conn.sendall.assert_called_with(str.encode('12\n'))
         assert(not self.testtcp.close.was_called)
         self.assertIsNotNone(self.testtcp.sock)
         self.assertIsNotNone(self.testtcp.conn)

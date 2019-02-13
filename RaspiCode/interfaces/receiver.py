@@ -28,9 +28,11 @@ of received values is determined by store_received.'''
     def connect(self,port):
         '''Create a new TcpSocket if connection state is closed. Wait
         for a connection on specified port.'''
+        print("{}: waiting for connection...".format(self.__class__.__name__))
         with self.state_lock:
             if self.state == ConnState.CLOSED:
                 self.state = ConnState.PENDING
+                self.set_state_as_running() # inform subclass that things are starting
             else:
                 raise ReceiverError('Socket open: cannot make new socket.')
         try:
@@ -59,6 +61,7 @@ of received values is determined by store_received.'''
             raise ReceiverError('Error waiting for connection.')
         with self.state_lock:
             self.state = ConnState.READY
+        print("{}: connected.".format(self.__class__.__name__))
 
     @abstractmethod
     def store_received(self,recvd_list):
@@ -66,6 +69,10 @@ of received values is determined by store_received.'''
 
     @abstractmethod
     def run_on_connection_interrupted(self):
+        pass
+
+    @abstractmethod
+    def set_state_as_running(self):
         pass
 
     def update_values(self):
@@ -100,11 +107,11 @@ of received values is determined by store_received.'''
             if data is None:
                 self.disconnect_internal()
                 self.run_on_connection_interrupted()
-                print('{} controller disconnected'.format(self.__class__.__name__))
                 break
             data_arr = data.split(',')
             reply = self.store_received(data_arr)
             if reply is None:
+                print("{}: invalid values received".format(self.__class__.__name__))
                 self.disconnect_internal()
                 self.run_on_connection_interrupted()
                 break
@@ -130,11 +137,13 @@ of received values is determined by store_received.'''
         with self.state_lock:
             if self.state == ConnState.CLOSED:
                 return
+        print("{}: disconnecting...".format(self.__class__.__name__))
         with self.state_lock:
             self.state = ConnState.CLOSED
         if self.socket is not None:
             self.socket.close()
             self.socket = None
+        print("{}: disconnected.".format(self.__class__.__name__))
 
     def disconnect(self):
         '''Externally set connection state to a requested close to

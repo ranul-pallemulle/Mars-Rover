@@ -1,12 +1,18 @@
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.actuator import Actuator, ActuatorError
 import coreutils.resource_manager as mgr
+from enum import Enum
+
+class State(Enum):
+    STOPPED = 0
+    RUNNING = 1
 
 class Joystick(Receiver,Actuator):
 
     def __init__(self):
         Receiver.__init__(self)
         Actuator.__init__(self)
+        self.controller_state = State.STOPPED
         self.xval = 0
         self.yval = 0        
         
@@ -40,20 +46,37 @@ motors so we don't need to query motor_set.'''
             return (self.xval, self.yval)
 
     def start(self):
+        print("Starting Joystick mode...")
+        self.controller_state = State.RUNNING
         self.begin_receive()
         self.acquire_motors(mgr.Motors.WHEELS)
         if not self.have_acquired(mgr.Motors.WHEELS):
             self.stop()
             return
         self.begin_actuate()
+        print("Joystick mode started.")
         
     def stop(self):
-        if self.have_acquired(mgr.Motors.WHEELS):
-            self.release_motors(mgr.Motors.WHEELS)
-        self.disconnect()
+        if self.is_running():
+            print("Stopping Joystick mode...")
+            if self.have_acquired(mgr.Motors.WHEELS):
+                self.release_motors(mgr.Motors.WHEELS)
+            try:
+                self.disconnect()
+            except ReceiverError as e:
+                print(str(e))
+            self.controller_state = State.STOPPED
+            print("Joystick mode stopped.")
 
     def run_on_connection_interrupted(self):
         '''Runs if connection to remote is interrupted.'''
-        if self.have_acquired(mgr.Motors.WHEELS):
-            self.release_motors(mgr.Motors.WHEELS)
+        self.stop()
+
+    def is_running(self):
+        if self.controller_state == State.RUNNING:
+            return True
+        return False
+
+    def set_state_as_running(self):
+        self.controller_state = State.RUNNING
 

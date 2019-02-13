@@ -16,22 +16,24 @@ arm_obj = None
 
 def release_all():
     '''Close all resources so that shutdown can be done.'''
-    try:
-        kill_joystick([CommandTypes.STOP_JOYSTICK])
-    except LauncherError as e:
-        print('Release all warning: '+str(e))
-    try:
-        kill_arm([CommandTypes.STOP_ARM])
-    except LauncherError as e:
-        print('Release all warning: '+str(e))        
-    try:
-        kill_camera([])
-    except LauncherError as e:
-        print('Release all warning: '+str(e))
-    try:
-        kill_auto([])
-    except LauncherError as e:
-        print('Release all warning: '+str(e))
+    if (jstick_obj is not None) and jstick_obj.is_running():
+        try:
+            kill_joystick([CommandTypes.STOP_JOYSTICK])
+        except LauncherError as e:
+            pass
+    if (arm_obj is not None) and arm_obj.is_running():
+        try:
+            kill_arm([CommandTypes.STOP_ARM])
+        except LauncherError as e:
+            pass
+    # try:
+    #     kill_camera([])
+    # except LauncherError as e:
+    #     pass
+    # try:
+    #     kill_auto([])
+    # except LauncherError as e:
+    #     pass
 
 def launch_joystick(arg_list):
     '''Start joystick operation if it is not running.'''

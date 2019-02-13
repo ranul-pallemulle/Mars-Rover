@@ -13,6 +13,7 @@ class TestResourceManager(unittest.TestCase):
     @patch('coreutils.resource_manager.camera.Camera')
     def setUp(self,mocked_cam,mocked_arm,mocked_wheels):
         self.manager = mgr.ResourceManager()
+        self.manager.initialise()
         
 
     @patch('coreutils.resource_manager.MotorInterface.WheelMotors')

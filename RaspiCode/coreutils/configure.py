@@ -5,15 +5,18 @@ class ConfigurationError(Exception):
     pass
 
 class Configuration:
-    def __init__(self):
-        self.tree = ET.parse("settings.xml")
+    def __init__(self, name="settings.xml"):
+        self.tree = ET.parse(name)
         self.root = self.tree.getroot()
 
     def _getsubelemvalue(self,elem, pred, match):
         for things in elem:
             for subthing in things:
-                if subthing.attrib[pred] == match:
-                    return subthing
+                try:
+                    if subthing.attrib[pred] == match:
+                        return subthing
+                except KeyError as e:
+                    return None
 
     def _make_searchstr_list(self, req_list):
         searchstr_list = []
@@ -30,7 +33,7 @@ class Configuration:
                 if (idx3 == -1) or (idx4 == -1):
                     continue
                 attrtype = elem[idx3+1:idx4].upper()
-                attrname = elem[idx4+1:].capitalize()
+                attrname = elem[idx4+1:]
                 searchstr = searchstr + "[@"+attrtype+"='"+attrname+"']"
             searchstr_list.append(searchstr)
         return searchstr_list
@@ -43,38 +46,54 @@ class Configuration:
         for searchstr in searchstr_list:
             res = self.root.findall(searchstr)
             res_list.append(res)
+        if not res_list[0]:
+            return None
         return res_list
 
     def top_level_element_value(self, name):
         elem_list = self.provide_settings(["{"+name+"}"])
+        if not elem_list:
+            return None
         return (elem_list[0][0].text.strip())
 
 class MotorConfiguration(Configuration):
-    def __init__(self):
-        Configuration.__init__(self)
+    def __init__(self, name="settings.xml"):
+        Configuration.__init__(self, name)
     
     def get_pwm_pin(self, motor_group ,motor_name):
         req = ["{Motors}[name]"+motor_group+".{Motor}[name]"
                +motor_name]
         motor = self.provide_settings(req)
         pin = self._getsubelemvalue(motor[0],"TYPE","PWM")
-        return int(pin.text)
+        try:
+            return int(pin.text)
+        except ValueError as e:
+            raise ConfigurationError("Bad value in settings file for pwm pin of motor '"+motor_name+"'. Error: "+str(e))
 
     def get_digital_pin(self, motor_group, motor_name):
         req = ["{Motors}[name]"+motor_group+".{Motor}[name]"
                +motor_name]
         motor = self.provide_settings(req)
         pin = self._getsubelemvalue(motor[0], "TYPE", "Digital")
-        return int(pin.text)
+        try:
+            return int(pin.text)
+        except ValueError as e:
+             raise ConfigurationError("Bad value in settings file for digital pin of motor '"+motor_name+"'. Error: "+str(e))
 
 class OverallConfiguration(Configuration):
-    def __init__(self):
-        Configuration.__init__(self)
+    def __init__(self, name="settings.xml"):
+        Configuration.__init__(self, name)
 
     def operation_mode(self):
-        return self.top_level_element_value("MODE")
+        val = self.top_level_element_value("MODE")
+        if val is None:
+            raise ConfigurationError("No settings found for operation mode.")
+        return val
 
     def pwm_hardware_setting(self):
-        return self.top_level_element_value("PWMHARDWARE")
+        val = self.top_level_element_value("PWMHARDWARE")
+        if val is None:
+            raise ConfigurationError("No settings found for pwm hardware.")
+        return val
 
 global_config = OverallConfiguration()

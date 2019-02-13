@@ -25,11 +25,18 @@ def main(argv):
         print("Port number should be an integer")
         sys.exit(1)
     try:
+        mgr.global_resources.initialise()
+    except mgr.ResourceError as e:
+        print(str(e) + "\nExiting...")
+        sys.exit(1)
+    print("Waiting for connection...")
+    try:
         main_sock = TcpSocket(port)
         main_sock.wait_for_connection()
     except TcpSocketError as e:
         print(str(e))
         sys.exit(1)
+    print("Connected.")
     while(True):
         try:
             comm_str = main_sock.read()

@@ -76,7 +76,9 @@ class TestArm(unittest.TestCase):
         self.testarm.have_acquired = method_call_logger(self.testarm.have_acquired)
         self.testarm.release_motors = method_call_logger(self.testarm.release_motors)
         self.testarm.disconnect = method_call_logger(self.testarm.disconnect)
+        self.testarm.is_running = method_call_logger(self.testarm.is_running)
 
+        self.testarm.is_running.set_return_value(True)
         self.testarm.have_acquired.set_return_value(True)
 
         self.testarm.stop()
