@@ -61,10 +61,11 @@ motors so we don't need to query motor_set.'''
             print("Stopping Joystick mode...")
             if self.have_acquired(mgr.Motors.WHEELS):
                 self.release_motors(mgr.Motors.WHEELS)
-            try:
-                self.disconnect()
-            except ReceiverError as e:
-                print(str(e))
+            if self.connection_active():
+                try:
+                    self.disconnect()
+                except ReceiverError as e:
+                    print(str(e))
             self.controller_state = State.STOPPED
             print("Joystick mode stopped.")
 

@@ -152,8 +152,15 @@ of received values is determined by store_received.'''
             if self.state == ConnState.CLOSED:
                 raise ReceiverError('{} controller already closed'.format(self.__class__.__name__))
         self.socket.unblock()
+        while self.state != ConnState.CLOSED:
+            pass
                 
     def get_state(self):
         '''Get current connection state for external use.'''
         with self.state_lock:
             return self.state
+
+    def connection_active(self):
+        '''Return True if state is not CLOSED'''
+        with self.state_lock:
+            return self.state != ConnState.CLOSED

@@ -71,6 +71,8 @@ def kill_joystick(arg_list):
         raise LauncherError('Incorrect command received for stopping Joystick')
     global jstick_obj
     if jstick_obj is not None:
+        if not jstick_obj.is_running():
+            raise LauncherError('Joystick mode already stopped.')
         try:
             jstick_obj.stop()
         except ReceiverError as e:
@@ -113,6 +115,8 @@ def kill_arm(arg_list):
         raise LauncherError('Incorrect command received for stopping RoboticArm')
     global arm_obj
     if arm_obj is not None:
+        if not arm_obj.is_running():
+            raise LauncherError('RoboticArm mode already stopped.')
         try:
             arm_obj.stop()
         except ReceiverError as e:
