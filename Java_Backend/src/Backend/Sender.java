@@ -66,9 +66,10 @@ public class Sender {
         }
     }
     
-    public void sendData(double x_vel, double y_vel){  //used to send controls to motor speeds
+    public void sendData(int x_vel, int y_vel){  //used to send controls to motor speeds
         try{
-            String sendingstr = Double.toString(x_vel) + "," + Double.toString(y_vel);
+            String sendingstr = Integer.toString(x_vel) + "," + Integer.toString(y_vel);
+            System.out.println(sendingstr);
             byte[] sendingByte= sendingstr.getBytes();
             if(SuccessInit){
                 output.write(sendingByte);
@@ -85,9 +86,9 @@ public class Sender {
         }
     }
     
-    public void sendData(double base_angle, double joint_angle, double arm_angle){  //used to send controls to motor speeds
+    public void sendData(int base_angle, int joint_angle, int arm_angle){  //used to send controls to motor speeds
         try{
-            String sendingstr = Double.toString(base_angle) + "," + Double.toString(joint_angle) + "," + Double.toString(arm_angle);
+            String sendingstr = Integer.toString(base_angle) + "," + Integer.toString(joint_angle) + "," + Integer.toString(arm_angle);
             byte[] sendingByte= sendingstr.getBytes();
             if(SuccessInit){
                 output.write(sendingByte);
@@ -106,7 +107,8 @@ public class Sender {
     
     public void startPiApp(String Application, int port_num){
         try{
-            String sendingstr = "START_" + String.Application + " " + Integer.toString(port_num);
+            String sendingstr = "START_" + Application + " " + Integer.toString(port_num);
+            System.out.println(sendingstr);
             byte[] sendingByte= sendingstr.getBytes();
             if(SuccessInit){
                 output.write(sendingByte);
@@ -120,7 +122,27 @@ public class Sender {
             
         }
         catch(IOException ex){
-            Logger.getLogger(SendDataToRover.class.getName()).log(Level.SEVERE, null, ex);   
+            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);   
+        }
+    }
+    
+    public void stopPiApp(String Application){
+        try{
+            String sendingstr = "STOP_" + Application;
+            byte[] sendingByte= sendingstr.getBytes();
+            if(SuccessInit){
+                output.write(sendingByte);
+                System.out.println("Sent");
+                String response;
+                if((response = input.readLine())!=null) {
+                    System.out.println(response);
+                    System.out.println(this.IP);
+                }
+            }
+            
+        }
+        catch(IOException ex){
+            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);   
         }
     }
     
