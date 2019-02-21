@@ -5,9 +5,9 @@ import RPi.GPIO as io
 
 import board
 import busio
-from adafruit_servokit import ServoKit
-import PCA9685_servo
-import PCA9685_motor
+from resources.adafruit_servokit import ServoKit
+import resources.PCA9685_servo as PCA9685_servo
+import resources.PCA9685_motor as PCA9685_motor
 
 motor_config = cfg.MotorConfiguration()
 
@@ -20,21 +20,24 @@ elif pwm_hardware == "EXTERNAL":
 
 
 class WheelMotors:
-    def __init__(self, values):
+    def __init__(self):
         left_pwm_pin = motor_config.get_pwm_pin("Wheels", "Left")
-        left_digital_pin = motor_config.get_digital_pin("Wheels", "Left")
+        left_digital1_pin = motor_config.get_digital1_pin("Wheels", "Left")
+        left_digital2_pin = motor_config.get_digital2_pin("Wheels", "Left")
+        
         right_pwm_pin = motor_config.get_pwm_pin("Wheels", "Right")
-        right_digital_pin = motor_config.get_digital_pin("Wheels", "Right")
+        right_digital1_pin = motor_config.get_digital1_pin("Wheels", "Right")
+        right_digital2_pin = motor_config.get_digital2_pin("Wheels", "Right")
 
         self._ymax = 100
         self._xmax = 100
 
-        self.leftmotor_in1_pin = IN1
-        self.leftmotor_in2_pin = IN2
-        self.rightmotor_in1_pin = IN3
-        self.rightmotor_in2_pin = IN4
-        self.ENA_left = ENA
-        self.ENB_right = ENB
+        self.leftmotor_in1_pin = left_digital1_pin
+        self.leftmotor_in2_pin = left_digital2_pin
+        self.rightmotor_in1_pin = right_digital1_pin
+        self.rightmotor_in2_pin = right_digital2_pin
+        self.ENA_left = left_pwm_pin
+        self.ENB_right = right_pwm_pin
 
         io.setmode(io.BCM)
 

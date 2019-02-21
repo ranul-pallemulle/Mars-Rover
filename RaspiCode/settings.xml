@@ -1,7 +1,7 @@
 <SETTINGS>
 
-  <MODE> LAPTOP </MODE>
-  <!-- <MODE> RASPBERRYPI </MODE> -->
+  <!-- <MODE> LAPTOP </MODE> -->
+  <MODE> RASPBERRYPI </MODE>
   
   <PWMHARDWARE> ONBOARD </PWMHARDWARE>
   <!-- <PWMHARDWARE> EXTERNAL </PWMHARDWARE> -->
@@ -12,12 +12,14 @@
   
   <MOTORS NAME="Wheels">
     <MOTOR NAME="Left">
-      <PIN TYPE="PWM"> 17 </PIN>
-      <PIN TYPE="Digital"> 4 </PIN>
+      <PIN TYPE="PWM">  12 </PIN>
+      <PIN TYPE="Digital1">  20 </PIN>
+      <PIN TYPE="Digital2">  21 </PIN>
     </MOTOR>
     <MOTOR NAME="Right">
-      <PIN TYPE="PWM"> 18 </PIN>
-      <PIN TYPE="Digital"> 5 </PIN>
+      <PIN TYPE="PWM"> 13 </PIN>
+      <PIN TYPE="Digital1"> 16 </PIN>
+      <PIN TYPE="Digital2">  19 </PIN>
     </MOTOR>
   </MOTORS>
 

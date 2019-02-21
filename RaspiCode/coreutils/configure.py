@@ -70,16 +70,26 @@ class MotorConfiguration(Configuration):
         except ValueError as e:
             raise ConfigurationError("Bad value in settings file for pwm pin of motor '"+motor_name+"'. Error: "+str(e))
 
-    def get_digital_pin(self, motor_group, motor_name):
+    def get_digital1_pin(self, motor_group, motor_name):
         req = ["{Motors}[name]"+motor_group+".{Motor}[name]"
                +motor_name]
         motor = self.provide_settings(req)
-        pin = self._getsubelemvalue(motor[0], "TYPE", "Digital")
+        pin = self._getsubelemvalue(motor[0], "TYPE", "Digital1")
         try:
             return int(pin.text)
         except ValueError as e:
              raise ConfigurationError("Bad value in settings file for digital pin of motor '"+motor_name+"'. Error: "+str(e))
 
+    def get_digital2_pin(self, motor_group, motor_name):
+        req = ["{Motors}[name]"+motor_group+".{Motor}[name]"
+               +motor_name]
+        motor = self.provide_settings(req)
+        pin = self._getsubelemvalue(motor[0], "TYPE", "Digital2")
+        try:
+            return int(pin.text)
+        except ValueError as e:
+             raise ConfigurationError("Bad value in settings file for digital pin of motor '"+motor_name+"'. Error: "+str(e))
+         
 class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
         Configuration.__init__(self, name)

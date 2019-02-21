@@ -24,6 +24,7 @@ class MotorInterface:
             if self.operation_mode == "LAPTOP":
                 return MockWheelMotors()
             elif self.operation_mode == "RASPBERRYPI":
+                import resources.motors as motors
                 return motors.WheelMotors()
         except cfg.ConfigurationError as e:
             raise MotorInterfaceError('Error in configuration: \n'+str(e))
@@ -33,6 +34,7 @@ class MotorInterface:
             if self.operation_mode == "LAPTOP":
                 return MockArmMotors()
             elif self.operation_mode == "RASPBERRYPI":
+                import resources.motors as motors
                 return motors.ArmMotors()
         except cfg.ConfigurationError as e:
             raise MotorInterfaceError('Error in configuration: \n'+str(e))

@@ -51,7 +51,7 @@ Implementation Notes
 
 import board
 import busio
-from PCA9685_servo import PCA9685
+from resources.PCA9685_servo import PCA9685
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_ServoKit.git"
