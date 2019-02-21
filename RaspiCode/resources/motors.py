@@ -22,18 +22,16 @@ elif pwm_hardware == "EXTERNAL":
 class WheelMotors:
     def __init__(self):
         left_pwm_pin = motor_config.get_pwm_pin("Wheels", "Left")
-        left_digital1_pin = motor_config.get_digital1_pin("Wheels", "Left")
-        left_digital2_pin = motor_config.get_digital2_pin("Wheels", "Left")
+        left_digital_pin = motor_config.get_digital_pin("Wheels", "Left")
 
         right_pwm_pin = motor_config.get_pwm_pin("Wheels", "Right")
-        right_digital1_pin = motor_config.get_digital1_pin("Wheels", "Right")
-        right_digital2_pin = motor_config.get_digital2_pin("Wheels", "Right")
+        right_digital_pin = motor_config.get_digital_pin("Wheels", "Right")
 
         self._ymax = 100
         self._xmax = 100
 
-        self.leftmotor_in1_pin = left_digital1_pin
-        self.rightmotor_in1_pin = right_digital1_pin
+        self.leftmotor_in1_pin = left_digital_pin
+        self.rightmotor_in1_pin = right_digital_pin
         self.PWM_left = left_pwm_pin
         self.PWM_right = right_pwm_pin
 
