@@ -5,7 +5,7 @@ import RPi.GPIO as io
 
 import board
 import busio
-from adafruit_servokit import ServoKit
+from resources.adafruit_servokit import ServoKit
 import resources.PCA9685_servo as PCA9685_servo
 import resources.PCA9685_motor as PCA9685_motor
 
@@ -22,19 +22,20 @@ elif pwm_hardware == "EXTERNAL":
 class WheelMotors:
     def __init__(self):
         left_pwm_pin = motor_config.get_pwm_pin("Wheels", "Left")
-        left_digital_pin = motor_config.get_digital_pin("Wheels", "Left")
+        left_digital1_pin = motor_config.get_digital1_pin("Wheels", "Left")
+        left_digital2_pin = motor_config.get_digital2_pin("Wheels", "Left")
+
         right_pwm_pin = motor_config.get_pwm_pin("Wheels", "Right")
-        right_digital_pin = motor_config.get_digital_pin("Wheels", "Right")
+        right_digital1_pin = motor_config.get_digital1_pin("Wheels", "Right")
+        right_digital2_pin = motor_config.get_digital2_pin("Wheels", "Right")
 
         self._ymax = 100
         self._xmax = 100
 
-        self.leftmotor_in1_pin = IN1
-        self.leftmotor_in2_pin = IN2
-        self.rightmotor_in1_pin = IN3
-        self.rightmotor_in2_pin = IN4
-        self.ENA_left = ENA
-        self.ENB_right = ENB
+        self.leftmotor_in1_pin = left_digital1_pin
+        self.rightmotor_in1_pin = right_digital1_pin
+        self.PWM_left = left_pwm_pin
+        self.PWM_right = right_pwm_pin
 
         io.setmode(io.BCM)
 
@@ -64,8 +65,8 @@ class WheelMotors:
         x = []
         y = []
 
-        v_left = (y / self._ymax) + (1 / 2 * x)
-        v_right = (y / self._ymax) - (1 / 2 * x)
+        v_left = (y / self._ymax) + (1 / 2 * (x / self._xmax))
+        v_right = (y / self._ymax) - (1 / 2 * (x / self._xmax))
 
         # Sets average v as the fraction of y compared to its max
         # v_avg = y / self._ymax
@@ -125,21 +126,23 @@ class WheelMotors:
         int(power)
         if power < 0:
             # Reverse Mode for Right Motor
-            _setMotorMode("rightmotor", "reverse")
-            pwm = -int(duty_cycle * power)
+            # _setMotorMode("rightmotor", "reverse")
+            io.output(self.rightmotor_in1_pin, True)
+            pwm = -int(duty_cycle * (1 - power))
             if pwm > duty_cycle:
                 pwm = duty_cycle
         elif power > 0:
             # Forward Motor for Left Motor
-            _setMotorMode("rightmotor", "forward")
+            # _setMotorMode("rightmotor", "forward")
+            io.output(self.rightmotor_in1_pin, False)
             pwm = int(duty_cycle * power)
             if pwm > duty_cycle:
                 pwm = duty_cycle
         else:
             # Stops right motor
-            _setMotorMode("rightmotor", "stop")
+            io.output(self.rightmotor_in1_pin, False)
             pwm = 0
-        PCA9685_pwm.set_pwm(self.ENB_right, 0, pwm)
+        PCA9685_pwm.set_pwm(self.PWM_right, 0, pwm)
 
     def _setMotorLeft(self, power):
         """
@@ -149,22 +152,24 @@ class WheelMotors:
         """
         int(power)
         if power < 0:
-            # Forward Mode for Left Motor
-            _setMotorMode("leftmotor", "reverse")
-            pwm = -int(duty_cycle * power)
+            # Backwards Mode for Left Motor
+            io.output(self.leftmotor_in1_pin, True)
+            pwm = int(duty_cycle * (1 - power))
             if pwm > duty_cycle:
                 pwm = duty_cycle
         elif power > 0:
             # Reverse Mode for Left Motor
-            _setMotorMode("leftmotor", "forward")
+            # _setMotorMode("leftmotor", "forward")
+
+            io.output(self.leftmotor_in1_pin, False)
             pwm = int(duty_cycle * power)
             if pwm > duty_cycle:
                 pwm = duty_cycle
         else:
             # Stop left motor
-            _setMotorMode("leftmotor", "stop")
+            io.output(self.leftmotor_in1_pin, False)
             pwm = 0
-        PCA9685_pwm.set_pwm(self.ENA_left, 0, pwm)
+        PCA9685_pwm.set_pwm(self.PWM_left, 0, pwm)
 
 
 class ArmMotors:
