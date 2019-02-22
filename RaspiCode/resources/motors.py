@@ -38,20 +38,20 @@ class WheelMotors:
         io.setmode(io.BCM)
 
         io.setup(self.leftmotor_in1_pin, io.OUT)
-        io.setup(self.leftmotor_in2_pin, io.OUT)
+
         io.setup(self.rightmotor_in1_pin, io.OUT)
-        io.setup(self.rightmotor_in2_pin, io.OUT)
+
 
         io.output(self.leftmotor_in1_pin, False)
-        io.output(self.leftmotor_in2_pin, False)
+
         io.output(self.rightmotor_in1_pin, False)
-        io.output(self.rightmotor_in2_pin, False)
+
 
         io.setwarnings(False)
 
         self.duty_cycle = 4095
-        PCA9685_pwm = PCA9685_motor.PCA9685()
-        PCA9685_pwm.set_pwm_freq(60)
+        self.PCA9685_pwm = PCA9685_motor.PCA9685()
+        self.PCA9685_pwm.set_pwm_freq(60)
 
     def set_values(self, values):
         """
@@ -60,8 +60,8 @@ class WheelMotors:
                 _setMotorRight and _setMotorLeft that deals with 
                 calculating PWM values and setting direction. 
         """
-        x = []
-        y = []
+        x = values[0]
+        y = values[1]
 
         v_left = (y / self._ymax) + (1 / 2 * (x / self._xmax))
         v_right = (y / self._ymax) - (1 / 2 * (x / self._xmax))
@@ -81,8 +81,8 @@ class WheelMotors:
         # elif x == 0:
         #   pass
 
-        _setMotorRight(v_right)
-        _setMotorLeft(v_left)
+        self._setMotorRight(v_right)
+        self._setMotorLeft(v_left)
 
     def _setMotorMode(self, motor, mode):
         """
@@ -126,21 +126,21 @@ class WheelMotors:
             # Reverse Mode for Right Motor
             # _setMotorMode("rightmotor", "reverse")
             io.output(self.rightmotor_in1_pin, True)
-            pwm = -int(duty_cycle * (1 - power))
-            if pwm > duty_cycle:
-                pwm = duty_cycle
+            pwm = int(self.duty_cycle * (1 + power))
+            if pwm > self.duty_cycle:
+                pwm = self.duty_cycle
         elif power > 0:
             # Forward Motor for Left Motor
             # _setMotorMode("rightmotor", "forward")
             io.output(self.rightmotor_in1_pin, False)
-            pwm = int(duty_cycle * power)
-            if pwm > duty_cycle:
-                pwm = duty_cycle
+            pwm = int(self.duty_cycle * power)
+            if pwm > self.duty_cycle:
+                pwm = self.duty_cycle
         else:
             # Stops right motor
             io.output(self.rightmotor_in1_pin, False)
             pwm = 0
-        PCA9685_pwm.set_pwm(self.PWM_right, 0, pwm)
+        self.PCA9685_pwm.set_pwm(self.PWM_right, 0, pwm)
 
     def _setMotorLeft(self, power):
         """
@@ -152,22 +152,22 @@ class WheelMotors:
         if power < 0:
             # Backwards Mode for Left Motor
             io.output(self.leftmotor_in1_pin, True)
-            pwm = int(duty_cycle * (1 - power))
-            if pwm > duty_cycle:
-                pwm = duty_cycle
+            pwm = int(self.duty_cycle * (1 + power))
+            if pwm > self.duty_cycle:
+                pwm = self.duty_cycle
         elif power > 0:
             # Reverse Mode for Left Motor
             # _setMotorMode("leftmotor", "forward")
 
             io.output(self.leftmotor_in1_pin, False)
-            pwm = int(duty_cycle * power)
-            if pwm > duty_cycle:
-                pwm = duty_cycle
+            pwm = int(self.duty_cycle * power)
+            if pwm > self.duty_cycle:
+                pwm = self.duty_cycle
         else:
             # Stop left motor
             io.output(self.leftmotor_in1_pin, False)
             pwm = 0
-        PCA9685_pwm.set_pwm(self.PWM_left, 0, pwm)
+        self.PCA9685_pwm.set_pwm(self.PWM_left, 0, pwm)
 
 
 class ArmMotors:
@@ -186,13 +186,13 @@ class ArmMotors:
         self.kit = ServoKit(channels=16)
 
         # 3 Servos, defines PIN numbers
-        self.servo_grab = self.kit.servo[grab_PIN]
-        self.servo_middle = self.kit.servo[middle_PIN]
-        self.servo_bottom = self.kit.servo[bottom_PIN]
+        # self.servo_grab = self.kit.servo[grab_PIN]
+        # self.servo_middle = self.kit.servo[middle_PIN]
+        # self.servo_bottom = self.kit.servo[bottom_PIN]
 
-        self.servo_grab.set_pulse_width_range(750, 2250)
-        self.servo_middle.set_pulse_width_range(750, 2250)
-        self.servo_bottom.set_pulse_width_range(750, 2250)
+        # self.servo_grab.set_pulse_width_range(750, 2250)
+        # self.servo_middle.set_pulse_width_range(750, 2250)
+        # self.servo_bottom.set_pulse_width_range(750, 2250)
         pass
 
     def set_values(self, values):
