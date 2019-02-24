@@ -42,6 +42,10 @@ and open the template in the editor.
     -fx-stroke: #000000;
 }
 
+#ButtonJoystickStart:hover{
+    -fx-stroke: #000000;
+}
+
 #ButtonVidStart:hover{
     -fx-stroke: #000000;
 }
@@ -63,7 +67,9 @@ and open the template in the editor.
 #ButtonVid:hover{
     -fx-fill: -fx-theme-button-hover-color;
 }
-
+#DispMain{
+    -fx-fill: -fx-theme-label-color;
+}
 #DispJoyLabel{
     -fx-fill: -fx-theme-label-color;
 }

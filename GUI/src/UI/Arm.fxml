@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="300.0" prefWidth="600.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.FXMLController">
+<AnchorPane id="AnchorPane" prefHeight="300.0" prefWidth="600.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.ARMController">
     <children>
         <Rectangle fx:id="blocker" fill="#FF000055" x="0" y="0" height="500" width="500"/>
         <Text id="Freearmlabel" x="430" y="70" text="Seg3down"/>

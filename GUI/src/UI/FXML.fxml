@@ -18,8 +18,8 @@
                 <Circle fx:id="ButtonArm" radius="20" centerX="400.0" centerY="450.0" onMouseClicked="#openArm"/>
                 <Rectangle fx:id="ButtonJoystickStart" fill="RED" stroke="GREY" x="200" y="430" height="40" width="100" arcWidth="5" arcHeight="5" onMouseClicked="#connectjoystick" />
                 <Rectangle fx:id="ButtonMain" fill="RED" stroke="GREY" x="200" y="30" height="40" width="100" arcWidth="5" arcHeight="5" onMouseClicked="#connectrover" />
-                <Rectangle fx:id="TEST" fill="RED" stroke="GREY" x="200" y="70" height="40" width="100" arcWidth="5" arcHeight="5" onMouseClicked="#connecttest" />
-                <Text id="DispJoyLabel" x="230" y="50" text="Main"/>
+                <!--<Rectangle fx:id="TEST" fill="RED" stroke="GREY" x="200" y="70" height="40" width="100" arcWidth="5" arcHeight="5" onMouseClicked="#connecttest" />-->
+                <Text id="DispMain" x="235" y="50" text="Main"/>
                 <Circle fx:id="ButtonVid" radius="20" centerX="100.0" centerY="450.0" onMouseClicked="#openVid"/>
                 <Text id="DispJoyLabel" x="10" y="20" text="X:"/>
                 <Text id="DispJoyLabel" x="10" y="40" text="Y:"/>
