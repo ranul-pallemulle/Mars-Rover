@@ -33,3 +33,4 @@ def kill_opmode(name, arg_list=[]):
         mode.stop(arg_list)
     except OpModeError as e:
         raise LauncherError('Failed to stop {}: '.format(mode.name)+str(e))
+    

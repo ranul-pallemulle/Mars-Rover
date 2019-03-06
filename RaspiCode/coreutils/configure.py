@@ -4,6 +4,7 @@ from threading import Lock
 # global configuration managers
 overall_config = None
 motor_config = None
+cam_config = None
 
 class ConfigurationError(Exception):
     '''Exception class for configuration.'''
@@ -31,8 +32,10 @@ class Configuration:
     def settings_file(name="settings.xml"):
         global overall_config
         global motor_config
+        global cam_config
         overall_config = OverallConfiguration(name)
         motor_config = MotorConfiguration(name)
+        cam_config = CameraConfiguration(name)
 
     def _getsubelemvalue(self,elem, pred, match):
         for things in elem:
@@ -106,6 +109,39 @@ class MotorConfiguration(Configuration):
         except ValueError as e:
              raise ConfigurationError("Bad value in settings file for digital pin of motor '"+motor_name+"'. Error: "+str(e))
 
+class CameraConfiguration(Configuration):
+    def __init__(self, name="settings.xml"):
+        Configuration.__init__(self,name)
+
+    def _generic_integer_setting(self, name):
+        req = ["{Camera}.{"+name+"}"]
+        elem_list = self.provide_settings(req)
+        if not elem_list:
+            return None
+        val = int(elem_list[0][0].text.strip())
+        return val
+
+    def capture_framerate(self):
+        return self._generic_integer_setting('capture_framerate')
+
+    def capture_frame_width(self):
+        return self._generic_integer_setting('capture_frame_width')
+
+    def capture_frame_height(self):
+        return self._generic_integer_setting('capture_frame_height')
+
+    def stream_port(self):
+        return self._generic_integer_setting('stream_port')
+
+    def stream_framerate(self):
+        return self._generic_integer_setting('stream_framerate')
+    def stream_frame_width(self):
+        return self._generic_integer_setting('stream_frame_width')
+
+    def stream_frame_height(self):
+        return self._generic_integer_setting('stream_frame_height')
+
+
 class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
         Configuration.__init__(self, name)
@@ -157,6 +193,12 @@ class OverallConfiguration(Configuration):
         if port < 1000:
             raise ConfigurationError("Error in Diagnostics settings: port number needs to be larger than 1000 to prevent conflict with reserved ports.")
         return port
+        
+    def ip_address(self):
+        val = self.top_level_element_value("IP_ADDRESS")
+        if val is None:
+            raise ConfigurationError("No settings found for IP address.")
+        return val
 
     def main_ip(self):
         ip_addr = self.top_level_element_value("MAIN_IP")
