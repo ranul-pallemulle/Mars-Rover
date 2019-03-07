@@ -76,7 +76,7 @@ public class ARMController implements Initializable {
     double initialoffsetx = 0;
     double initialoffsety = 0;    
     
-    Sender command_sender = new Sender("172.24.1.1",5560);
+    Sender command_sender;
     Sender joystick_sender;
     Sender arm_sender;
     Sender test_sender;
@@ -85,6 +85,11 @@ public class ARMController implements Initializable {
     {
         this.stage = stage;
         
+    }
+    
+    public void pass_main_sender(Sender some_sender)
+    {
+        command_sender = some_sender;
     }
     
     double servoangle(double x3, double x2, double x1, double y3, double y2, double y1){
@@ -139,7 +144,7 @@ public class ARMController implements Initializable {
             ButtonArmStart.setFill(Color.web("#00FF00"));
             blocker.setFill(Color.web("#00000000"));
             System.out.println("CONNECTING TO ARM");
-            command_sender.startPiApp("JOYSTICK", 5567);
+            command_sender.startPiApp("ARM", 5567);
             arm_sender = new Sender("172.24.1.1", 5567);
             //System.out.println("returned 0");
             try{
@@ -431,57 +436,6 @@ public class ARMController implements Initializable {
             double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
             //System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang);
             arm_sender.sendData((int)joint0angd, (int)joint1angd, (int)joint2angd);
-        }
-    }
-    
-    public void connecttest(MouseEvent e){
-        if(enableTEST == false){
-            enableTEST = true;
-            TEST.setFill(Color.web("#00FF00"));
-            System.out.println("CONNECTING TO TEST");
-            command_sender.startPiApp("ARM", 5564);
-//            System.out.println("returned 0");
-            test_sender = new Sender("172.24.1.1", 5564);
-            try{
-            test_sender.initialise();
-            } catch(UnknownHostException ex) {
-                System.out.println("unknown host");
-                return;
-            }
-            catch(IOException ex) {
-                System.out.println("io exception");
-                return;
-            }
-            //System.out.println("returned 1");
-        }else{
-            test_sender.stopPiApp("ARM");
-            enableTEST = false;
-            TEST.setFill(Color.web("#FF0000"));
-            System.out.println("DISCONNECTING FROM JOYSTICK");
-        }
-    }
-    
-    public void connectrover(MouseEvent e){
-        if(enablerover == false){
-            try{
-            command_sender.initialise();
-            } catch(UnknownHostException ex) {
-                System.out.println("unknown host");
-                return;
-            }
-            catch(IOException ex) {
-                System.out.println("io exception");
-                return;
-            }
-            
-            enablerover = true;
-            ButtonMain.setFill(Color.web("#00FF00"));
-            System.out.println("CONNECTING TO ROVER");
-        }else{
-            
-            enablerover = false;
-            ButtonMain.setFill(Color.web("#FF0000"));
-            System.out.println("DISCONNECTING FROM ROVER");
         }
     }
 
