@@ -18,7 +18,7 @@ class TcpSocket:
             port_int = int(port)
             if float(port) - port_int > 0:
                 raise ValueError
-            assert port_int > 0
+            assert port_int > 1000,"Port number needs to be an integer larger than 1000."
         except (ValueError, AssertionError) as e:
             raise TcpSocketError(str(e))
         self.disconn_listener, self.disconn_sender = socket.socketpair()
