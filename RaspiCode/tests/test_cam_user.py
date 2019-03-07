@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch,Mock
 import interfaces.cam_user as cam_user
 import coreutils.resource_manager as mgr
+from resources.camera import CameraError
 
 
 class CamUserImpl(cam_user.CameraUser):
@@ -68,7 +69,7 @@ class TestCamUser(unittest.TestCase):
         mock_camconfig.capture_frame_width.return_value = 5000
         mock_camconfig.capture_frame_height.return_value = 2500
         mock_cfg.CameraConfiguration.return_value = mock_camconfig
-        comm = 'appsrc ! videoconvert ! omxh264enc tune=zerolatency speed-preset=superfast ! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host=192.168.1.1 port=1000'
+        comm = 'appsrc ! videoconvert ! video/x-raw,width=5000,height=2500,framerate=10/1 ! x264enc tune=zerolatency speed-preset=ultrafast bitrate=8000 ! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host=192.168.1.1 port=1000 sync=false'
         mock_thread_retval = Mock()
         mock_thread.return_value = mock_thread_retval
         self.testImpl.camera = Mock()
@@ -110,15 +111,14 @@ class TestCamUser(unittest.TestCase):
         pass
 
     def test_get_camera_frame(self):
-        self.testImpl.camera = Mock()
+        self.testImpl.camera = Mock() # have_camera returns True
         self.testImpl.get_camera_frame()
         self.testImpl.camera.get_frame.assert_called_with()
-        self.testImpl.camera.is_running.return_value = True
         self.testImpl.have_camera = Mock()
         self.testImpl.have_camera.return_value = False
         with self.assertRaises(cam_user.CameraUserError):
             self.testImpl.get_camera_frame()
-        self.testImpl.camera.is_running.return_value = False
+        self.testImpl.camera.get_frame.side_effect = CameraError
         self.testImpl.have_camera.return_value = True
         with self.assertRaises(cam_user.CameraUserError):
             self.testImpl.get_camera_frame()

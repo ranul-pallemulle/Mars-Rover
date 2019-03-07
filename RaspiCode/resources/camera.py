@@ -15,8 +15,7 @@ class Camera(Resource):
         self.gst_comm = None
         self.op_mode = cfg.global_config.operation_mode()
         if self.op_mode == "RASPBERRYPI":
-            # self.source = "v4l2src"
-            self.source = "raspivid"
+            self.source = "v4l2src"
         elif self.op_mode == "LAPTOP":
             if platform == "darwin":
                 self.source = 'avfvideosrc'
@@ -44,11 +43,13 @@ class Camera(Resource):
             raise CameraError('Camera already released: cannot release.')
 
     def get_frame(self):
-        ret,frame = self.cap.read()
-        if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            return frame
-        return None
+        if self.active:
+            ret,frame = self.cap.read()
+            if ret:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                return frame
+            return None
+        raise CameraError('Camera not active: cannot get frame.')
             
     def _eval_gst_comm(self):
         self.gst_comm = self.source+' ! video/x-raw,framerate='+str(self.framerate)+'/1,width='+str(self.frame_width)+',height='+str(self.frame_height)+' ! videoconvert ! appsink name=opencvsink sync=false'

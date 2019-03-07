@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import coreutils.configure as cfg
+from resources.camera import CameraError
 import coreutils.resource_manager as mgr
 import cv2
 from threading import Thread
@@ -28,12 +29,19 @@ class CameraUser:
             raise CameraUserError('Camera not active: cannot stream.')
         
         while self.streaming:
-            if self.camera.is_active():
+            frame = self.get_camera_frame()
+            self.stream_writer.write(frame)
+
+    def get_camera_frame(self):
+        if self.have_camera():
+            try:
                 frame = self.camera.get_frame()
-            else:
-                break
+            except CameraError as e:
+                raise CameraUserError(str(e))
             if frame is not None:
-                self.stream_writer.write(frame)
+                return frame
+            raise CameraUserError('Error in camera frame.')
+        raise CameraUserError('Camera not acquired.')
 
     def begin_stream(self, source=None):
         '''Stream source (default is direct camera output) to the specified port.'''
