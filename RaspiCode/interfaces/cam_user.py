@@ -22,14 +22,18 @@ class CameraUser:
         if self.stream_writer is None:
             raise CamerUserError('Stream writer not initialised.')
         if not self.have_camera():
-            raise CameraUserError('Camera not acquired.')
+            raise CameraUserError('Camera not acquired: cannot stream.')
+
+        if not self.camera.is_active():
+            raise CameraUserError('Camera not active: cannot stream.')
         
         while self.streaming:
-            frame = self.camera.get_frame()
+            if self.camera.is_active():
+                frame = self.camera.get_frame()
+            else:
+                break
             if frame is not None:
                 self.stream_writer.write(frame)
-            #     cv2.imshow('frame', frame)
-            # cv2.waitKey(1)
 
     def begin_stream(self, source=None):
         '''Stream source (default is direct camera output) to the specified port.'''
@@ -37,9 +41,6 @@ class CameraUser:
             raise CameraUserError('Already streaming: cannot start new stream.')
         if not self.have_camera():
             raise CameraUserError('Camera not acquired.')
-
-        # if not self.camera.is_running():
-        #     self.camera.start()
         
         host = cfg.global_config.ip_address()
         if source is None:
@@ -57,9 +58,11 @@ class CameraUser:
         op_mode = cfg.global_config.operation_mode()
         if op_mode == "RASPBERRYPI":
             compressor = 'omxh264enc'
+            tune = ' '
         elif op_mode == "LAPTOP":
             compressor = 'x264enc'
-        comm = 'appsrc ! videoconvert ! video/x-raw,width='+str(src_width)+',height='+str(src_height)+',framerate='+str(src_framerate)+'/1 ! '+compressor+' speed-preset=superfast ! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
+            tune = ' tune=zerolatency '
+        comm = 'appsrc ! videoconvert ! video/x-raw,width='+str(src_width)+',height='+str(src_height)+',framerate='+str(src_framerate)+'/1 ! '+compressor+tune+'speed-preset=superfast bitrate=8000 ! h264parse ! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
 
         self.stream_writer = cv2.VideoWriter(comm, cv2.CAP_GSTREAMER, 0, strm_framerate, (strm_width, strm_height),True)
         self.streaming = True
@@ -81,40 +84,16 @@ class CameraUser:
             raise CameraUserError('Already have camera access: cannot reacquire.')
         try:
             self.camera = mgr.global_resources.get_shared(mgr.Camera.FEED)
-            if not self.have_camera():
-                print("Warning (camera): could not get shared access to camera.")
         except mgr.ResourceError as e:
             print(str(e))
             raise CameraUserError('Could not get access to camera.')
 
     def release_camera(self):
         if self.have_camera():
-            if self.camera.is_running():
-                self.stop_camera_capture()
             mgr.global_resources.release(mgr.Camera.FEED)
             self.camera = None
         else:
             print ("Warning (camera): release_camera called while not acquired.")
-
-    def start_camera_capture(self):
-        if self.have_camera():
-            self.camera.start()
-        else:
-            raise CameraUserError('Camera not acquired.')
-
-    def stop_camera_capture(self):
-        if self.have_camera():
-            self.camera.stop()
-        else:
-            raise CameraUserError('Camera not acquired.')
-
-    def get_camera_frame(self):
-        if not self.camera.is_running():
-            raise CameraUserError('Camera not capturing frames currently.')
-        if self.have_camera():
-            return self.camera.get_frame()
-        else:
-            raise CameraUserError('Camera not acquired.')
 
     def have_camera(self):
         '''Check if camera has been acquired.'''
