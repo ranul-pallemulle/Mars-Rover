@@ -29,7 +29,7 @@ public class ValueSender implements Runnable{
     }
     public void beginTCP(){
         try{
-            tcp.initialise();
+            tcp.initialise(); //from TCPSendData
         }
         catch (IOException e){
             System.err.print("beginTCP failed");
@@ -69,7 +69,7 @@ public class ValueSender implements Runnable{
         }
     }
     
-    private void makeComm(){
+    private void makeComm(){ //checking everything is fine and then send
         
         //System.out.println("Hi! x: "+this.xval+" y: "+this.yval);
         double rad=Math.sqrt((xval*xval)+(yval*yval));
@@ -124,8 +124,5 @@ public class ValueSender implements Runnable{
         return tcp.isInitialised();
     }
     
-    
- 
-
     
 }
