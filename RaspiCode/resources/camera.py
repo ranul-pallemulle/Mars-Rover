@@ -2,55 +2,57 @@ import coreutils.configure as cfg
 from resources.resource import Resource, Policy
 import cv2
 from threading import Thread
+from sys import platform
 
 class CameraError(Exception):
     pass
 
 class Camera(Resource):
     def __init__(self):
-        Resource.__init__(self)
-        self.policy = Policy.SHARED
-        self.register_name("Camera")
-        
-        self.running = False
-        self.source = cfg.cam_config.device()
-        self.framerate = cfg.cam_config.capture_framerate()
-        self.frame_width = cfg.cam_config.capture_frame_width()
-        self.frame_height = cfg.cam_config.capture_frame_height()
+        self.framerate = cam_config.capture_framerate()
+        self.frame_width=cam_config.capture_frame_width()
+        self.frame_height=cam_config.capture_frame_height()
         self.gst_comm = None
-        # self.op_mode = cfg.global_config.operation_mode()
-        # if self.op_mode == "RASPBERRYPI" or self.op_mode == "LAPTOP":
-        #     self.source = 'v4l2src'
-        # elif self.op_mode == "MAC":
-        #     self.source = 'avfvideosrc'
-        self._eval_gst_comm()
+        self.op_mode = cfg.global_config.operation_mode()
+        if self.op_mode == "RASPBERRYPI":
+            self.source = "v4l2src"
+        elif self.op_mode == "LAPTOP":
+            if platform == "darwin":
+                self.source = 'avfvideosrc'
+            else:
+                self.source = "v4l2src"
+        else:
+            raise CameraError('Unknown operation mode: no availabe video source.')
         self.cap = None
-        self.ret = None
-        self.frame = None
+        self.active = False
 
-    def _capture(self):
-        while True:
-            self.ret,self.frame = self.cap.read()
-            if not self.ret:
-                break 
+    def start_capture(self):
+        if self.cap is None and not self.active:
+            self._eval_gst_comm()
+            self.cap = cv2.VideoCapture(self.gst_comm)
+            self.active = True
+        else:
+            raise CameraError('Camera already initialised: release before reinitialising.')
 
-    def start(self):
-        self.cap = cv2.VideoCapture(self.gst_comm)
-        thread = Thread(target=self._capture, args=())
-        thread.start()
-
-    def stop(self):
-        if self.cap is not None:
+    def stop_capture(self):
+        if self.cap is not None and self.active:
             self.cap.release()
-        self.frame = None
+            self.cap = None
+            self.active = False
+        else:
+            raise CameraError('Camera already released: cannot release.')
 
     def get_frame(self):
-        if self.ret:
-            return self.frame
+        ret,frame = self.cap.read()
+        if ret:
+            return frame
         return None
             
     def _eval_gst_comm(self):
         self.gst_comm = self.source+' ! video/x-raw,framerate='+str(self.framerate)+'/1,width='+str(self.frame_width)+',height='+str(self.frame_height)+' ! videoconvert ! appsink name=opencvsink sync=false'
+
+    def is_active(self):
+        return self.active
 
     def get_framerate(self):
         return self.framerate

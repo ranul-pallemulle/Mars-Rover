@@ -163,6 +163,5 @@ Pass self as this argument.'''
                         dg.print("Shared resource {} deinitialised".format(typename))
         else:
             raise ResourceError('Resource "{}" not found'.format(typename))
-                        
-
+        
 global_resources = ResourceManager()
