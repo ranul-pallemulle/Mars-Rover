@@ -6,4 +6,3 @@ __pycache__
 /GUI/build/
 /GUI/dist/
 *DS_Store*
-/RaspiCode/resources/motor_temp/
