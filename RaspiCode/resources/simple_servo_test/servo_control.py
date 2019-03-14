@@ -8,8 +8,8 @@ i2c = busio.I2C(board.SCL,board.SDA)
 servo = adafruit_pca9685.PCA9685(i2c)
 kit = ServoKit(channels=16)
 
-kit.servo[13].actuation_range = 360
-kit.servo[13].set_pulse_width_range(100, 4000)
+kit.servo[13].actuation_range = 180  #360
+kit.servo[13].set_pulse_width_range(500, 2500) #100,4000
 
 while True:
     angle = input("Angle?")
