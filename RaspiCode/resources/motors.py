@@ -181,16 +181,26 @@ class ArmMotors:
         self.servo_top = self.kit.servo[servo1_pin]
         self.servo_middle = self.kit.servo[servo2_pin]
         self.servo_bottom = self.kit.servo[servo3_pin]
-    
-        self.servo_grab.set_pulse_width_range(750, 2250)
-        self.servo_top.set_pulse_width_range(750, 2250)
-        self.servo_middle.set_pulse_width_range(750, 2250)
-        self.servo_bottom.set_pulse_width_range(750, 2250)
+
+        self.servo_grab.actuation_range = 360
+        self.servo_top.actuation_range = 360
+        self.servo_middle.actuation_range = 360
+        self.servo_bottom.actuation_range = 360
+
+        self.servo_grab.set_pulse_width_range(100, 4000)
+        self.servo_top.set_pulse_width_range(100, 4000)
+        self.servo_middle.set_pulse_width_range(100, 4000)
+        self.servo_bottom.set_pulse_width_range(100, 4000)
 
 
     def set_values(self, values):
+
+
+        offset_1 = 160
+        offset_2 = 180
+        offset_3 = 105
         self.angle_grab = values[0]
-        self.angle_top = values[1]
+        self.angle_top = values[1] - offs
         self.angle_middle = values[2]
         self.angle_bottom = values[3]
         
@@ -206,9 +216,10 @@ class ArmMotors:
         all angles are in degrees. 
         """
         
+
         #Limit of servo angles 
         grab_lim = 90
-        top_lim - 90
+        top_lim = 90
         middle_lim = 90
         bottom_lim = 90
                                     
