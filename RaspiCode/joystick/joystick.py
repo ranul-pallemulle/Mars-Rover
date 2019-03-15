@@ -1,6 +1,7 @@
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.actuator import Actuator, ActuatorError
 import coreutils.resource_manager as mgr
+from threading import Lock
 from enum import Enum
 
 class State(Enum):
@@ -13,6 +14,7 @@ class Joystick(Receiver,Actuator):
         Receiver.__init__(self)
         Actuator.__init__(self)
         self.controller_state = State.STOPPED
+        self.controller_lock = Lock()
         self.xval = 0
         self.yval = 0        
         
@@ -46,6 +48,7 @@ motors so we don't need to query motor_set.'''
             return (self.xval, self.yval)
 
     def start(self):
+        self.controller_lock.acquire()
         print("Starting Joystick mode...")
         self.controller_state = State.RUNNING
         self.begin_receive()
@@ -55,8 +58,10 @@ motors so we don't need to query motor_set.'''
             return
         self.begin_actuate()
         print("Joystick mode started.")
+        self.controller_lock.release()
         
     def stop(self):
+        self.controller_lock.acquire()
         if self.is_running():
             print("Stopping Joystick mode...")
             if self.have_acquired(mgr.Motors.WHEELS):
@@ -68,6 +73,7 @@ motors so we don't need to query motor_set.'''
                     print(str(e))
             self.controller_state = State.STOPPED
             print("Joystick mode stopped.")
+        self.controller_lock.release()
 
     def run_on_connection_interrupted(self):
         '''Runs if connection to remote is interrupted.'''

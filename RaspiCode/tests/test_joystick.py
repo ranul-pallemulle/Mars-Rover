@@ -45,6 +45,8 @@ class TestJoystick(unittest.TestCase):
         self.testjstick.acquire_motors = method_call_logger(self.testjstick.acquire_motors)
 
         self.testjstick.have_acquired.set_return_value(False)
+
+        self.testjstick.controller_lock = Mock()
         
         self.testjstick.start()
 
@@ -76,9 +78,11 @@ class TestJoystick(unittest.TestCase):
         self.testjstick.release_motors = method_call_logger(self.testjstick.release_motors)
         self.testjstick.disconnect = method_call_logger(self.testjstick.disconnect)
         self.testjstick.is_running = method_call_logger(self.testjstick.is_running)
+        self.testjstick.connection_active = method_call_logger(self.testjstick.connection_active)
 
         self.testjstick.is_running.set_return_value(True)
         self.testjstick.have_acquired.set_return_value(True)
+        self.testjstick.connection_active.set_return_value(True)
 
         self.testjstick.stop()
 

@@ -163,9 +163,9 @@ class ArmMotors:
         self.kit = ServoKit(channels=16)
         
         gripper_pin = motor_config.get_pin("Arm","Gripper")
-    	servo1_pin = motor_config.get_pin("Arm","Servo1")
-    	servo2_pin = motor_config.get_pin("Arm","Servo2")
-    	servo3_pin = motor_config.get_pin("Arm","Servo3")
+        servo1_pin = motor_config.get_pin("Arm","Servo1")
+        servo2_pin = motor_config.get_pin("Arm","Servo2")
+        servo3_pin = motor_config.get_pin("Arm","Servo3")
 
         #servo1_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo1")
         #servo1_digital_pin = motor_config.get_digital_pin("Arm", "Servo1")

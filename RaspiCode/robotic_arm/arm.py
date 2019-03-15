@@ -1,6 +1,7 @@
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.actuator import Actuator, ActuatorError
 import coreutils.resource_manager as mgr
+from threading import Lock
 from enum import Enum
 
 class State(Enum):
@@ -13,6 +14,7 @@ class RoboticArm(Receiver, Actuator):
         Receiver.__init__(self)
         Actuator.__init__(self)
         self.controller_state = State.STOPPED
+        self.controller_lock = Lock()
         self.angle_1 = 0
         self.angle_2 = 0
         self.angle_3 = 0
@@ -45,6 +47,7 @@ class RoboticArm(Receiver, Actuator):
             return (self.angle_1, self.angle_2, self. angle_3)
 
     def start(self):
+        self.controller_lock.acquire()
         print("Starting RoboticArm mode...")
         self.begin_receive()
         self.acquire_motors(mgr.Motors.ARM)
@@ -54,8 +57,10 @@ class RoboticArm(Receiver, Actuator):
         self.begin_actuate()
         self.controller_state = State.RUNNING
         print("RoboticArm mode started.")
+        self.controller_lock.release()
     
     def stop(self):
+        self.controller_lock.acquire()
         if self.is_running():
             print("Stopping RoboticArm mode...")
             if self.have_acquired(mgr.Motors.ARM):
@@ -67,6 +72,7 @@ class RoboticArm(Receiver, Actuator):
                     print(str(e))
             self.controller_state = State.STOPPED
             print("RoboticArm mode stopped.")
+        self.controller_lock.release()
 
     def run_on_connection_interrupted(self):
         self.stop()
