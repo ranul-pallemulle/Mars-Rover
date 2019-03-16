@@ -15,7 +15,7 @@ class Camera(Resource):
         self.gst_comm = None
         self.op_mode = cfg.global_config.operation_mode()
         if self.op_mode == "RASPBERRYPI":
-            self.source = "v4l2src"
+            self.source = "rpicamsrc bitrate=8000"
         elif self.op_mode == "LAPTOP":
             if platform == "darwin":
                 self.source = 'avfvideosrc'
@@ -46,7 +46,7 @@ class Camera(Resource):
         if self.active:
             ret,frame = self.cap.read()
             if ret:
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 return frame
             return None
         raise CameraError('Camera not active: cannot get frame.')
