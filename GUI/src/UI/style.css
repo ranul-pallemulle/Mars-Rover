@@ -101,9 +101,18 @@ and open the template in the editor.
     -fx-stroke: #000000;
 }
 
-#ground{
-    -fx-fill: #cc7722
+#Armrange{
+    -fx-fill: #AAAAAA66;
 }
+
+#ground{
+    -fx-fill: #cc7722;
+}
+
+#groundline{
+    -fx-stroke: #000000;
+}
+
 
 #armseg1{
     -fx-fill: #ffaa55;

@@ -99,6 +99,11 @@ public class ARMController implements Initializable {
         }else if(retangle < -180){
             retangle = retangle + 360;
         }
+        if(retangle > 100){
+            retangle = 100;
+        }else if(retangle < -100){
+            retangle = -100;
+        }
         return retangle;
     }
     
@@ -157,7 +162,7 @@ public class ARMController implements Initializable {
                 System.out.println("io exception");
                 return;
             }
-            //System.out.println("returned 1");
+            System.out.println("returned 1");
         }else{
             command_sender.stopPiApp("ARM");
             enablearm = false;
@@ -207,10 +212,10 @@ public class ARMController implements Initializable {
 //            joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
 //            joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
 //            System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang);
+            
             double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
             double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
             double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-            //System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang);
             arm_sender.sendData((int)joint0angd, (int)joint1angd, (int)joint2angd);
         }
     }
@@ -300,10 +305,10 @@ public class ARMController implements Initializable {
 //            joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
 //            joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
 //            System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang);
+            
             double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
             double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
             double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-            //System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang);
             arm_sender.sendData((int)joint0angd, (int)joint1angd, (int)joint2angd);
         }
     }
@@ -431,10 +436,11 @@ public class ARMController implements Initializable {
 //            joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
 //            joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
 //            joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+//            System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang);
+//            
             double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
             double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
             double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-            //System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang);
             arm_sender.sendData((int)joint0angd, (int)joint1angd, (int)joint2angd);
         }
     }

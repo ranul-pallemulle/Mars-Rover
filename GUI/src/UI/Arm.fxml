@@ -16,11 +16,10 @@
         <Text id="Arm3downLabel" x="360" y="70" text="Freearm"/>
         <Circle fx:id="buttonarm3" radius="20" fill="RED" stroke="GREY" centerX="450.0" centerY="100.0" onMouseClicked="#arm3down"/>
         <Circle fx:id="freearm" radius="20" fill="GREEN" stroke="GREY" centerX="400.0" centerY="100.0" onMouseClicked="#freearm"/>
-        
+        <Circle id="Armrange" centerX="250" centerY="250" radius="150"/>
         <Rectangle id="ground" x="0" y="380" width="500" height="120"/>
+        <Line id="groundline" endX="500" endY="380" startX="0" startY="380"/>
         <!--<Circle id="wheel" radius="30" fill="GRAY" centerX="150" centerY="350"/>-->
-        
-        
         <Line fx:id="lineseg1" strokeWidth="8" endX="300" endY="250" startX="250" startY="250"/>
         <Line fx:id="lineseg2" strokeWidth="8" endX="350" endY="250" startX="300" startY="250"/>
         <Line fx:id="lineseg3" strokeWidth="8" endX="400" endY="250" startX="350" startY="250"/>
