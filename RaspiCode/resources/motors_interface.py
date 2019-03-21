@@ -66,4 +66,4 @@ class MockArmMotors:
         print("Found settings for arm motors.")
         
     def set_values(self, values):
-        print("arm motors got values: {}, {}, {}".format(values[0], values[1], values[2]))        
+        print("arm motors got values: {}, {}, {}, {}".format(values[0], values[1], values[2], values[3]))

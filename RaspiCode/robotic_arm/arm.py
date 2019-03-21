@@ -18,25 +18,29 @@ class RoboticArm(Receiver, Actuator):
         self.angle_1 = 0
         self.angle_2 = 0
         self.angle_3 = 0
+        self.angle_grp = 0      # gripper
 
     def store_received(self, recvd_list):
-        if len(recvd_list) != 3:
+        if len(recvd_list) != 4:
             return None
         try:
             thet_1 = int(recvd_list[0])
             thet_2 = int(recvd_list[1])
             thet_3 = int(recvd_list[2])
+            gripval = int(recvd_list[3])
         except (ValueError, IndexError) as e:
             print(str(e))
             return None
         else:
             if thet_1 <= 180 and thet_1 >= -180\
                and thet_2 <= 180 and thet_2 >= -180\
-               and thet_3 <= 180 and thet_3 >= -180:
+               and thet_3 <= 180 and thet_3 >= -180\
+               and gripval <= 180 and gripval >= -180:
                 with self.condition:
                     self.angle_1 = thet_1
                     self.angle_2 = thet_2
                     self.angle_3 = thet_3
+                    self.angle_grp = gripval
                     self.condition.notify()
                 return 'ACK'
             else:
@@ -44,7 +48,7 @@ class RoboticArm(Receiver, Actuator):
 
     def get_values(self, motor_set):
         with self.condition:
-            return (self.angle_1, self.angle_2, self. angle_3)
+            return (self.angle_1, self.angle_2, self.angle_3, self.angle_grp)
 
     def start(self):
         self.controller_lock.acquire()
