@@ -6,8 +6,7 @@ class MotorInterfaceError(Exception):
 class MotorInterface:
     def __init__(self):
         try:
-            self.pwm_hardware = cfg.global_config.pwm_hardware_setting()
-            self.operation_mode = cfg.global_config.operation_mode()
+            self.operation_mode = cfg.overall_config.operation_mode()
         except cfg.ConfigurationError as e:
             raise MotorInterfaceError("Error in configuration: "+str(e))
 
@@ -16,7 +15,6 @@ class MotorInterface:
             import resources.motors
         elif self.operation_mode == "LAPTOP":
             print("Operation mode: Laptop (debug) - no actual motors in use.")
-        print("Found PWM hardware setting: "+self.pwm_hardware)
 
 
     def WheelMotors(self):
@@ -41,11 +39,10 @@ class MotorInterface:
             
 class MockWheelMotors:
     def __init__(self):
-        motor_config = cfg.MotorConfiguration()
-        left_pwm_pin = motor_config.get_pwm_pin("Wheels", "Left")
-        left_digital_pin = motor_config.get_digital_pin("Wheels", "Left")
-        right_pwm_pin = motor_config.get_pwm_pin("Wheels", "Right")
-        right_digital_pin = motor_config.get_digital_pin("Wheels", "Right")
+        left_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Left")
+        left_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Left")
+        right_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Right")
+        right_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Right")
         print("Found settings for wheel motors.")
 
     def set_values(self, values):
@@ -54,15 +51,14 @@ class MockWheelMotors:
     
 class MockArmMotors:
     def __init__(self):
-        motor_config = cfg.MotorConfiguration()
-        servo1_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo1")
-        servo1_digital_pin = motor_config.get_digital_pin("Arm", "Servo1")
-        servo2_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo2")
-        servo2_digital_pin = motor_config.get_digital_pin("Arm", "Servo2")
-        servo3_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo3")
-        servo3_digital_pin = motor_config.get_digital_pin("Arm", "Servo3")
-        gripper_pwm_pin = motor_config.get_pwm_pin("Arm", "Gripper")
-        gripper_digital_pin = motor_config.get_digital_pin("Arm", "Gripper")
+        servo1_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo1")
+        servo1_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo1")
+        servo2_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo2")
+        servo2_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo2")
+        servo3_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo3")
+        servo3_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo3")
+        gripper_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Gripper")
+        gripper_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Gripper")
         print("Found settings for arm motors.")
         
     def set_values(self, values):

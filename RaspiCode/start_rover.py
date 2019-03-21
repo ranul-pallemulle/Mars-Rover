@@ -5,6 +5,7 @@
 # stdout and stderr visible through journalctl
 import sys
 import coreutils.resource_manager as mgr
+import coreutils.configure as cfg
 from coreutils.parser import parse, CommandTypes, CommandError
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
 from coreutils import launcher
@@ -16,27 +17,42 @@ def main(argv):
     Create a TcpSocket to communicate with remote computer. Parse
     received commands and feed into call_action.
     '''
-    if len(argv) != 2:
-        print("Usage: python3 start_rover.py <port>")
+    if len(argv) != 2 and len(argv) != 3:
+        print("Usage: python3 start_rover.py <port> \n       \
+python3 start_rover.py <port> <settings>")
         sys.exit(1)
+        
     try:
         port = int(argv[1])
     except ValueError:
         print("Port number should be an integer")
         sys.exit(1)
+        
+    try:        
+        if len(argv) == 3:
+            cfg.Configuration.settings_file(argv[2])
+        else:
+            cfg.Configuration.settings_file()
+    except cfg.ConfigurationError as e:
+        print(str(e) + "\nExiting...")
+        sys.exit(1)
+        
     try:
         mgr.global_resources.initialise()
     except mgr.ResourceError as e:
         print(str(e) + "\nExiting...")
         sys.exit(1)
     print("Waiting for connection...")
+    
     try:
         main_sock = TcpSocket(port)
         main_sock.wait_for_connection()
     except TcpSocketError as e:
         print(str(e))
         sys.exit(1)
+        
     print("Connected.")
+    
     while(True):
         try:
             comm_str = main_sock.read()

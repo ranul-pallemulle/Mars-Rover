@@ -1,7 +1,7 @@
 <SETTINGS>
 
-  <!-- <MODE> LAPTOP </MODE> -->
-  <MODE> RASPBERRYPI </MODE>
+  <MODE> LAPTOP </MODE>
+  <!-- <MODE> RASPBERRYPI </MODE> -->
   
   <MOTORS NAME="Wheels">
     <MOTOR NAME="Left">

@@ -1,6 +1,7 @@
 from enum import Enum
 from resources import camera
 from resources.motors_interface import MotorInterface, MotorInterfaceError
+import coreutils.configure as cfg
 
 class Motors(Enum):
     '''Typenames to be used for resource_manager functions.'''
@@ -26,6 +27,8 @@ class ResourceManager:
             Camera.FEED   : 0} # use count
         
     def initialise(self):
+        if not cfg.Configuration.ready():
+            raise ResourceError("Settings file not parsed.")
         try:
             MI = MotorInterface()
             self.wheels = MI.WheelMotors()
