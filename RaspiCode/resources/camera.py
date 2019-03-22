@@ -9,11 +9,11 @@ class CameraError(Exception):
 
 class Camera(Resource):
     def __init__(self):
-        self.framerate = cam_config.capture_framerate()
-        self.frame_width=cam_config.capture_frame_width()
-        self.frame_height=cam_config.capture_frame_height()
+        self.framerate = cfg.cam_config.capture_framerate()
+        self.frame_width=cfg.cam_config.capture_frame_width()
+        self.frame_height=cfg.cam_config.capture_frame_height()
         self.gst_comm = None
-        self.op_mode = cfg.global_config.operation_mode()
+        self.op_mode = cfg.overall_config.operation_mode()
         if self.op_mode == "RASPBERRYPI":
             self.source = "rpicamsrc"
         elif self.op_mode == "LAPTOP":

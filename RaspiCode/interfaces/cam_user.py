@@ -53,20 +53,19 @@ class CameraUser:
         if not self.have_camera():
             raise CameraUserError('Camera not acquired.')
         
-        host = cfg.global_config.ip_address()
+        host = cfg.overall_config.ip_address()
         if source is None:
-            cam_config = cfg.CameraConfiguration()
-            strm_port = cam_config.stream_port()
-            strm_framerate = cam_config.stream_framerate()
-            strm_width = cam_config.stream_frame_width()
-            strm_height = cam_config.stream_frame_height()
+            strm_port = cfg.cam_config.stream_port()
+            strm_framerate = cfg.cam_config.stream_framerate()
+            strm_width = cfg.cam_config.stream_frame_width()
+            strm_height = cfg.cam_config.stream_frame_height()
 
-            src_framerate = cam_config.capture_framerate()
-            src_width = cam_config.capture_frame_width()
-            src_height = cam_config.capture_frame_height()
+            src_framerate = cfg.cam_config.capture_framerate()
+            src_width = cfg.cam_config.capture_frame_width()
+            src_height = cfg.cam_config.capture_frame_height()
         else:
             pass
-        op_mode = cfg.global_config.operation_mode()
+        op_mode = cfg.overall_config.operation_mode()
         if op_mode == "RASPBERRYPI":
             compressor = 'omxh264enc'
             tune = ' '
