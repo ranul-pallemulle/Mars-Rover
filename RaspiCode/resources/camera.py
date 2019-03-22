@@ -14,7 +14,8 @@ class Camera(Resource):
         self.frame_height=cfg.cam_config.capture_frame_height()
         self.gst_comm = None
         self.op_mode = cfg.overall_config.operation_mode()
-        if self.op_mode == "RASPBERRYPI":
+        if self.op_mode == "RASPBERRYPI" or\
+           self.op_mode == "RASPBERRYPI_NO_MOTORS":
             self.source = "rpicamsrc"
         elif self.op_mode == "LAPTOP":
             if platform == "darwin":
