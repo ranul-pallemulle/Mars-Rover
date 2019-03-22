@@ -23,8 +23,10 @@ class Configuration:
     def ready():
         global overall_config
         global motor_config
+        global cam_config
         if overall_config is None \
-           or motor_config is None:
+           or motor_config is None \
+           or cam_config is None:
             return False
         return True
 
