@@ -14,12 +14,15 @@ class MotorInterface:
             print("Operation mode: Raspberry Pi")
             import resources.motors
         elif self.operation_mode == "LAPTOP":
-            print("Operation mode: Laptop (debug) - no actual motors in use.")
+            print("Operation mode: Laptop (debug) - no motors.")
+        elif self.operation_mode == "RASPBERRYPI_NO_MOTORS":
+            print("Operation mode: Raspberry Pi (debug) - no motors)")
 
 
     def WheelMotors(self):
         try:
-            if self.operation_mode == "LAPTOP":
+            if self.operation_mode == "LAPTOP" or\
+               self.operation_mode == "RASPBERRYPI_NO_MOTORS":
                 return MockWheelMotors()
             elif self.operation_mode == "RASPBERRYPI":
                 import resources.motors as motors
@@ -29,7 +32,8 @@ class MotorInterface:
 
     def ArmMotors(self):
         try:
-            if self.operation_mode == "LAPTOP":
+            if self.operation_mode == "LAPTOP" or\
+               self.operation_mode == "RASPBERRYPI_NO_MOTORS":
                 return MockArmMotors()
             elif self.operation_mode == "RASPBERRYPI":
                 import resources.motors as motors
