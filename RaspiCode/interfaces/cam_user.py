@@ -66,7 +66,8 @@ class CameraUser:
         else:
             pass
         op_mode = cfg.overall_config.operation_mode()
-        if op_mode == "RASPBERRYPI":
+        if op_mode == "RASPBERRYPI" or\
+           op_mode == "RASPBERRYPI_NO_MOTORS":
             compressor = 'omxh264enc'
             tune = ' '
         elif op_mode == "LAPTOP":
