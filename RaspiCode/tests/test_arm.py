@@ -46,6 +46,8 @@ class TestArm(unittest.TestCase):
         self.testarm.acquire_motors = method_call_logger(self.testarm.acquire_motors)
 
         self.testarm.have_acquired.set_return_value(False)
+
+        self.testarm.controller_lock = Mock()
         
         self.testarm.start()
 
@@ -77,9 +79,11 @@ class TestArm(unittest.TestCase):
         self.testarm.release_motors = method_call_logger(self.testarm.release_motors)
         self.testarm.disconnect = method_call_logger(self.testarm.disconnect)
         self.testarm.is_running = method_call_logger(self.testarm.is_running)
+        self.testarm.connection_active = method_call_logger(self.testarm.connection_active)
 
         self.testarm.is_running.set_return_value(True)
         self.testarm.have_acquired.set_return_value(True)
+        self.testarm.connection_active.set_return_value(True)
 
         self.testarm.stop()
 

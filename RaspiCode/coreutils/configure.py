@@ -1,4 +1,9 @@
 import xml.etree.ElementTree as ET
+from threading import Lock
+
+# global configuration managers
+overall_config = None
+motor_config = None
 
 class ConfigurationError(Exception):
     '''Exception class for configuration.'''
@@ -6,8 +11,26 @@ class ConfigurationError(Exception):
 
 class Configuration:
     def __init__(self, name="settings.xml"):
-        self.tree = ET.parse(name)
+        try:
+            self.tree = ET.parse(name)
+        except FileNotFoundError as e:
+            raise ConfigurationError(str(e))
         self.root = self.tree.getroot()
+        self.tree_lock = Lock()
+
+    def ready():
+        global overall_config
+        global motor_config
+        if overall_config is None \
+           or motor_config is None:
+            return False
+        return True
+
+    def settings_file(name="settings.xml"):
+        global overall_config
+        global motor_config
+        overall_config = OverallConfiguration(name)
+        motor_config = MotorConfiguration(name)
 
     def _getsubelemvalue(self,elem, pred, match):
         for things in elem:
@@ -43,9 +66,10 @@ class Configuration:
             return None
         searchstr_list = self._make_searchstr_list(req_list)
         res_list = []
-        for searchstr in searchstr_list:
-            res = self.root.findall(searchstr)
-            res_list.append(res)
+        with self.tree_lock:
+            for searchstr in searchstr_list:
+                res = self.root.findall(searchstr)
+                res_list.append(res)
         if not res_list[0]:
             return None
         return res_list
@@ -90,10 +114,3 @@ class OverallConfiguration(Configuration):
             raise ConfigurationError("No settings found for operation mode.")
         return val
 
-    def pwm_hardware_setting(self):
-        val = self.top_level_element_value("PWMHARDWARE")
-        if val is None:
-            raise ConfigurationError("No settings found for pwm hardware.")
-        return val
-
-global_config = OverallConfiguration()

@@ -9,13 +9,23 @@ from resources.adafruit_servokit import ServoKit
 import resources.PCA9685_servo as PCA9685_servo
 import resources.PCA9685_motor as PCA9685_motor
 
+motor_config = cfg.MotorConfiguration()
+
+pwm_hardware = cfg.global_config.pwm_hardware_setting()
+
+if pwm_hardware == "ONBOARD":
+    print("All pwm done through RPi.GPIO")
+elif pwm_hardware == "EXTERNAL":
+    print("All pwm done through external chip communicated with via I2C")
+
+
 class WheelMotors:
     def __init__(self):
-        left_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Left")
-        left_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Left")
+        left_pwm_pin = motor_config.get_pwm_pin("Wheels", "Left")
+        left_digital_pin = motor_config.get_digital_pin("Wheels", "Left")
 
-        right_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Right")
-        right_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Right")
+        right_pwm_pin = motor_config.get_pwm_pin("Wheels", "Right")
+        right_digital_pin = motor_config.get_digital_pin("Wheels", "Right")
 
         self._ymax = 100
         self._xmax = 100
@@ -28,9 +38,14 @@ class WheelMotors:
         io.setmode(io.BCM)
 
         io.setup(self.leftmotor_in1_pin, io.OUT)
+
         io.setup(self.rightmotor_in1_pin, io.OUT)
+
+
         io.output(self.leftmotor_in1_pin, False)
+
         io.output(self.rightmotor_in1_pin, False)
+
 
         io.setwarnings(False)
 
@@ -40,16 +55,31 @@ class WheelMotors:
 
     def set_values(self, values):
         """
-        Only calculates fraction used to find PWM values across
-        the whole duty cycle. Fraction is then passed through
-        _setMotorRight and _setMotorLeft that deals with 
-        calculating PWM values and setting direction. 
+                Only calculates fraction used to find PWM values across
+                the whole duty cycle. Fraction is then passed through
+                _setMotorRight and _setMotorLeft that deals with 
+                calculating PWM values and setting direction. 
         """
         x = values[0]
         y = values[1]
 
         v_left = (y / self._ymax) + (1 / 2 * (x / self._xmax))
         v_right = (y / self._ymax) - (1 / 2 * (x / self._xmax))
+
+        # Sets average v as the fraction of y compared to its max
+        # v_avg = y / self._ymax
+        # v_left = v_avg
+        # v_right = v_avg
+
+        # #Sets a R
+        # if x > 0:
+        #     v_left += x / self._xmax
+        #     v_right += v_left - self.D
+        # elif x < 0:
+        #     v_right += x / self._xmax
+        #     v_left += v_right - self.D
+        # elif x == 0:
+        #   pass
 
         self._setMotorRight(v_right)
         self._setMotorLeft(v_left)
@@ -142,96 +172,53 @@ class WheelMotors:
 
 class ArmMotors:
     def __init__(self):
-        
-        """
-        Call set_values to set angles ofs servos.
-        Will need to callibrate for limits
-        """
+        servo1_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo1")
+        servo1_digital_pin = motor_config.get_digital_pin("Arm", "Servo1")
+        servo2_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo2")
+        servo2_digital_pin = motor_config.get_digital_pin("Arm", "Servo2")
+        servo3_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo3")
+     servo3_digital_pin = motor_config.get_digital_pin("Arm", "Servo3")
+        gripper_pwm_pin = motor_config.get_pwm_pin("Arm", "Gripper")
+        gripper_digital_pin = motor_config.get_digital_pin("Arm", "Gripper")
 
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.servo = PCA9685_servo.PCA9685(self.i2c)
         self.kit = ServoKit(channels=16)
-        
-        gripper_pin = cfg.motor_config.get_pin("Arm","Gripper")
-        servo1_pin = cfg.motor_config.get_pin("Arm","Servo1")
-        servo2_pin = cfg.motor_config.get_pin("Arm","Servo2")
-        servo3_pin = cfg.motor_config.get_pin("Arm","Servo3")
 
-        #servo1_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo1")
-        #servo1_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo1")
-        #servo2_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo2")
-        #servo2_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo2")
-        #servo3_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo3")
-        #servo3_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo3")
-        #gripper_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Gripper")
-        #gripper_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Gripper")
+	self.servo1_pwm_pin = 
 
         # 3 Servos, defines PIN numbers
-        self.servo_grab = self.kit.servo[gripper_pin]
-        self.servo_top = self.kit.servo[servo1_pin]
-        self.servo_middle = self.kit.servo[servo2_pin]
-        self.servo_bottom = self.kit.servo[servo3_pin]
+        # self.servo_grab = self.kit.servo[grab_PIN]
+        # self.servo_middle = self.kit.servo[middle_PIN]
+        # self.servo_bottom = self.kit.servo[bottom_PIN]
 
-        self.servo_grab.actuation_range = 360
-        self.servo_top.actuation_range = 360
-        self.servo_middle.actuation_range = 360
-        self.servo_bottom.actuation_range = 360
-
-        self.servo_grab.set_pulse_width_range(100, 4000)
-        self.servo_top.set_pulse_width_range(100, 4000)
-        self.servo_middle.set_pulse_width_range(100, 4000)
-        self.servo_bottom.set_pulse_width_range(100, 4000)
-
+        # self.servo_grab.set_pulse_width_range(750, 2250)
+        # self.servo_middle.set_pulse_width_range(750, 2250)
+        # self.servo_bottom.set_pulse_width_range(750, 2250)
+        pass
 
     def set_values(self, values):
+        print("arm motors got values: {}, {}, {}".format(values[0], values[1], values[2]))
 
+    def set_angle(self):
+        for i in range(len(self.angle_grab)):
+            if self.angle_middle[i] < 0 or self.angle_middle[i] > 90:
+                raise Exception('Middle servo angle out of range, the  value  was: {}'.format(self.angle_middle[i]))
 
-        offset_1 = 160
-        offset_2 = 180
-        offset_3 = 105
-        self.angle_grab = values[0]
-        self.angle_top = values[1] - offs
-        self.angle_middle = values[2]
-        self.angle_bottom = values[3]
-        
-        print("arm motors got values: {}, {}, {},{}".format(values[0], values[1], values[2],
-              values[3]))
-        
-        self._set_angle()
-         
+            if self.angle_bottom[i] < 0 or self.angle_bottom[i] > 180:
+                raise Exception('Bottom servo angle out of range, the  value  was: {}'.format(self.angle_bottom[i]))
 
-    def _set_angle(self):
-        """
-        Sets angles of servos, limits defined in the top of the function
-        all angles are in degrees. 
-        """
-        
+            # Good angle range is 30 - 80 degrees
+            if self.angle_grab[i] < 0 or self.angle_grab[i] > 90:
+                raise Exception('Grabbing servo angle out of range, the  value  was: {}'.format(self.angle_grab[i]))
 
-        #Limit of servo angles 
-        grab_lim = 90
-        top_lim = 90
-        middle_lim = 90
-        bottom_lim = 90
-                                    
-        # Good angle range is 30 - 80 degrees
-        if self.angle_grab > grab_lim:
-            self.angle_grab = grab_lim
-            print('Grabbing servo angle out of range, limit = {}'.format(grab_lim))
-                            
-        if self.angle_top > top_lim:
-            self.angle_top = top_lim
-            print('Top servo angle out of range, limit = {}'.format(top_lim))
-            
-        if self.angle_middle > middle_lim:
-            self.angle_middle = middle_lim
-            print('Middle servo angle out of range, limit = {}'.format(middle_lim))
+            self.servo_grab.angle = self.angle_grab[i]
+            self.servo_middle.angle = self.angle_middle[i]
+            self.servo_bottom.angle = self.angle_bottom[i]
 
-        if self.angle_bottom > bottom_lim:
-            self.angle_bottom = bottom_lim
-            print('Bottom servo angle out of range, limit = {}'.format(bottom_lim))
+            time.sleep(1)
 
-        self.servo_grab.angle = self.angle_grab
-        self.servo_middle.angle = self.angle_middle
-        self.servo_bottom.angle = self.angle_bottom
+    def _set_angle_test(self, 
 
-        time.sleep(1)
+if __name__ == "__main__":
+	

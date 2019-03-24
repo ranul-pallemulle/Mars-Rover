@@ -1,7 +1,7 @@
 *~
 #*#
-__pycache__
-
+__pycache__/
+*NOTES*
 /GUI/nbproject/private/
 /GUI/build/
 /GUI/dist/
