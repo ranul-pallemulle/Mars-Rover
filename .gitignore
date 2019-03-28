@@ -6,3 +6,5 @@ __pycache__/
 /GUI/build/
 /GUI/dist/
 *DS_Store*
+.vscode
+.env

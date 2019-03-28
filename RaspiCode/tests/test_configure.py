@@ -47,10 +47,10 @@ class TestConfigure(unittest.TestCase):
     def test_top_level_element_value_valid(self):
         name = "sometopelem"
         val = self.testconf.top_level_element_value(name)
-        self.assertEquals(val, "0.2")
+        self.assertEqual(val, "0.2")
         name = "someOTHERtopelem"
         val = self.testconf.top_level_element_value(name)
-        self.assertEquals(val, "0.5")
+        self.assertEqual(val, "0.5")
 
     def test_top_level_element_value_invalid(self):
         name = "nonexistent"
@@ -62,7 +62,7 @@ class TestConfigure(unittest.TestCase):
         motor_name = "Servo2"
         pin_num = self.testMotorConf.get_pwm_pin(motor_group, motor_name)
         self.assertTrue(isinstance(pin_num, int))
-        self.assertEquals(pin_num, 23)
+        self.assertEqual(pin_num, 23)
 
     def test_motor_get_pwm_pin_badval(self):
         motor_group = "Arm"
@@ -75,7 +75,7 @@ class TestConfigure(unittest.TestCase):
         motor_name = "Servo2"
         pin_num = self.testMotorConf.get_digital_pin(motor_group,motor_name)
         self.assertTrue(isinstance(pin_num, int))
-        self.assertEquals(pin_num, 7)
+        self.assertEqual(pin_num, 7)
 
     def test_operation_mode(self):
         mode = self.testconf.operation_mode()
