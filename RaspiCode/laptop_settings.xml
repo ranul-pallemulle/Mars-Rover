@@ -37,4 +37,10 @@
   <MOTORS NAME="DeployableCamera">
   </MOTORS>
 
+  <OPMODES_DIRECTORIES>
+    joystick,
+    robotic_arm,
+    dummy_opmode
+  </OPMODES_DIRECTORIES>  
+
 </SETTINGS>

@@ -14,6 +14,8 @@ class RecvrImpl(recvr.Receiver):
     def store_received(self, recvd_list):
         pass
 
+    def run_on_connection_interrupted(self):
+        pass
 
 class TestReceiver(unittest.TestCase):
 
@@ -24,23 +26,31 @@ class TestReceiver(unittest.TestCase):
         pass
 
     def test_init(self):
+        '''Check if initial state is valid.
+        > ConnState should be CLOSED and the member socket should be None.'''
         testImpl2 = RecvrImpl()
         self.assertEqual(testImpl2.state, recvr.ConnState.CLOSED)
         self.assertIsNone(testImpl2.socket)
 
-    def test_connect_closed(self):
+    @patch('interfaces.receiver.TcpSocket')
+    def test_connect_closed(self, mock_sock):
+        '''connect called with a valid port number when the state is CLOSED. 
+The member socket should be None to begin with.
+        > member socket should be set to a 1024 bytes buffer and should start
+waiting for a connection. The state should now be READY.'''
         self.testImpl.state = recvr.ConnState.CLOSED
-        self.mock_tcpsock = Mock(spec_set=TcpSocket)
-        with patch('interfaces.receiver.TcpSocket') as self.mock_tcpsock:
-            self.testImpl.connect(9700)
-            self.mock_tcpsock.return_value.set_max_recv_bytes.\
-            assert_called_with(1024)
-            self.mock_tcpsock.return_value.wait_for_connection.\
-            assert_called_with()
+        self.assertEqual(self.testImpl.socket, None)
+        self.testImpl.connect(9700)
+        mock_sock.return_value.set_max_recv_bytes.assert_called_with(1024)
+        mock_sock.return_value.wait_for_connection.assert_called_with()
         self.assertEqual(self.testImpl.state, recvr.ConnState.READY)
 
     def test_connect_closed_bad_port(self):
+        '''connect called with an invalid port number when the state is CLOSED. 
+The member socket should be None to begin with.
+        > member socket should still be None and the state should be CLOSED.'''
         self.testImpl.state = recvr.ConnState.CLOSED
+        self.assertEqual(self.testImpl.socket, None)
         with self.assertRaises(recvr.ReceiverError):
             self.testImpl.connect('string')
         with self.assertRaises(recvr.ReceiverError):
@@ -50,18 +60,27 @@ class TestReceiver(unittest.TestCase):
         self.assertEqual(self.testImpl.state, recvr.ConnState.CLOSED)
         self.assertIsNone(self.testImpl.socket)
 
-    def test_connect_closed_tcp_create_error(self):
+    @patch('interfaces.receiver.TcpSocket')
+    def test_connect_closed_error(self, mock_sock):
+        '''connect called with a valid port number when the state is CLOSED.
+TcpSocket throws an error during creation. Member socket should be None to begin
+ with.
+        > disconnect_internal() should be called and ReceiverError should be 
+raised. Final state should be CLOSED. Member socket should be None.'''
         self.testImpl.disconnect_internal = method_call_logger(\
         self.testImpl.disconnect_internal)
         self.testImpl.state = recvr.ConnState.CLOSED
-        self.mock_tcpsock = Mock(spec_set=TcpSocket)
-        with patch('interfaces.receiver.TcpSocket') as self.mock_tcpsock:
-            self.mock_tcpsock.side_effect = TcpSocketError
-            with self.assertRaises(recvr.ReceiverError):
-                self.testImpl.connect(9700)
-            assert(self.testImpl.disconnect_internal.was_called)
+        mock_sock.side_effect = TcpSocketError
+        with self.assertRaises(recvr.ReceiverError):
+            self.testImpl.connect(9700)
+        assert(self.testImpl.disconnect_internal.was_called)
+        self.assertEqual(self.testImpl.state, recvr.ConnState.CLOSED)
+        self.assertIsNone(self.testImpl.socket)
 
     def test_connect_other_state(self):
+        '''connect called with a valid port number with states other than CLOSED.
+        > ReceiverError should be raised. Final state should be the same as 
+before.'''
         self.testImpl.state = recvr.ConnState.RUNNING
         with self.assertRaises(recvr.ReceiverError):
             self.testImpl.connect(9700)
@@ -83,6 +102,11 @@ class TestReceiver(unittest.TestCase):
         self.assertEqual(self.testImpl.state, recvr.ConnState.READY)
 
     def test_connect_closed_tcp_wait_error(self):
+        '''connect called with a valid port number when the state is CLOSED. 
+TcpSocket throws an error during wait_for_connection. Member socket should be 
+None to begin with.
+        > disconnect_internal() should be called and ReceiverError should be 
+raised. Final state should be CLOSED. Member socket should be None.'''
         self.testImpl.disconnect_internal = method_call_logger(\
         self.testImpl.disconnect_internal)
         self.testImpl.state = recvr.ConnState.CLOSED
@@ -94,6 +118,7 @@ class TestReceiver(unittest.TestCase):
                 self.testImpl.connect(9700)
             assert(self.testImpl.disconnect_internal.was_called)
         self.assertEqual(self.testImpl.state, recvr.ConnState.CLOSED)
+        self.assertIsNone(self.testImpl.socket)
 
     def test_update_values_ready_state_reply_error(self):
         self.testImpl.disconnect_internal = method_call_logger(\

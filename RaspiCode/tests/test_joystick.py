@@ -48,7 +48,7 @@ class TestJoystick(unittest.TestCase):
 
         self.testjstick.controller_lock = Mock()
         
-        self.testjstick.start()
+        self.testjstick.start(None)
 
         assert(self.testjstick.begin_receive.was_called)
         assert(self.testjstick.acquire_motors.was_called)
@@ -65,7 +65,7 @@ class TestJoystick(unittest.TestCase):
 
         self.testjstick.have_acquired.set_return_value(True)
 
-        self.testjstick.start()
+        self.testjstick.start(None)
 
         assert(self.testjstick.begin_receive.was_called)
         assert(self.testjstick.acquire_motors.was_called)
@@ -84,7 +84,7 @@ class TestJoystick(unittest.TestCase):
         self.testjstick.have_acquired.set_return_value(True)
         self.testjstick.connection_active.set_return_value(True)
 
-        self.testjstick.stop()
+        self.testjstick.stop(None)
 
         assert(self.testjstick.release_motors.was_called)
         assert(self.testjstick.disconnect.was_called)
@@ -95,7 +95,7 @@ class TestJoystick(unittest.TestCase):
 
         self.testjstick.have_acquired.set_return_value(False)
 
-        self.testjstick.stop()
+        self.testjstick.stop(None)
 
         assert(not self.testjstick.release_motors.was_called)
         assert(self.testjstick.disconnect.was_called)

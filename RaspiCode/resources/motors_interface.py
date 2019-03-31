@@ -6,25 +6,25 @@ class MotorInterfaceError(Exception):
 class MotorInterface:
     def __init__(self):
         try:
-            self.operation_mode = cfg.overall_config.operation_mode()
+            self.hardware_mode = cfg.overall_config.hardware_mode()
         except cfg.ConfigurationError as e:
             raise MotorInterfaceError("Error in configuration: "+str(e))
 
-        if self.operation_mode == "RASPBERRYPI":
-            print("Operation mode: Raspberry Pi")
+        if self.hardware_mode == "RASPBERRYPI":
+            print("Hardware mode: Raspberry Pi")
             import resources.motors
-        elif self.operation_mode == "LAPTOP":
-            print("Operation mode: Laptop (debug) - no motors.")
-        elif self.operation_mode == "RASPBERRYPI_NO_MOTORS":
-            print("Operation mode: Raspberry Pi (debug) - no motors)")
+        elif self.hardware_mode == "LAPTOP":
+            print("Hardware mode: Laptop (debug) - no motors.")
+        elif self.hardware_mode == "RASPBERRYPI_NO_MOTORS":
+            print("Hardware mode: Raspberry Pi (debug) - no motors)")
 
 
     def WheelMotors(self):
         try:
-            if self.operation_mode == "LAPTOP" or\
-               self.operation_mode == "RASPBERRYPI_NO_MOTORS":
+            if self.hardware_mode == "LAPTOP" or\
+               self.hardware_mode == "RASPBERRYPI_NO_MOTORS":
                 return MockWheelMotors()
-            elif self.operation_mode == "RASPBERRYPI":
+            elif self.hardware_mode == "RASPBERRYPI":
                 import resources.motors as motors
                 return motors.WheelMotors()
         except cfg.ConfigurationError as e:
@@ -32,10 +32,10 @@ class MotorInterface:
 
     def ArmMotors(self):
         try:
-            if self.operation_mode == "LAPTOP" or\
-               self.operation_mode == "RASPBERRYPI_NO_MOTORS":
+            if self.hardware_mode == "LAPTOP" or\
+               self.hardware_mode == "RASPBERRYPI_NO_MOTORS":
                 return MockArmMotors()
-            elif self.operation_mode == "RASPBERRYPI":
+            elif self.hardware_mode == "RASPBERRYPI":
                 import resources.motors as motors
                 return motors.ArmMotors()
         except cfg.ConfigurationError as e:

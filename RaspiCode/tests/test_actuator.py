@@ -44,21 +44,6 @@ class TestActuator(unittest.TestCase):
         self.mock_mgr.get_unique.return_value = None
         self.testImpl.acquire_motors(mgr.Motors.WHEELS)
         self.assertEqual(len(self.testImpl.motor_list), 0)
-
-    def test_update_motors_release_called(self):
-        # self.assertEqual(len(self.testImpl.motor_list), 0)
-        # self.testImpl.release_was_called = True
-        # self.testImpl.motor_list[mgr.Motors.WHEELS] = Mock()
-        # self.testImpl.release_motors = method_call_logger(self.testImpl.release_motors)
-        # assert(not self.testImpl.release_motors.was_called)
-        # thread = Thread(target=self.testImpl.update_motors,args=())
-        # thread.start()
-        # with self.testImpl.condition:
-        #     self.testImpl.condition.notify()
-        # time.sleep(0.5)
-        # # assert(self.testImpl.release_motors.was_called)
-        # self.assertEqual(self.testImpl.release_was_called, False)
-        pass                    # can't seem to get this to work
         
     def test_release_motors(self):
         self.assertEqual(len(self.testImpl.motor_list), 0)

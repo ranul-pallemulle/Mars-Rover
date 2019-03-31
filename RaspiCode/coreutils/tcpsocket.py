@@ -92,7 +92,7 @@ class TcpSocket:
             raise TcpSocketError('Socket is uninitialised')
 
     def close(self):
-        '''Close any open socket descriptors.'''
+        '''Close any open socket descriptors. Does not raise exceptions.'''
         if self.conn is not None:
             try:
                 self.conn.close()
@@ -107,11 +107,14 @@ class TcpSocket:
                 pass
             finally:
                 self.sock = None
-        self.disconn_listener.close()
-        self.disconn_sender.close()
+        try:
+            self.disconn_listener.close()
+            self.disconn_sender.close()
+        except socket.error:
+            pass
 
     def unblock(self):
-        '''Force read() to return with None to indicate broken connection.'''
+        '''Force read() to return with None to indicate broken connection. Should not raise exceptions.'''
         self.disconn_sender.sendall(str.encode('d'))
 
     def set_max_recv_bytes(self, numbytes):

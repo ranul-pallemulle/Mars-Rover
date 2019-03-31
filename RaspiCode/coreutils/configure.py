@@ -108,9 +108,19 @@ class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
         Configuration.__init__(self, name)
 
-    def operation_mode(self):
+    def hardware_mode(self):
         val = self.top_level_element_value("MODE")
         if val is None:
-            raise ConfigurationError("No settings found for operation mode.")
+            raise ConfigurationError("No settings found for hardware mode.")
         return val
+
+    def opmodes_directories(self):
+        dir_list_str = self.top_level_element_value("OPMODES_DIRECTORIES")
+        if dir_list_str is None:
+            raise ConfigurationError("No settings found for operational mode directories.")
+        dir_list_str = dir_list_str.replace('\n','').replace(' ','')
+        dir_list = dir_list_str.split(',')
+        if '' in dir_list and len(dir_list) > 1:
+            raise ConfigurationError("Error in operational mode settings: probably extra comma in list.")
+        return dir_list
 
