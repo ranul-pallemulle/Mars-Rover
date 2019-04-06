@@ -41,6 +41,11 @@
     joystick,
     robotic_arm,
     dummy_opmode
-  </OPMODES_DIRECTORIES>  
+  </OPMODES_DIRECTORIES>
+
+  <RESOURCES_DIRECTORIES>
+    resources/camera.py,
+    resources/motors_interface.py
+  </RESOURCES_DIRECTORIES>
 
 </SETTINGS>

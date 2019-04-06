@@ -1,4 +1,5 @@
 import coreutils.configure as cfg
+from resources.resource import Resource, Policy
 
 class MotorInterfaceError(Exception):
     pass
@@ -41,8 +42,11 @@ class MotorInterface:
         except cfg.ConfigurationError as e:
             raise MotorInterfaceError('Error in configuration: \n'+str(e))
             
-class MockWheelMotors:
+class MockWheelMotors(Resource):
     def __init__(self):
+        Resource.__init__(self)
+        self.policy = Policy.UNIQUE
+        self.register_name("Wheels")
         left_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Left")
         left_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Left")
         right_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Right")
@@ -53,8 +57,11 @@ class MockWheelMotors:
         print("wheel motors got values: {}, {}".format(values[0], values[1]))        
         
     
-class MockArmMotors:
+class MockArmMotors(Resource):
     def __init__(self):
+        Resource.__init__(self)
+        self.policy = Policy.UNIQUE
+        self.register_name("Arm")
         servo1_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo1")
         servo1_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo1")
         servo2_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo2")
