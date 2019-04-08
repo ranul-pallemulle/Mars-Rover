@@ -9,23 +9,13 @@ from resources.adafruit_servokit import ServoKit
 import resources.PCA9685_servo as PCA9685_servo
 import resources.PCA9685_motor as PCA9685_motor
 
-motor_config = cfg.MotorConfiguration()
-
-pwm_hardware = cfg.global_config.pwm_hardware_setting()
-
-if pwm_hardware == "ONBOARD":
-    print("All pwm done through RPi.GPIO")
-elif pwm_hardware == "EXTERNAL":
-    print("All pwm done through external chip communicated with via I2C")
-
-
 class WheelMotors:
     def __init__(self):
-        left_pwm_pin = motor_config.get_pwm_pin("Wheels", "Left")
-        left_digital_pin = motor_config.get_digital_pin("Wheels", "Left")
+        left_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Left")
+        left_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Left")
 
-        right_pwm_pin = motor_config.get_pwm_pin("Wheels", "Right")
-        right_digital_pin = motor_config.get_digital_pin("Wheels", "Right")
+        right_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Right")
+        right_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Right")
 
         self._ymax = 100
         self._xmax = 100
@@ -162,19 +152,19 @@ class ArmMotors:
         self.servo = PCA9685_servo.PCA9685(self.i2c)
         self.kit = ServoKit(channels=16)
         
-        gripper_pin = motor_config.get_pin("Arm","Gripper")
-    	servo1_pin = motor_config.get_pin("Arm","Servo1")
-    	servo2_pin = motor_config.get_pin("Arm","Servo2")
-    	servo3_pin = motor_config.get_pin("Arm","Servo3")
+        gripper_pin = cfg.motor_config.get_pin("Arm","Gripper")
+        servo1_pin = cfg.motor_config.get_pin("Arm","Servo1")
+        servo2_pin = cfg.motor_config.get_pin("Arm","Servo2")
+        servo3_pin = cfg.motor_config.get_pin("Arm","Servo3")
 
-        #servo1_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo1")
-        #servo1_digital_pin = motor_config.get_digital_pin("Arm", "Servo1")
-        #servo2_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo2")
-        #servo2_digital_pin = motor_config.get_digital_pin("Arm", "Servo2")
-        #servo3_pwm_pin = motor_config.get_pwm_pin("Arm", "Servo3")
-        #servo3_digital_pin = motor_config.get_digital_pin("Arm", "Servo3")
-        #gripper_pwm_pin = motor_config.get_pwm_pin("Arm", "Gripper")
-        #gripper_digital_pin = motor_config.get_digital_pin("Arm", "Gripper")
+        #servo1_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo1")
+        #servo1_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo1")
+        #servo2_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo2")
+        #servo2_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo2")
+        #servo3_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo3")
+        #servo3_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo3")
+        #gripper_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Gripper")
+        #gripper_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Gripper")
 
         # 3 Servos, defines PIN numbers
         self.servo_grab = self.kit.servo[gripper_pin]

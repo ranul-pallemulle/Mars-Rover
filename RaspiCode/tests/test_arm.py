@@ -11,15 +11,15 @@ class TestArm(unittest.TestCase):
         self.testarm = arm.RoboticArm()
 
     def test_store_received(self):
-        recvd_list = [120, 180, 90]
+        recvd_list = [120, 180, 90, 140]
         ret = self.testarm.store_received(recvd_list)
         self.assertEqual(ret, 'ACK')
         vals = self.testarm.get_values(None)
-        self.assertEqual(vals, (120, 180, 90))
-        recvd_list = [200, 180, 20]
+        self.assertEqual(vals, (120, 180, 90, 140))
+        recvd_list = [200, 180, 20, 30]
         ret = self.testarm.store_received(recvd_list)
         self.assertEqual(ret, 'ERR:RANGE')
-        recvd_list = [20, 30, 50 , 180]
+        recvd_list = [20, 30, 50]
         ret = self.testarm.store_received(recvd_list)
         self.assertEqual(ret, None)
         recvd_list = [10]
@@ -31,12 +31,13 @@ class TestArm(unittest.TestCase):
 
     def test_get_values(self):
         vals = self.testarm.get_values(None)
-        self.assertEqual(vals, (0,0,0))
+        self.assertEqual(vals, (0,0,0,0))
         self.testarm.angle_1 = 5
         self.testarm.angle_2 = 10
         self.testarm.angle_3 = 20
+        self.testarm.angle_grp = 120
         vals = self.testarm.get_values(None)
-        self.assertEqual(vals, (5,10,20))
+        self.assertEqual(vals, (5,10,20,120))
 
     def test_start(self):
         self.testarm.begin_receive = method_call_logger(self.testarm.begin_receive)
@@ -46,6 +47,8 @@ class TestArm(unittest.TestCase):
         self.testarm.acquire_motors = method_call_logger(self.testarm.acquire_motors)
 
         self.testarm.have_acquired.set_return_value(False)
+
+        self.testarm.controller_lock = Mock()
         
         self.testarm.start()
 
@@ -77,9 +80,11 @@ class TestArm(unittest.TestCase):
         self.testarm.release_motors = method_call_logger(self.testarm.release_motors)
         self.testarm.disconnect = method_call_logger(self.testarm.disconnect)
         self.testarm.is_running = method_call_logger(self.testarm.is_running)
+        self.testarm.connection_active = method_call_logger(self.testarm.connection_active)
 
         self.testarm.is_running.set_return_value(True)
         self.testarm.have_acquired.set_return_value(True)
+        self.testarm.connection_active.set_return_value(True)
 
         self.testarm.stop()
 

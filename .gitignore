@@ -1,2 +1,10 @@
-.DS_Store
+*~
+#*#
 __pycache__/
+*NOTES*
+/GUI/nbproject/private/
+/GUI/build/
+/GUI/dist/
+*DS_Store*
+.vscode
+.env
