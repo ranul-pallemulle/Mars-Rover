@@ -17,8 +17,10 @@ class Dummy(Receiver, Actuator, OpMode):
     def store_received(self, recvd_list):
         if len(recvd_list) != 2:
             return None
-        self.val1 = recvd_list[0]
-        self.val2 = recvd_list[1]
+        with self.condition:
+            self.val1 = recvd_list[0]
+            self.val2 = recvd_list[1]
+            self.condition.notify()
         return 'Got em'
 
     def get_values(self, motor_set):
@@ -26,6 +28,7 @@ class Dummy(Receiver, Actuator, OpMode):
             return (self.val1, self.val2)
 
     def start(self, args):
+        '''Implementation of OpMode abstract method start(args). Starts the Dummy mode.'''
         try:
             port = args[0]
             self.connect(port)
@@ -35,18 +38,19 @@ class Dummy(Receiver, Actuator, OpMode):
         except ReceiverError as e:
             raise OpModeError(str(e))
         try:
-            self.acquire_motors(mgr.Motors.WHEELS)
+            self.acquire_motors("Wheels")
         except ActuatorError as e:
-            self.stop()
+            self.stop(None)
             raise OpModeError(str(e))
-        if self.have_acquired(mgr.Motors.WHEELS):
+        if self.have_acquired("Wheels"):
             self.begin_actuate()
         else:
-            self.stop()
+            self.stop(None)
+            raise OpModeError('Could not get access to Wheels.')
 
     def stop(self, args):
-        if self.have_acquired(mgr.Motors.WHEELS):
-            self.release_motors(mgr.Motors.WHEELS)
+        if self.have_acquired("Wheels"):
+            self.release_motors("Wheels")
         if self.connection_active():
             try:
                 self.disconnect()

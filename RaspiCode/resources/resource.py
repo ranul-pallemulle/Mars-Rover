@@ -32,14 +32,14 @@ file. Initialise them to register them and add to resource_list.'''
             if not folder:
                 print("WARNING: no resource modules found.")
                 return
-            if folder.endswith('.py'):
+            if folder.endswith('.py'): # not a folder but a file
                 folder = folder.split('.py')[0]
                 path = folder.replace('/','.')                
                 try:
                     importlib.import_module(path)
                 except FileNotFoundError as e:
                     raise ResourceRawError('Error in resource files list. Check settings file. : \n'+str(e))
-            else:
+            else:               # is a folder; check inside
                 try:
                     for filename in os.listdir(folder):
                         if str(filename).endswith('.py'):

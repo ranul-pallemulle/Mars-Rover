@@ -58,23 +58,19 @@ motors so we don't need to query motor_set.'''
         except ReceiverError as e:
             raise OpModeError(str(e))
         try:
-            # self.acquire_motors(mgr.Motors.WHEELS)
             self.acquire_motors("Wheels")
         except ActuatorError as e:
             self.stop(None)         # clean up
             raise OpModeError(str(e))
-        # if self.have_acquired(mgr.Motors.WHEELS):
         if self.have_acquired("Wheels"):
             self.begin_actuate()    # start sending received values to motors
         else:
             self.stop(None)
-            raise OpModeError
+            raise OpModeError('Could not get access to Wheel motors.')
         
     def stop(self, args):
         '''Implementation of the OpMode abstract method stop(args). Stops the Joystick mode.'''
-        # if self.have_acquired(mgr.Motors.WHEELS):
         if self.have_acquired("Wheels"):
-            # self.release_motors(mgr.Motors.WHEELS)
             self.release_motors("Wheels")
         if self.connection_active():
             try:

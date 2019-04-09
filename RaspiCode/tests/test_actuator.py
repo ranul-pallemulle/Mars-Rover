@@ -31,32 +31,32 @@ class TestActuator(unittest.TestCase):
     def test_acquire_motors(self):
         self.assertEqual(len(self.testImpl.motor_list), 0)
         self.mock_mgr.get_unique.return_value = Mock()
-        self.testImpl.acquire_motors(mgr.Motors.WHEELS)
-        self.mock_mgr.get_unique.assert_called_with(mgr.Motors.WHEELS)
+        self.testImpl.acquire_motors("Wheels")
+        self.mock_mgr.get_unique.assert_called_with("Wheels")
         self.assertEqual(len(self.testImpl.motor_list), 1)
 
         self.setUp()
         self.mock_mgr.get_unique.side_effect = mgr.ResourceError
         with self.assertRaises(act.ActuatorError):
-            self.testImpl.acquire_motors(mgr.Motors.WHEELS)
+            self.testImpl.acquire_motors("Wheels")
         
         self.setUp()
         self.mock_mgr.get_unique.return_value = None
-        self.testImpl.acquire_motors(mgr.Motors.WHEELS)
+        self.testImpl.acquire_motors("Wheels")
         self.assertEqual(len(self.testImpl.motor_list), 0)
         
     def test_release_motors(self):
         self.assertEqual(len(self.testImpl.motor_list), 0)
         self.assertEqual(self.testImpl.release_was_called, False)
-        self.testImpl.motor_list[mgr.Motors.WHEELS] = Mock()
-        self.testImpl.release_motors(mgr.Motors.WHEELS)
-        self.mock_mgr.release.assert_called_with(mgr.Motors.WHEELS)
+        self.testImpl.motor_list["Wheels"] = Mock()
+        self.testImpl.release_motors("Wheels")
+        self.mock_mgr.release.assert_called_with("Wheels")
 
     def test_have_acquired(self):
         self.assertEqual(len(self.testImpl.motor_list), 0)
-        self.assertEqual(self.testImpl.have_acquired(mgr.Motors.WHEELS), False)
-        self.testImpl.motor_list[mgr.Motors.WHEELS] = Mock()
-        self.assertEqual(self.testImpl.have_acquired(mgr.Motors.WHEELS), True)
+        self.assertEqual(self.testImpl.have_acquired("Wheels"), False)
+        self.testImpl.motor_list["Wheels"] = Mock()
+        self.assertEqual(self.testImpl.have_acquired("Wheels"), True)
 
 
 class method_call_logger(object):
@@ -65,6 +65,6 @@ class method_call_logger(object):
         self.was_called = False
 
     def __call__(self, code=None):
-        self.meth(mgr.Motors.WHEELS)
+        self.meth("Wheels")
         self.was_called = True       
         

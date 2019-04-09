@@ -64,16 +64,20 @@ class RoboticArm(Receiver, Actuator, OpMode):
         except ReceiverError as e:
             raise OpModeError(str(e))
         try:
-            self.acquire_motors(mgr.Motors.ARM)
+            self.acquire_motors("Arm")
         except ActuatorError as e:
-            self.stop()         # clean up
+            self.stop(None)         # clean up
             raise OpModeError(str(e))
-        self.begin_actuate()    # start sending received values to motors
-    
+        if self.have_acquired("Arm"):
+            self.begin_actuate()    # start sending received values to motors
+        else:
+            self.stop(None)
+            raise OpModeError('Could not get access to Arm motors.')
+            
     def stop(self, args):
         '''Implementation of OpMode abstract method stop(args). Stops the RoboticArm mode.'''
-        if self.have_acquired(mgr.Motors.ARM):
-            self.release_motors(mgr.Motors.ARM)
+        if self.have_acquired("Arm"):
+            self.release_motors("Arm")
         if self.connection_active():
             try:
                 self.disconnect()

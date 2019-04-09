@@ -25,8 +25,6 @@ class TestOpMode(unittest.TestCase):
     @patch('interfaces.opmode.cfg')
     def setUp(self, mocked_cfg):
         if not type(self).ranSetup:
-            mocked_cfg.overall_config.opmodes_directories.return_value \
-            = ['tests']
             OpMode.opmodes_initialise()
             type(self).ranSetup = True
         

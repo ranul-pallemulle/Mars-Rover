@@ -76,12 +76,20 @@ file. Initialise them to register them and add to opmodes_list.'''
             if not folder:
                 print("WARNING: no operational modes found.")
                 return
-            try:
-                for filename in os.listdir(folder):
-                    if str(filename).endswith('.py'):
-                        importlib.import_module(folder+'.'+str(filename).split('.')[0])
-            except FileNotFoundError as e:
-                raise OpModeError('Error in opmode directories list. Check settings file. : \n'+str(e))
+            if folder.endswith('.py'):
+                folder = folder.split('.py')[0]
+                path = folder.replace('/','.')
+                try:
+                    importlib.import_module(path)
+                except FileNotFoundError as e:
+                    raise OpModeError('Error in opmodes files list. Check settings file. : \n'+str(e))
+            else:
+                try:
+                    for filename in os.listdir(folder):
+                        if str(filename).endswith('.py'):
+                            importlib.import_module(folder+'.'+str(filename).split('.')[0])
+                except FileNotFoundError as e:
+                    raise OpModeError('Error in opmode directories list. Check settings file. : \n'+str(e))
         for subcls in cls.__subclasses__():
             try:
                 subcls()

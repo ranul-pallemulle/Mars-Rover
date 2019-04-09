@@ -8,15 +8,22 @@ class TestLauncher(unittest.TestCase):
     def setUp(self):
         pass
 
-    @patch(launcher.OpMode)
-    @patch(launcher.kill_opmode)
-    def test_release_all(self, mock_kill_opmode, mock_OpMode):
+    @patch('coreutils.launcher.OpMode')
+    # @patch(launcher.kill_opmode)
+    def test_release_all(self, mock_OpMode):
         mock_OpMode.get_all_names.return_value = ["test"]
+        launcher.kill_opmode = method_call_logger(launcher.kill_opmode)
         mock_mode = Mock()
         mock_mode.is_stopped.return_value = False
         mock_OpMode.get.return_value = mock_mode
         launcher.release_all()
-        mock_kill_opmode.assert_called_with("test")
+        assert(launcher.kill_opmode.was_called)
+
+    def test_launch_opmode(self):
+        pass
+
+    def test_kill_opmode(self):
+        pass
 
     # def test_launch_joystick_errors(self):
     #     with self.assertRaises(launcher.LauncherError):
@@ -76,3 +83,11 @@ class TestLauncher(unittest.TestCase):
     #         # uninitialised
     #         launcher.kill_arm([CommandTypes.STOP_ARM, ])
 
+class method_call_logger(object):
+    def __init__(self, meth):
+        self.meth = meth
+        self.was_called = False
+
+    def __call__(self, code=None):
+        # self.meth("Wheels")
+        self.was_called = True

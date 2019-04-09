@@ -51,7 +51,7 @@ class MockWheelMotors(Resource):
         left_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Left")
         right_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Right")
         right_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Right")
-        print("Found settings for wheel motors.")
+        # print("Found settings for wheel motors.")
 
     def set_values(self, values):
         print("wheel motors got values: {}, {}".format(values[0], values[1]))        
@@ -70,7 +70,7 @@ class MockArmMotors(Resource):
         servo3_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo3")
         gripper_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Gripper")
         gripper_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Gripper")
-        print("Found settings for arm motors.")
+        # print("Found settings for arm motors.")
         
     def set_values(self, values):
         print("arm motors got values: {}, {}, {}, {}".format(values[0], values[1], values[2], values[3]))
