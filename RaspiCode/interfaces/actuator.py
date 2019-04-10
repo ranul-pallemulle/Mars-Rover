@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from threading import Thread, RLock, Condition
 import coreutils.resource_manager as mgr
 
@@ -6,9 +6,8 @@ class ActuatorError(Exception):
     '''Exception class that will be raised by classes implementing Actuator.'''
     pass
 
-class Actuator:
+class Actuator(ABC):
     '''Actuates motors on a separate thread.'''
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         ''' Make empty list of motor objects.'''

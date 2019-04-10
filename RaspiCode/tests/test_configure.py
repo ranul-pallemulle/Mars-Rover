@@ -15,9 +15,9 @@ class TestConfigure(unittest.TestCase):
         self.assertEqual(res, expect)
 
     def test_provide_settings_valid_correct(self):
-        req_list = ["{Motors}[name]TestWheels.{Motor}[name]Right"]
+        req_list = ["{Motors}[name]Wheels.{Motor}[name]Right"]
         tempstr = self.testconf._make_searchstr_list(req_list)
-        tempstr_expect = ["./MOTORS[@NAME='TestWheels']/MOTOR[@NAME='Right']"]
+        tempstr_expect = ["./MOTORS[@NAME='Wheels']/MOTOR[@NAME='Right']"]
         self.assertEqual(tempstr, tempstr_expect)
         res = self.testconf.provide_settings(req_list)
         self.assertIsNotNone(res)
@@ -33,13 +33,13 @@ class TestConfigure(unittest.TestCase):
         self.assertIsNone(res)
 
     def test_getsubelemvalue_valid(self):
-        req_list = ["{Motors}[name]TestWheels.{Motor}[name]Right"]
+        req_list = ["{Motors}[name]Wheels.{Motor}[name]Right"]
         res0 = self.testconf.provide_settings(req_list)
         res = self.testconf._getsubelemvalue(res0[0], "TYPE", "PWM")
         self.assertIsNotNone(res)
 
     def test_getsubelemvalue_invalid(self):
-        req_list = ["{Motors}[name]TestWheels.{Motor}[name]Right"]
+        req_list = ["{Motors}[name]Wheels.{Motor}[name]Right"]
         res0 = self.testconf.provide_settings(req_list)
         res = self.testconf._getsubelemvalue(res0[0], "FAKE", "PWM")
         self.assertIsNone(res)
@@ -47,10 +47,10 @@ class TestConfigure(unittest.TestCase):
     def test_top_level_element_value_valid(self):
         name = "sometopelem"
         val = self.testconf.top_level_element_value(name)
-        self.assertEquals(val, "0.2")
+        self.assertEqual(val, "0.2")
         name = "someOTHERtopelem"
         val = self.testconf.top_level_element_value(name)
-        self.assertEquals(val, "0.5")
+        self.assertEqual(val, "0.5")
 
     def test_top_level_element_value_invalid(self):
         name = "nonexistent"
@@ -62,7 +62,7 @@ class TestConfigure(unittest.TestCase):
         motor_name = "Servo2"
         pin_num = self.testMotorConf.get_pwm_pin(motor_group, motor_name)
         self.assertTrue(isinstance(pin_num, int))
-        self.assertEquals(pin_num, 23)
+        self.assertEqual(pin_num, 23)
 
     def test_motor_get_pwm_pin_badval(self):
         motor_group = "Arm"
@@ -75,8 +75,16 @@ class TestConfigure(unittest.TestCase):
         motor_name = "Servo2"
         pin_num = self.testMotorConf.get_digital_pin(motor_group,motor_name)
         self.assertTrue(isinstance(pin_num, int))
-        self.assertEquals(pin_num, 7)
+        self.assertEqual(pin_num, 7)
 
-    def test_operation_mode(self):
-        mode = self.testconf.operation_mode()
-        self.assertEqual(mode, "RASPBERRYPI")
+    # def test_hardware_mode(self):
+    #     mode = self.testconf.hardware_mode()
+    #     self.assertEqual(mode, "LAPTOP")
+
+    def test_opmodes_directories(self):
+        mode = self.testconf.opmodes_directories()
+        self.assertEqual(mode, ['joystick', 'robotic_arm'])
+
+    def test_resources_directories(self):
+        resource = self.testconf.resources_directories()
+        self.assertEqual(resource, ['resources/mock_motors.py'])

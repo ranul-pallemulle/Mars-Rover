@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from threading import Thread, Lock
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
 from enum import Enum
@@ -15,10 +15,9 @@ class ReceiverError(Exception):
     '''Exception class that will be raised by classes implementing Receiver'''
     pass
 
-class Receiver:
+class Receiver(ABC):
     '''Receive values via a TcpSocket on a separate thread. Valid format
 of received values is determined by store_received.'''
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         self.state = ConnState.CLOSED
@@ -26,13 +25,12 @@ of received values is determined by store_received.'''
         self.state_lock = Lock()
 
     def connect(self,port):
-        '''Create a new TcpSocket if connection state is closed. Wait
-        for a connection on specified port.'''
+        '''Create a new TcpSocket if connection state is closed. Wait 
+for a connection on specified port. Overall state change is CLOSED to READY.'''
         print("{}: waiting for connection...".format(self.__class__.__name__))
         with self.state_lock:
             if self.state == ConnState.CLOSED:
                 self.state = ConnState.PENDING
-                self.set_state_as_running() # inform subclass that things are starting
             else:
                 raise ReceiverError('Socket open: cannot make new socket.')
         try:
@@ -65,14 +63,13 @@ of received values is determined by store_received.'''
 
     @abstractmethod
     def store_received(self,recvd_list):
+        '''Instance specific method to use the received data.'''
         pass
 
     @abstractmethod
     def run_on_connection_interrupted(self):
-        pass
-
-    @abstractmethod
-    def set_state_as_running(self):
+        '''Instance specific method to do any cleaning up if the connection
+unexpectedly terminates.'''
         pass
 
     def update_values(self):

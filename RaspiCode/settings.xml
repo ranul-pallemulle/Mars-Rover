@@ -1,7 +1,7 @@
 <SETTINGS>
 
   <!-- <MODE> LAPTOP </MODE> -->
-  <MODE> RASPBERRYPI </MODE>
+  <!-- <MODE> RASPBERRYPI </MODE> -->
   <!-- <MODE> RASPBERRYPI_NO_MOTORS </MODE> -->
   
   <MOTORS NAME="Wheels">
@@ -36,5 +36,15 @@
 
   <MOTORS NAME="DeployableCamera">
   </MOTORS>
+
+  <OPMODES_DIRECTORIES>
+    joystick,
+    robotic_arm
+  </OPMODES_DIRECTORIES>
+
+  <RESOURCES_DIRECTORIES>
+    resources/camera.py,
+    resources/motors.py
+  </RESOURCES_DIRECTORIES>
 
 </SETTINGS>

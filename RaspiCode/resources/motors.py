@@ -1,6 +1,7 @@
 import sys
 import time
 import coreutils.configure as cfg
+from resources.resource import Resource, Policy
 import RPi.GPIO as io
 
 import board
@@ -9,8 +10,11 @@ from resources.adafruit_servokit import ServoKit
 import resources.PCA9685_servo as PCA9685_servo
 import resources.PCA9685_motor as PCA9685_motor
 
-class WheelMotors:
+class WheelMotors(Resource):
     def __init__(self):
+        Resource.__init__(self)
+        self.policy = Policy.UNIQUE
+        self.register_name("Wheels")
         left_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Left")
         left_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Left")
 
@@ -140,13 +144,16 @@ class WheelMotors:
         self.PCA9685_pwm.set_pwm(self.PWM_left, 0, pwm)
 
 
-class ArmMotors:
+class ArmMotors(Resource):
     def __init__(self):
         
         """
         Call set_values to set angles ofs servos.
         Will need to callibrate for limits
         """
+        Resource.__init__(self)
+        self.policy = Policy.UNIQUE
+        self.register_name("Arm")
 
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.servo = PCA9685_servo.PCA9685(self.i2c)

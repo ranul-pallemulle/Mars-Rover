@@ -1,7 +1,7 @@
 <SETTINGS>
 
-  <!-- <MODE> LAPTOP </MODE> -->
-  <MODE> RASPBERRYPI </MODE>
+  <MODE> LAPTOP </MODE>
+  <!-- <MODE> RASPBERRYPI </MODE> -->
   
   <PWMHARDWARE> ONBOARD </PWMHARDWARE>
   <!-- <PWMHARDWARE> EXTERNAL </PWMHARDWARE> -->
@@ -13,7 +13,7 @@
   <SOMETOPELEM> 0.2 </SOMETOPELEM>
   <SOMEOTHERTOPELEM> 0.5 </SOMEOTHERTOPELEM>
   
-  <MOTORS NAME="TestWheels">
+  <MOTORS NAME="Wheels">
     <MOTOR NAME="Left">
       <PIN TYPE="PWM"> 17 </PIN>
       <PIN TYPE="Digital"> 4 </PIN>
@@ -45,5 +45,15 @@
 
   <MOTORS NAME="DeployableCamera">
   </MOTORS>
+
+  <OPMODES_DIRECTORIES>
+    joystick,
+    robotic_arm
+  </OPMODES_DIRECTORIES>
+
+  <RESOURCES_DIRECTORIES>
+    <!-- resources/camera.py, -->
+    resources/mock_motors.py
+  </RESOURCES_DIRECTORIES>  
 
 </SETTINGS>

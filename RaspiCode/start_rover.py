@@ -1,21 +1,16 @@
-# script runs on boot. Does network setup to receive commands from
-# remote computer. Runs parser on these commands and takes action
-# accordingly.
-# Note that when run on boot, this runs as a service under systemd.
-# stdout and stderr visible through journalctl
 import sys
 import coreutils.resource_manager as mgr
 import coreutils.configure as cfg
-from coreutils.parser import parse, CommandTypes, CommandError
+from interfaces.opmode import OpMode, OpModeError
+from coreutils.parser import parse_entry, CommandPrefixes, CommandError
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
-from coreutils import launcher
+import coreutils.launcher as launcher
+from coreutils.launcher import LauncherError
 from threading import Thread
 
 def main(argv):
-    '''
-    Rover operation starts here! 
-    Create a TcpSocket to communicate with remote computer. Parse
-    received commands and feed into call_action.
+    '''Rover operation starts here! Wait for a connection from a remote
+    computer, interpret commands received and take appropriate action.
     '''
     if len(argv) != 2 and len(argv) != 3:
         print("Usage: python3 start_rover.py <port> \n       \
@@ -23,30 +18,41 @@ python3 start_rover.py <port> <settings>")
         sys.exit(1)
         
     try:
-        port = int(argv[1])
+        port = int(argv[1])     # port to receive commands on
     except ValueError:
         print("Port number should be an integer")
         sys.exit(1)
         
     try:        
-        if len(argv) == 3:
+        if len(argv) == 3:      # settings file specified
             cfg.Configuration.settings_file(argv[2])
-        else:
+        else:                   # use the default settings file (settings.xml)
             cfg.Configuration.settings_file()
-    except cfg.ConfigurationError as e:
+    except cfg.ConfigurationError as e: # error related to settings file
         print(str(e) + "\nExiting...")
         sys.exit(1)
         
     try:
-        mgr.global_resources.initialise()
+        OpMode.opmodes_initialise() # check for available operational modes
+    except OpModeError as e:
+        print(str(e) + "\nExiting...")
+        sys.exit(1)
+    if OpMode.get_all():        # list of registered modes is not empty
+        print("Found operational modes: ")
+    for name in OpMode.get_all_names(): # print registered names of all modes
+        print('  '+name)
+        
+    try:
+        mgr.global_resources.initialise() # get all resources ready
+                                          # (motors, camera, etc)
     except mgr.ResourceError as e:
         print(str(e) + "\nExiting...")
         sys.exit(1)
+        
     print("Waiting for connection...")
-    
     try:
         main_sock = TcpSocket(port)
-        main_sock.wait_for_connection()
+        main_sock.wait_for_connection() # wait for remote connection
     except TcpSocketError as e:
         print(str(e))
         sys.exit(1)
@@ -55,46 +61,51 @@ python3 start_rover.py <port> <settings>")
     
     while(True):
         try:
-            comm_str = main_sock.read()
+            comm_str = main_sock.read() # wait for a command
             if comm_str is None:
                 print("Connection lost")
-                launcher.release_all()
+                launcher.release_all() # stop all operational modes
                 sys.exit(1)
-            result = parse(comm_str)
-        except TcpSocketError as e:
+            result = parse_entry(comm_str) # command received; interpret it
+        except TcpSocketError as e:        # connection error occurred
             print(str(e))
             launcher.release_all()
             sys.exit(1)
-        except CommandError as e:
-            main_sock.reply(str(e))
+        except CommandError as e: # received command could not be interpreted
+            main_sock.reply(str(e)) # send reply to remote with error message
             print(str(e))
-        else:
+        else:                   # command successfully interpreted
             reply = "ACK"
             try:
                 main_sock.reply(reply)
-            except TcpSocketError as e:
+            except TcpSocketError as e: # connection error occurred
                 print(str(e))
                 launcher.release_all()
                 sys.exit(1)
             action_thread = Thread(target=call_action,args=[result])
-            action_thread.start()
+            action_thread.start() # carry out action directed by the received
+                                  # command, in a separate thread.
 
 def call_action(arg_list):
-    '''First element of arg_list should be a command. Based on
-    command, do something.'''
+    '''Based on command, do something.'''
     try:
-        if arg_list[0] == CommandTypes.START_JOYSTICK:
-            launcher.launch_joystick(arg_list)
-        elif arg_list[0] == CommandTypes.STOP_JOYSTICK:
-            launcher.kill_joystick(arg_list)
-        elif arg_list[0] == CommandTypes.START_ARM:
-            launcher.launch_arm(arg_list)
-        elif arg_list[0] == CommandTypes.STOP_ARM:
-            launcher.kill_arm(arg_list)
-    except launcher.LauncherError as e:
+        if arg_list[0] == CommandPrefixes.START: # start an operational mode
+            launcher.launch_opmode(arg_list[1], arg_list[2:])
+        elif arg_list[0] == CommandPrefixes.STOP: # stop an operational mode
+            launcher.kill_opmode(arg_list[1], arg_list[2:])
+        else:                   # command is to be passed to a specific mode
+            mode_name = arg_list[0]
+            mode = OpMode.get(mode_name) # get mode using its registered
+                                         # name. Throws OpModeError if mode_name
+                                         # is invalid.
+            if mode.is_running():
+                mode.submode_command(arg_list[1:]) # pass command to the mode
+            else:
+                print("{} not active. Start {} before passing submode commands.".format(mode_name, mode_name))
+    except (LauncherError, OpModeError) as e: # error carrying out action
         print(str(e))
-        return
-    except Exception as e:
+        return                  # terminate thread - stop processing current command
+    except Exception as e:      # unhandled exception: something is really wrong
         print(str(e))
         sys.exit(1)
         
