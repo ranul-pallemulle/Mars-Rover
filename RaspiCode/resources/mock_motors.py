@@ -1,3 +1,4 @@
+import time
 import coreutils.configure as cfg
 from resources.resource import Resource, Policy
 

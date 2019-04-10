@@ -1,6 +1,6 @@
 <SETTINGS>
 
-  <MODE> LAPTOP </MODE>
+  <!-- <MODE> LAPTOP </MODE> -->
   <!-- <MODE> RASPBERRYPI </MODE> -->
   <!-- <MODE> RASPBERRYPI_NO_MOTORS </MODE> -->
   

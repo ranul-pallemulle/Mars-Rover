@@ -77,9 +77,9 @@ class TestConfigure(unittest.TestCase):
         self.assertTrue(isinstance(pin_num, int))
         self.assertEqual(pin_num, 7)
 
-    def test_hardware_mode(self):
-        mode = self.testconf.hardware_mode()
-        self.assertEqual(mode, "LAPTOP")
+    # def test_hardware_mode(self):
+    #     mode = self.testconf.hardware_mode()
+    #     self.assertEqual(mode, "LAPTOP")
 
     def test_opmodes_directories(self):
         mode = self.testconf.opmodes_directories()

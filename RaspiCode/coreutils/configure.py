@@ -108,11 +108,11 @@ class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
         Configuration.__init__(self, name)
 
-    def hardware_mode(self):
-        val = self.top_level_element_value("MODE")
-        if val is None:
-            raise ConfigurationError("No settings found for hardware mode.")
-        return val
+    # def hardware_mode(self):
+    #     val = self.top_level_element_value("MODE")
+    #     if val is None:
+    #         raise ConfigurationError("No settings found for hardware mode.")
+    #     return val
 
     def opmodes_directories(self):
         dir_list_str = self.top_level_element_value("OPMODES_DIRECTORIES")

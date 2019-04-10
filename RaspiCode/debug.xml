@@ -2,7 +2,7 @@
 
   <!-- <MODE> LAPTOP </MODE> -->
   <!-- <MODE> RASPBERRYPI </MODE> -->
-  <MODE> RASPBERRYPI_NO_MOTORS </MODE>
+  <!-- <MODE> RASPBERRYPI_NO_MOTORS </MODE> -->
   
   <MOTORS NAME="Wheels">
     <MOTOR NAME="Left">
@@ -39,7 +39,8 @@
 
   <OPMODES_DIRECTORIES>
     joystick,
-    robotic_arm
+    robotic_arm,
+    dummy_opmode
   </OPMODES_DIRECTORIES>
 
   <RESOURCES_DIRECTORIES>
