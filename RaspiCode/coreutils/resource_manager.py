@@ -38,7 +38,7 @@ class ResourceManager:
             
 
     def get_unique(self, typename):
-        '''Provide unique access to a resource.'''
+        '''Provide unique access to a resource. Return None if already acquired.'''
         if typename in self.resources_status.keys():
             # print("Refcount for {}: {}".format(typename,sys.getrefcount(rsc.Resource.get(typename))))            
             resource = rsc.Resource.get(typename)
