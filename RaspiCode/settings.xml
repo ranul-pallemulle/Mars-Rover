@@ -44,7 +44,7 @@
 
   <RESOURCES_DIRECTORIES>
     resources/camera.py,
-    resources/motors_interface.py
+    resources/motors.py
   </RESOURCES_DIRECTORIES>
 
 </SETTINGS>

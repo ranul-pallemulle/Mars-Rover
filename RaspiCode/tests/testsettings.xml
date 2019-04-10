@@ -51,4 +51,9 @@
     robotic_arm
   </OPMODES_DIRECTORIES>
 
+  <RESOURCES_DIRECTORIES>
+    <!-- resources/camera.py, -->
+    resources/mock_motors.py
+  </RESOURCES_DIRECTORIES>  
+
 </SETTINGS>

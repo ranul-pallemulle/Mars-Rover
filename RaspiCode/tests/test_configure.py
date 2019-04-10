@@ -84,3 +84,7 @@ class TestConfigure(unittest.TestCase):
     def test_opmodes_directories(self):
         mode = self.testconf.opmodes_directories()
         self.assertEqual(mode, ['joystick', 'robotic_arm'])
+
+    def test_resources_directories(self):
+        resource = self.testconf.resources_directories()
+        self.assertEqual(resource, ['resources/mock_motors.py'])
