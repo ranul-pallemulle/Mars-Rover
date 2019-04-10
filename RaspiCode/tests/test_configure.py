@@ -15,9 +15,9 @@ class TestConfigure(unittest.TestCase):
         self.assertEqual(res, expect)
 
     def test_provide_settings_valid_correct(self):
-        req_list = ["{Motors}[name]TestWheels.{Motor}[name]Right"]
+        req_list = ["{Motors}[name]Wheels.{Motor}[name]Right"]
         tempstr = self.testconf._make_searchstr_list(req_list)
-        tempstr_expect = ["./MOTORS[@NAME='TestWheels']/MOTOR[@NAME='Right']"]
+        tempstr_expect = ["./MOTORS[@NAME='Wheels']/MOTOR[@NAME='Right']"]
         self.assertEqual(tempstr, tempstr_expect)
         res = self.testconf.provide_settings(req_list)
         self.assertIsNotNone(res)
@@ -33,13 +33,13 @@ class TestConfigure(unittest.TestCase):
         self.assertIsNone(res)
 
     def test_getsubelemvalue_valid(self):
-        req_list = ["{Motors}[name]TestWheels.{Motor}[name]Right"]
+        req_list = ["{Motors}[name]Wheels.{Motor}[name]Right"]
         res0 = self.testconf.provide_settings(req_list)
         res = self.testconf._getsubelemvalue(res0[0], "TYPE", "PWM")
         self.assertIsNotNone(res)
 
     def test_getsubelemvalue_invalid(self):
-        req_list = ["{Motors}[name]TestWheels.{Motor}[name]Right"]
+        req_list = ["{Motors}[name]Wheels.{Motor}[name]Right"]
         res0 = self.testconf.provide_settings(req_list)
         res = self.testconf._getsubelemvalue(res0[0], "FAKE", "PWM")
         self.assertIsNone(res)
@@ -77,6 +77,14 @@ class TestConfigure(unittest.TestCase):
         self.assertTrue(isinstance(pin_num, int))
         self.assertEqual(pin_num, 7)
 
-    def test_operation_mode(self):
-        mode = self.testconf.operation_mode()
-        self.assertEqual(mode, "RASPBERRYPI")
+    # def test_hardware_mode(self):
+    #     mode = self.testconf.hardware_mode()
+    #     self.assertEqual(mode, "LAPTOP")
+
+    def test_opmodes_directories(self):
+        mode = self.testconf.opmodes_directories()
+        self.assertEqual(mode, ['joystick', 'robotic_arm'])
+
+    def test_resources_directories(self):
+        resource = self.testconf.resources_directories()
+        self.assertEqual(resource, ['resources/mock_motors.py'])

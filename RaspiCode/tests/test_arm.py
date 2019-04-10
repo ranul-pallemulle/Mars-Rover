@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
+from interfaces.opmode import OpModeError
 from interfaces.receiver import ConnState, ReceiverError
 from robotic_arm import arm
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
@@ -40,6 +41,7 @@ class TestArm(unittest.TestCase):
         self.assertEqual(vals, (5,10,20,120))
 
     def test_start(self):
+        self.testarm.connect = method_call_logger(self.testarm.connect)
         self.testarm.begin_receive = method_call_logger(self.testarm.begin_receive)
         self.testarm.begin_actuate = method_call_logger(self.testarm.begin_actuate)
         self.testarm.have_acquired = method_call_logger(self.testarm.have_acquired)
@@ -50,8 +52,10 @@ class TestArm(unittest.TestCase):
 
         self.testarm.controller_lock = Mock()
         
-        self.testarm.start()
+        with self.assertRaises(OpModeError):
+            self.testarm.start([5000])
 
+        assert(self.testarm.connect.was_called)
         assert(self.testarm.begin_receive.was_called)
         assert(self.testarm.acquire_motors.was_called)
         assert(self.testarm.have_acquired.was_called)
@@ -67,7 +71,7 @@ class TestArm(unittest.TestCase):
 
         self.testarm.have_acquired.set_return_value(True)
 
-        self.testarm.start()
+        self.testarm.start([5000])
 
         assert(self.testarm.begin_receive.was_called)
         assert(self.testarm.acquire_motors.was_called)
@@ -79,14 +83,14 @@ class TestArm(unittest.TestCase):
         self.testarm.have_acquired = method_call_logger(self.testarm.have_acquired)
         self.testarm.release_motors = method_call_logger(self.testarm.release_motors)
         self.testarm.disconnect = method_call_logger(self.testarm.disconnect)
-        self.testarm.is_running = method_call_logger(self.testarm.is_running)
+        self.testarm.is_stopped = method_call_logger(self.testarm.is_stopped)
         self.testarm.connection_active = method_call_logger(self.testarm.connection_active)
 
-        self.testarm.is_running.set_return_value(True)
+        self.testarm.is_stopped.set_return_value(False)
         self.testarm.have_acquired.set_return_value(True)
         self.testarm.connection_active.set_return_value(True)
 
-        self.testarm.stop()
+        self.testarm.stop(None)
 
         assert(self.testarm.release_motors.was_called)
         assert(self.testarm.disconnect.was_called)
@@ -97,7 +101,7 @@ class TestArm(unittest.TestCase):
 
         self.testarm.have_acquired.set_return_value(False)
 
-        self.testarm.stop()
+        self.testarm.stop(None)
 
         assert(not self.testarm.release_motors.was_called)
         assert(self.testarm.disconnect.was_called)

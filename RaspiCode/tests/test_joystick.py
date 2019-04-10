@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import patch, Mock
+from interfaces.opmode import OpModeError
 from interfaces.receiver import ConnState, ReceiverError
 from joystick import joystick
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
-import coreutils.resource_manager as mgr
 
 class TestJoystick(unittest.TestCase):
     
@@ -38,6 +38,7 @@ class TestJoystick(unittest.TestCase):
         self.assertEqual(vals, (5,10))
 
     def test_start(self):
+        self.testjstick.connect = method_call_logger(self.testjstick.connect)
         self.testjstick.begin_receive = method_call_logger(self.testjstick.begin_receive)
         self.testjstick.begin_actuate = method_call_logger(self.testjstick.begin_actuate)
         self.testjstick.have_acquired = method_call_logger(self.testjstick.have_acquired)
@@ -47,9 +48,11 @@ class TestJoystick(unittest.TestCase):
         self.testjstick.have_acquired.set_return_value(False)
 
         self.testjstick.controller_lock = Mock()
-        
-        self.testjstick.start()
 
+        with self.assertRaises(OpModeError):
+            self.testjstick.start([5000])
+
+        assert(self.testjstick.connect.was_called)
         assert(self.testjstick.begin_receive.was_called)
         assert(self.testjstick.acquire_motors.was_called)
         assert(self.testjstick.have_acquired.was_called)
@@ -65,7 +68,7 @@ class TestJoystick(unittest.TestCase):
 
         self.testjstick.have_acquired.set_return_value(True)
 
-        self.testjstick.start()
+        self.testjstick.start([5000])
 
         assert(self.testjstick.begin_receive.was_called)
         assert(self.testjstick.acquire_motors.was_called)
@@ -77,14 +80,14 @@ class TestJoystick(unittest.TestCase):
         self.testjstick.have_acquired = method_call_logger(self.testjstick.have_acquired)
         self.testjstick.release_motors = method_call_logger(self.testjstick.release_motors)
         self.testjstick.disconnect = method_call_logger(self.testjstick.disconnect)
-        self.testjstick.is_running = method_call_logger(self.testjstick.is_running)
+        self.testjstick.is_stopped = method_call_logger(self.testjstick.is_stopped)
         self.testjstick.connection_active = method_call_logger(self.testjstick.connection_active)
 
-        self.testjstick.is_running.set_return_value(True)
+        self.testjstick.is_stopped.set_return_value(False)
         self.testjstick.have_acquired.set_return_value(True)
         self.testjstick.connection_active.set_return_value(True)
 
-        self.testjstick.stop()
+        self.testjstick.stop(None)
 
         assert(self.testjstick.release_motors.was_called)
         assert(self.testjstick.disconnect.was_called)
@@ -95,7 +98,7 @@ class TestJoystick(unittest.TestCase):
 
         self.testjstick.have_acquired.set_return_value(False)
 
-        self.testjstick.stop()
+        self.testjstick.stop(None)
 
         assert(not self.testjstick.release_motors.was_called)
         assert(self.testjstick.disconnect.was_called)
