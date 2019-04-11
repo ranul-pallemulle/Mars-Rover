@@ -1,5 +1,6 @@
 import time
 import coreutils.configure as cfg
+from coreutils.diagnostics import Diagnostics as dg
 from resources.resource import Resource, Policy
 
 class MockWheelMotors(Resource):
@@ -19,7 +20,7 @@ class MockWheelMotors(Resource):
     def set_values(self, values):
         x = values[0]
         y = values[1]
-        print ("Mock wheel motors: values received: {}, {}".format(x,y))
+        dg.print ("Mock wheel motors: values received: {}, {}".format(x,y))
         v_left = (y / self._ymax) + (1 / 2 * (x / self._xmax))
         v_right =(y / self._ymax) - (1 / 2 * (x / self._xmax))
 
@@ -38,7 +39,7 @@ class MockWheelMotors(Resource):
                 pwm = self.duty_cycle
         else:
             pwm = 0
-        print("Pwm value for right wheel motors: {}".format(pwm))
+        dg.print("Pwm value for right wheel motors: {}".format(pwm))
 
     def _setMotorLeft(self, power):
         int(power)
@@ -52,7 +53,7 @@ class MockWheelMotors(Resource):
                 pwm = self.duty_cycle
         else:
             pwm = 0
-        print("Pwm value for left wheel motors: {}".format(pwm))
+        dg.print("Pwm value for left wheel motors: {}".format(pwm))
 
 class MockArmMotors(Resource):
     def __init__(self):
@@ -77,7 +78,7 @@ class MockArmMotors(Resource):
         self.angle_top = values[1]
         self.angle_middle = values[2]
         self.angle_bottom = values[3]
-        print ("Mock arm motors: values received: {}, {}, {}, {}".format(values[0], values[1], values[2], values[3]))
+        dg.print ("Mock arm motors: values received: {}, {}, {}, {}".format(values[0], values[1], values[2], values[3]))
         self._set_angle()
 
     def _set_angle(self):
@@ -88,23 +89,23 @@ class MockArmMotors(Resource):
 
         if self.angle_grab > grab_lim:
             self.angle_grab = grab_lim
-            print('Grabbing servo angle out of range, limit = {}'.format(grab_lim))
+            dg.print('Grabbing servo angle out of range, limit = {}'.format(grab_lim))
 
         if self.angle_top > top_lim:
             self.angle_top = top_lim
-            print('Top servo angle out of range, limit = {}'.format(top_lim))
+            dg.print('Top servo angle out of range, limit = {}'.format(top_lim))
             
         if self.angle_middle > middle_lim:
             self.angle_middle = middle_lim
-            print('Middle servo angle out of range, limit = {}'.format(middle_lim))
+            dg.print('Middle servo angle out of range, limit = {}'.format(middle_lim))
 
         if self.angle_bottom > bottom_lim:
             self.angle_bottom = bottom_lim
-            print('Bottom servo angle out of range, limit = {}'.format(bottom_lim))
+            dg.print('Bottom servo angle out of range, limit = {}'.format(bottom_lim))
 
-        print("Pwm value for grab servo: {}".format(self.angle_grab))
-        print("Pwm value for top servo: {}".format(self.angle_top))
-        print("Pwm value for middle servo: {}".format(self.angle_middle))
-        print("Pwm value for bottom servo: {}".format(self.angle_bottom))
+        dg.print("Pwm value for grab servo: {}".format(self.angle_grab))
+        dg.print("Pwm value for top servo: {}".format(self.angle_top))
+        dg.print("Pwm value for middle servo: {}".format(self.angle_middle))
+        dg.print("Pwm value for bottom servo: {}".format(self.angle_bottom))
 
         time.sleep(1)

@@ -3,6 +3,11 @@
   <!-- <MODE> LAPTOP </MODE> -->
   <!-- <MODE> RASPBERRYPI </MODE> -->
   <!-- <MODE> RASPBERRYPI_NO_MOTORS </MODE> -->
+
+  <DIAGNOSTICS>
+    <STATE> Enabled </STATE>
+    <PORT> 5570 </PORT>
+  </DIAGNOSTICS>
   
   <MOTORS NAME="Wheels">
     <MOTOR NAME="Left">

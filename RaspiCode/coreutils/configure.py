@@ -134,3 +134,30 @@ class OverallConfiguration(Configuration):
             raise ConfigurationError("Error in resource settings: probably extra comma in list.")
         return dir_list
 
+    def diagnostics_enabled(self):
+        req = ["{Diagnostics}.{state}"]
+        elem_list = self.provide_settings(req)
+        if not elem_list:
+            raise ConfigurationError("No settings found for Diagnostics state.")
+        en_str = elem_list[0][0].text.strip()
+        if en_str == "Enabled":
+            return True
+        elif en_str == "Disabled":
+            return False
+        raise ConfigurationError("Error in Diagnostics settings: invalid state, can only be 'Enabled' or 'Disabled'.")
+
+    def diagnostics_port(self):
+        req = ["{Diagnostics}.{port}"]
+        elem_list = self.provide_settings(req)
+        if not elem_list:
+            raise ConfigurationError("No settings found for Diagnostics.")
+        port_str = elem_list[0][0].text.strip()
+        try:
+            port = int(port_str)
+        except TypeError:
+            raise ConfigurationError("Error in Diagnostics settings: port number setting must be an integer.")
+        if port < 1000:
+            raise ConfigurationError("Error in Diagnostics settings: port number needs to be larger than 1000 to prevent conflict with reserved ports.")
+        return port
+        
+

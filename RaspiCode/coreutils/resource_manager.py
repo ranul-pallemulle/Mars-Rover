@@ -3,6 +3,7 @@ import gc
 from enum import Enum
 import resources.resource as rsc
 import coreutils.configure as cfg
+from coreutils.diagnostics import Diagnostics as dg
 
 class Status(Enum):
     FREE = 0
@@ -26,9 +27,9 @@ class ResourceManager:
             raise ResourceError(str(e))
         resource_names = rsc.Resource.get_all_names()
         if resource_names:
-            print("Found resources: ")
+            dg.print("Found resources: ")
         for name in resource_names:
-            print('  '+name)
+            dg.print('  '+name)
         for name in resource_names:
             policy = rsc.Resource.get(name).policy
             if policy == rsc.Policy.UNIQUE:
@@ -45,7 +46,7 @@ class ResourceManager:
             if resource.policy == rsc.Policy.UNIQUE:
                 if self.resources_status[typename] == Status.FREE:
                     self.resources_status[typename] = Status.ACQUIRED
-                    print("Resource Manager: {} was acquired".format(typename))
+                    dg.print("Resource Manager: {} was acquired".format(typename))
                     return resource
                 else:
                     # raise ResourceError('Cannot provide access to resource "{}": currently in use.'.format(typename))
@@ -65,10 +66,10 @@ class ResourceManager:
                 self.resources_status[typename] = count + 1
                 if self.resources_status[typename] == 1:
                     if resource.shared_init:
-                        print("Shared resource {} initialising...".format(typename))
+                        dg.print("Shared resource {} initialising...".format(typename))
                         resource.shared_init()
-                        print("Shared resource {} initialised".format(typename))
-                print("Resource Manager: {} was acquired".format(typename))
+                        dg.print("Shared resource {} initialised".format(typename))
+                dg.print("Resource Manager: {} was acquired".format(typename))
                 return resource
             else:
                 raise ResourceError('Resource "{}" does not have a shared access policy.'.format(typename))
@@ -84,20 +85,20 @@ class ResourceManager:
             if resource.policy == rsc.Policy.UNIQUE:
                 if self.resources_status[typename] == Status.ACQUIRED:
                     self.resources_status[typename] = Status.FREE
-                    print("Resource Manager: {} was released.".format(typename))
+                    dg.print("Resource Manager: {} was released.".format(typename))
                 else:
                     raise ResourceError('Cannot release {}: resource was already free'.format(typename))
             elif resource.policy == rsc.Policy.SHARED:
                 count = self.resources_status[typename]
                 self.resources_status[typename] = count - 1
-                print("Resource Manager: {} was released.".format(typename))                
+                dg.print("Resource Manager: {} was released.".format(typename))                
                 if self.resources_status[typename] < 0:
                     raise ResourceError('Shared resource count for {} is less than 0.'.format(typename))
                 if self.resources_status[typename] == 0:
                     if resource.shared_deinit:
-                        print("Shared resource {} deinitialising...".format(typename))                        
+                        dg.print("Shared resource {} deinitialising...".format(typename))                        
                         resource.shared_deinit()
-                        print("Shared resource {} deinitialised".format(typename))
+                        dg.print("Shared resource {} deinitialised".format(typename))
         else:
             raise ResourceError('Resource "{}" not found'.format(typename))
                         

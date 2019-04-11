@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from threading import Thread, RLock, Condition
+from coreutils.diagnostics import Diagnostics as dg
 import coreutils.resource_manager as mgr
 
 class ActuatorError(Exception):
@@ -36,9 +37,9 @@ class Actuator(ABC):
                 if motor_set is not None:
                     self.motor_list[motor_type] = motor_set
                 else:
-                    print("{}: warning (acquire_motors): could not get unique access to {}".format(self.__class__.__name__,motor_type))
+                    dg.print("{}: warning (acquire_motors): could not get unique access to {}".format(self.__class__.__name__,motor_type))
         except mgr.ResourceError as e:
-            print(str(e))
+            dg.print(str(e))
             raise ActuatorError('{}: Could not get access to motors.'.format(self.__class__.__name__))
 
         
@@ -80,7 +81,7 @@ elsewhere.'''
                     self.release_was_called = True
                     self.condition.notify()
             else:
-                print("Warning (actuator): release_motors called on resource not acquired.")
+                dg.print("Warning (actuator): release_motors called on resource not acquired.")
 
                 
     def have_acquired(self, motor_set):

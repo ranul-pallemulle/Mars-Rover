@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from threading import Thread, Lock
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
+from coreutils.diagnostics import Diagnostics as dg
 from enum import Enum
 
 class ConnState(Enum):
@@ -27,7 +28,7 @@ of received values is determined by store_received.'''
     def connect(self,port):
         '''Create a new TcpSocket if connection state is closed. Wait 
 for a connection on specified port. Overall state change is CLOSED to READY.'''
-        print("{}: waiting for connection...".format(self.__class__.__name__))
+        dg.print("{}: waiting for connection...".format(self.__class__.__name__))
         with self.state_lock:
             if self.state == ConnState.CLOSED:
                 self.state = ConnState.PENDING
@@ -39,7 +40,7 @@ for a connection on specified port. Overall state change is CLOSED to READY.'''
                 raise ValueError
             assert port_int > 0
         except (ValueError, AssertionError) as e:
-            print(str(e))
+            dg.print(str(e))
             self.disconnect_internal()
             raise ReceiverError('Invalid value for port')
         self.port = port_int
@@ -48,18 +49,18 @@ for a connection on specified port. Overall state change is CLOSED to READY.'''
             self.socket = TcpSocket(self.port)
             self.socket.set_max_recv_bytes(1024)
         except TcpSocketError as e:
-            print(str(e))
+            dg.print(str(e))
             self.disconnect_internal()
             raise ReceiverError('Error creating TcpSocket object')
         try:
             self.socket.wait_for_connection();
         except TcpSocketError as e:
-            print(str(e))
+            dg.print(str(e))
             self.disconnect_internal()
             raise ReceiverError('Error waiting for connection.')
         with self.state_lock:
             self.state = ConnState.READY
-        print("{}: connected.".format(self.__class__.__name__))
+        dg.print("{}: connected.".format(self.__class__.__name__))
 
     @abstractmethod
     def store_received(self,recvd_list):
@@ -90,14 +91,14 @@ unexpectedly terminates.'''
                 self.run_on_connection_interrupted()
                 break
             if current_state != ConnState.RUNNING:
-                print('Invalid value of current_state')
+                dg.print('Invalid value of current_state')
                 self.disconnect_internal()
                 self.run_on_connection_interrupted()
                 break
             try:
                 data = self.socket.read()
             except TcpSocketError as e:
-                print(str(e))
+                dg.print(str(e))
                 self.disconnect_internal()
                 self.run_on_connection_interrupted()
                 break
@@ -108,14 +109,14 @@ unexpectedly terminates.'''
             data_arr = data.split(',')
             reply = self.store_received(data_arr)
             if reply is None:
-                print("{}: invalid values received".format(self.__class__.__name__))
+                dg.print("{}: invalid values received".format(self.__class__.__name__))
                 self.disconnect_internal()
                 self.run_on_connection_interrupted()
                 break
             try:
                 self.socket.reply(reply)
             except TcpSocketError as e:
-                print(str(e))
+                dg.print(str(e))
                 self.disconnect_internal()
                 self.run_on_connection_interrupted()
                 break
@@ -134,13 +135,13 @@ unexpectedly terminates.'''
         with self.state_lock:
             if self.state == ConnState.CLOSED:
                 return
-        print("{}: disconnecting...".format(self.__class__.__name__))
+        dg.print("{}: disconnecting...".format(self.__class__.__name__))
         with self.state_lock:
             self.state = ConnState.CLOSED
         if self.socket is not None:
             self.socket.close()
             self.socket = None
-        print("{}: disconnected.".format(self.__class__.__name__))
+        dg.print("{}: disconnected.".format(self.__class__.__name__))
 
     def disconnect(self):
         '''Externally set connection state to a requested close to
