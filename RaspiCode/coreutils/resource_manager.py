@@ -65,7 +65,9 @@ class ResourceManager:
                 self.resources_status[typename] = count + 1
                 if self.resources_status[typename] == 1:
                     if resource.shared_init:
+                        print("Shared resource {} initialising...".format(typename))
                         resource.shared_init()
+                        print("Shared resource {} initialised".format(typename))
                 print("Resource Manager: {} was acquired".format(typename))
                 return resource
             else:
@@ -82,17 +84,20 @@ class ResourceManager:
             if resource.policy == rsc.Policy.UNIQUE:
                 if self.resources_status[typename] == Status.ACQUIRED:
                     self.resources_status[typename] = Status.FREE
-                    print("Resource Manager: {} was released".format(typename))
+                    print("Resource Manager: {} was released.".format(typename))
                 else:
                     raise ResourceError('Cannot release {}: resource was already free'.format(typename))
             elif resource.policy == rsc.Policy.SHARED:
                 count = self.resources_status[typename]
                 self.resources_status[typename] = count - 1
+                print("Resource Manager: {} was released.".format(typename))                
                 if self.resources_status[typename] < 0:
                     raise ResourceError('Shared resource count for {} is less than 0.'.format(typename))
                 if self.resources_status[typename] == 0:
                     if resource.shared_deinit:
+                        print("Shared resource {} deinitialising...".format(typename))                        
                         resource.shared_deinit()
+                        print("Shared resource {} deinitialised".format(typename))
         else:
             raise ResourceError('Resource "{}" not found'.format(typename))
                         

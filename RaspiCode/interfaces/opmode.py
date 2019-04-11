@@ -119,36 +119,37 @@ file. Initialise them to register them and add to opmodes_list.'''
             print('WARNING: Operational mode name {} already registered. Skipping...'.format(name))
             return
         type(self).opmodes_list[name] = self
+        self.name = name
 
     def before_start_call(self):
         '''Call before the opmode's start() is executed.'''
         with self.opmode_lock:
             if not self.is_stopped():
-                raise OpModeError('Cannot start {}: mode already active'.format(self.__class__.__name__))
+                raise OpModeError('Cannot start {}: mode already active'.format(self.name))
             self.opmode_state = State.STARTING
-        print("Starting {} mode...".format(self.__class__.__name__))
+        print("Starting {} mode...".format(self.name))
 
     def after_start_call(self):
         '''Call after the opmode's start() is executed.'''
         with self.opmode_lock:
             self.opmode_state = State.RUNNING
-        print("{} mode started.".format(self.__class__.__name__))
+        print("{} mode started.".format(self.name))
 
     def before_stop_call(self):
         '''Call before the opmode's stop() is executed.'''
         with self.opmode_lock:
             if self.is_stopped():
-                raise OpModeError('Cannot stop {}: already stopped'.format(self.__class__.__name__))
+                raise OpModeError('Cannot stop {}: already stopped'.format(self.name))
             elif self.is_stopping():
-                raise OpModeError('Cannot stop {}: busy processing previous stop request.'.format(self.__class__.__name__))
+                raise OpModeError('Cannot stop {}: busy processing previous stop request.'.format(self.name))
             self.opmode_state = State.STOPPING
-        print("Stopping {} mode...".format(self.__class__.__name__))
+        print("Stopping {} mode...".format(self.name))
 
     def after_stop_call(self):
         '''Call after the opmode's stop() is executed.'''
         with self.opmode_lock:
             self.opmode_state = State.STOPPED
-        print("{} mode stopped.".format(self.__class__.__name__))
+        print("{} mode stopped.".format(self.name))
 
     @classmethod
     def get(cls, name):
