@@ -65,12 +65,19 @@ class CameraUser:
             src_height = cfg.cam_config.capture_frame_height()
         else:
             pass
-        op_mode = cfg.overall_config.operation_mode()
-        if op_mode == "RASPBERRYPI" or\
-           op_mode == "RASPBERRYPI_NO_MOTORS":
+        # op_mode = cfg.overall_config.operation_mode()
+        # if op_mode == "RASPBERRYPI" or\
+        #    op_mode == "RASPBERRYPI_NO_MOTORS":
+        #     compressor = 'omxh264enc'
+        #     tune = ' '
+        # elif op_mode == "LAPTOP":
+        #     compressor = 'x264enc'
+        #     tune = ' tune=zerolatency '
+        device = cfg.cam_config.device()
+        if device == 'rpicamsrc':
             compressor = 'omxh264enc'
             tune = ' '
-        elif op_mode == "LAPTOP":
+        elif device == 'v4l2src':
             compressor = 'x264enc'
             tune = ' tune=zerolatency '
         comm = 'appsrc ! videoconvert ! video/x-raw,width='+str(src_width)+',height='+str(src_height)+',framerate='+str(src_framerate)+'/1 ! '+compressor+tune+'! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
@@ -94,14 +101,14 @@ class CameraUser:
         if self.have_camera():
             raise CameraUserError('Already have camera access: cannot reacquire.')
         try:
-            self.camera = mgr.global_resources.get_shared(mgr.Camera.FEED)
+            self.camera = mgr.global_resources.get_shared("Camera")
         except mgr.ResourceError as e:
             print(str(e))
             raise CameraUserError('Could not get access to camera.')
 
     def release_camera(self):
         if self.have_camera():
-            mgr.global_resources.release(mgr.Camera.FEED)
+            mgr.global_resources.release("Camera")
             self.camera = None
         else:
             print ("Warning (camera): release_camera called while not acquired.")

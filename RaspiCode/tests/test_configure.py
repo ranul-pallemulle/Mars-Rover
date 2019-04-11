@@ -90,6 +90,11 @@ class TestConfigure(unittest.TestCase):
         resource = self.testconf.resources_directories()
         self.assertEqual(resource, ['resources/mock_motors.py'])
 
+    def test_camera_device(self):
+        device = self.testCameraConf.device()
+        self.assertTrue(isinstance(device,str))
+        self.assertEqual(device,'v4l2src')
+
     def test_camera_capture_framerate(self):
         framerate = self.testCameraConf.capture_framerate()
         self.assertTrue(isinstance(framerate,int))

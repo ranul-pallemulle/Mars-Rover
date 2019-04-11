@@ -123,6 +123,17 @@ class CameraConfiguration(Configuration):
         val = int(elem_list[0][0].text.strip())
         return val
 
+    def _generic_string_setting(self, name):
+        req = ["{Camera}.{"+name+"}"]
+        elem_list = self.provide_settings(req)
+        if not elem_list:
+            return None
+        val = elem_list[0][0].text.strip()
+        return val
+
+    def device(self):
+        return self._generic_string_setting('device')
+
     def capture_framerate(self):
         return self._generic_integer_setting('capture_framerate')
 

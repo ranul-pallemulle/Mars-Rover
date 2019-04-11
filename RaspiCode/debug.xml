@@ -11,6 +11,7 @@
   <!-- <IP_ADDRESS> 10.42.0.69 </IP_ADDRESS> -->
 
   <CAMERA>
+    <DEVICE> rpicamsrc </DEVICE>
     <CAPTURE_FRAMERATE> 60 </CAPTURE_FRAMERATE>
     <CAPTURE_FRAME_WIDTH> 512 </CAPTURE_FRAME_WIDTH>
     <CAPTURE_FRAME_HEIGHT> 320 </CAPTURE_FRAME_HEIGHT>
@@ -57,7 +58,8 @@
   <OPMODES_DIRECTORIES>
     RaspiCode/joystick,
     RaspiCode/robotic_arm,
-    RaspiCode/dummy_opmode
+    RaspiCode/dummy_opmode,
+    RaspiCode/camera_feed
   </OPMODES_DIRECTORIES>
 
   <RESOURCES_DIRECTORIES>
