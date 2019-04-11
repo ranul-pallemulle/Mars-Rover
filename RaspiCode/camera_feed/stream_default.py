@@ -1,26 +1,25 @@
 from interfaces.cam_user import CameraUser, CameraUserError
+from interfaces.opmode import OpMode, OpModeError
 
-class DefaultStream(CameraUser):
+class DefaultStream(CameraUser, OpMode):
 
     def __init__(self):
         CameraUser.__init__(self)
+        OpMode.__init__(self)
 
-    def is_running(self):
-        return self.streaming
+        self.register_name("Stream")
 
-    def start(self):
-        print("Starting simple camera stream mode...")
+    def start(self, args):
         self.acquire_camera()
         if not self.have_camera():
-            self.stop()
-            return
+            self.stop(None)
+            raise OpModeError(str(e))
         self.begin_stream()
-        print("Simple camera stream started.")
 
-    def stop(self):
-        if self.is_running():
-            print("Stopping simple camera stream mode...")
-            self.end_stream()
-            if self.have_camera():
-                self.release_camera()
-            print("Stopped simple camera stream mode.")
+    def stop(self, args):
+        self.end_stream()
+        if self.have_camera():
+            self.release_camera()
+
+    def submode_command(self, args):
+        print('Stream mode does not take submode commands.')

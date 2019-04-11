@@ -94,6 +94,11 @@ class TestConfigure(unittest.TestCase):
         main_ip = self.testconf.main_ip()
         self.assertEqual(main_ip, '172.24.1.1')
 
+    def test_camera_device(self):
+        device = self.testCameraConf.device()
+        self.assertTrue(isinstance(device,str))
+        self.assertEqual(device,'v4l2src')
+
     def test_camera_capture_framerate(self):
         framerate = self.testCameraConf.capture_framerate()
         self.assertTrue(isinstance(framerate,int))
