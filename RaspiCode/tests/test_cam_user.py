@@ -29,7 +29,7 @@ class TestCamUser(unittest.TestCase):
         self.assertIsNone(self.testImpl.camera)
         self.mock_mgr.get_shared.return_value = Mock()
         self.testImpl.acquire_camera()
-        self.mock_mgr.get_shared.assert_called_with(mgr.Camera.FEED)
+        self.mock_mgr.get_shared.assert_called_with("Camera")
         self.assertIsNotNone(self.testImpl.camera)
 
         self.setUp()
@@ -45,7 +45,7 @@ class TestCamUser(unittest.TestCase):
     def test_release_camera(self):
         self.testImpl.camera = Mock()
         self.testImpl.release_camera()
-        self.mock_mgr.release.assert_called_with(mgr.Camera.FEED)
+        self.mock_mgr.release.assert_called_with("Camera")
         self.assertIsNone(self.testImpl.camera)
 
     def test_have_acquired(self):
@@ -58,18 +58,16 @@ class TestCamUser(unittest.TestCase):
     @patch('interfaces.cam_user.cv2')
     @patch('interfaces.cam_user.cfg')
     def test_begin_stream_none_source(self, mock_cfg, mock_cv2, mock_thread):
-        mock_cfg.global_config.ip_address.return_value = '192.168.1.1'
-        mock_cfg.global_config.operation_mode.return_value = 'LAPTOP'
-        mock_camconfig = Mock()
-        mock_camconfig.stream_port.return_value = 1000
-        mock_camconfig.stream_framerate.return_value = 10
-        mock_camconfig.stream_frame_width.return_value = 5000
-        mock_camconfig.stream_frame_height.return_value = 2500
-        mock_camconfig.capture_framerate.return_value = 10
-        mock_camconfig.capture_frame_width.return_value = 5000
-        mock_camconfig.capture_frame_height.return_value = 2500
-        mock_cfg.CameraConfiguration.return_value = mock_camconfig
-        comm = 'appsrc ! videoconvert ! video/x-raw,width=5000,height=2500,framerate=10/1 ! x264enc tune=zerolatency speed-preset=ultrafast bitrate=8000 ! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host=192.168.1.1 port=1000 sync=false'
+        mock_cfg.overall_config.ip_address.return_value = '192.168.1.1'
+        mock_cfg.cam_config.device.return_value = 'v4l2src'
+        mock_cfg.cam_config.stream_port.return_value = 1000
+        mock_cfg.cam_config.stream_framerate.return_value = 10
+        mock_cfg.cam_config.stream_frame_width.return_value = 5000
+        mock_cfg.cam_config.stream_frame_height.return_value = 2500
+        mock_cfg.cam_config.capture_framerate.return_value = 10
+        mock_cfg.cam_config.capture_frame_width.return_value = 5000
+        mock_cfg.cam_config.capture_frame_height.return_value = 2500
+        comm = 'appsrc ! videoconvert ! video/x-raw,width=5000,height=2500,framerate=10/1 ! x264enc tune=zerolatency ! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host=192.168.1.1 port=1000 sync=false'
         mock_thread_retval = Mock()
         mock_thread.return_value = mock_thread_retval
         self.testImpl.camera = Mock()

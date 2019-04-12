@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, Mock
+from resources.resource import Resource, ResourceRawError, Policy
 import resources.camera as camera
 import coreutils.configure as cfg
 import time
@@ -17,6 +18,8 @@ class TestCamera(unittest.TestCase):
         mock_cfg.cam_config = cfg.CameraConfiguration('tests/testsettings.xml')
         testcam2 = camera.Camera()
         self.assertEqual(testcam2.active, False)
+        self.assertEqual(testcam2.policy, Policy.SHARED)
+        self.assertEqual(testcam2.name, "Camera")
         # op_mode = cfg.global_config.operation_mode()
         # if op_mode == "LAPTOP":
             # self.assertEqual(testcam2.framerate, 30)
