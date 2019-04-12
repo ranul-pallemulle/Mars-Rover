@@ -70,6 +70,7 @@ policy.
         else:
             dg.print('WARNING: Resource access policy for resource {} not specified. Skipping...'.format(name))
             return
+        self.name = name
 
     @classmethod
     def get(cls, name):
