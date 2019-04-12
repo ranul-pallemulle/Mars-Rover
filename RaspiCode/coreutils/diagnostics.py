@@ -17,9 +17,9 @@ class Diagnostics:
     '''Sending diagnostic messages back to a remote controller.'''
     buf = deque(maxlen = 20)    # buffer of unsent messages
     state_lock = Lock()
+    state = DiagState.CLOSED
     @classmethod
     def initialise(cls):
-        cls.state = DiagState.CLOSED
         enabled = cfg.overall_config.diagnostics_enabled()
         if not enabled:
             return
@@ -33,7 +33,7 @@ class Diagnostics:
             cls.socket = TcpSocket(port)
             cls.socket.set_max_recv_bytes(1024)
         except TcpSocketError as e:
-            raise DiagnosticError(str(e))
+            raise DiagnosticsError(str(e))
         cls.print("Waiting for diagnostics connection...")
         with cls.state_lock:
             cls.state = DiagState.PENDING

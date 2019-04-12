@@ -99,6 +99,7 @@ file. Initialise them to register them and add to opmodes_list.'''
 
     def __init__(self):
         ''' Wrap the start and stop functions. Initialise locks.'''
+        self.name = ''          # initialise registered name
         self.opmode_state = State.STOPPED
         self.opmode_lock = RLock()
         self.start_lock = Lock()

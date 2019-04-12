@@ -5,7 +5,7 @@
   <!-- <MODE> RASPBERRYPI_NO_MOTORS </MODE> -->
 
   <DIAGNOSTICS>
-    <STATE> Enabled </STATE>
+    <STATE> Disabled </STATE>
     <PORT> 5570 </PORT>
   </DIAGNOSTICS>
   
