@@ -132,7 +132,11 @@ class CameraConfiguration(Configuration):
         return val
 
     def device(self):
-        return self._generic_string_setting('device')
+        dev = self._generic_string_setting('device')
+        if dev == 'rpicamsrc' or dev == 'v4l2src' or dev == 'avfvideosrc':
+            return dev
+        raise ConfigurationError("Error in camera settings: invalid device specified, can only be 'rpicamsrc','v4l2src' or 'avfvideosrc'.")
+           
 
     def capture_framerate(self):
         return self._generic_integer_setting('capture_framerate')

@@ -65,14 +65,6 @@ class CameraUser:
             src_height = cfg.cam_config.capture_frame_height()
         else:
             pass
-        # op_mode = cfg.overall_config.operation_mode()
-        # if op_mode == "RASPBERRYPI" or\
-        #    op_mode == "RASPBERRYPI_NO_MOTORS":
-        #     compressor = 'omxh264enc'
-        #     tune = ' '
-        # elif op_mode == "LAPTOP":
-        #     compressor = 'x264enc'
-        #     tune = ' tune=zerolatency '
         device = cfg.cam_config.device()
         if device == 'rpicamsrc':
             compressor = 'omxh264enc'
