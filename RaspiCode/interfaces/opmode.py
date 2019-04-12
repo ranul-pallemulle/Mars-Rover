@@ -3,6 +3,7 @@ from threading import RLock, Lock
 from enum import Enum
 import importlib
 import os
+from coreutils.diagnostics import Diagnostics as dg
 import coreutils.configure as cfg
 
 class State(Enum):
@@ -71,10 +72,10 @@ file. Initialise them to register them and add to opmodes_list.'''
         except cfg.ConfigurationError as e:
             raise OpModeError(str(e))
         if not dir_list:
-            print("WARNING: no operational mode directories specified.")
+            dg.print("WARNING: no operational mode directories specified.")
         for folder in dir_list:
             if not folder:
-                print("WARNING: no operational modes found.")
+                dg.print("WARNING: no operational modes found.")
                 return
             if folder.endswith('.py'):
                 folder = folder.split('.py')[0]
@@ -98,6 +99,7 @@ file. Initialise them to register them and add to opmodes_list.'''
 
     def __init__(self):
         ''' Wrap the start and stop functions. Initialise locks.'''
+        self.name = ''          # initialise registered name
         self.opmode_state = State.STOPPED
         self.opmode_lock = RLock()
         self.start_lock = Lock()
@@ -116,7 +118,7 @@ file. Initialise them to register them and add to opmodes_list.'''
     def register_name(self, name):
         '''Store opmode instance in opmode_list.'''
         if name in type(self).opmodes_list:
-            print('WARNING: Operational mode name {} already registered. Skipping...'.format(name))
+            dg.print('WARNING: Operational mode name {} already registered. Skipping...'.format(name))
             return
         type(self).opmodes_list[name] = self
         self.name = name
@@ -127,13 +129,13 @@ file. Initialise them to register them and add to opmodes_list.'''
             if not self.is_stopped():
                 raise OpModeError('Cannot start {}: mode already active'.format(self.name))
             self.opmode_state = State.STARTING
-        print("Starting {} mode...".format(self.name))
+        dg.print("Starting {} mode...".format(self.name))
 
     def after_start_call(self):
         '''Call after the opmode's start() is executed.'''
         with self.opmode_lock:
             self.opmode_state = State.RUNNING
-        print("{} mode started.".format(self.name))
+        dg.print("{} mode started.".format(self.name))
 
     def before_stop_call(self):
         '''Call before the opmode's stop() is executed.'''
@@ -143,13 +145,13 @@ file. Initialise them to register them and add to opmodes_list.'''
             elif self.is_stopping():
                 raise OpModeError('Cannot stop {}: busy processing previous stop request.'.format(self.name))
             self.opmode_state = State.STOPPING
-        print("Stopping {} mode...".format(self.name))
+        dg.print("Stopping {} mode...".format(self.name))
 
     def after_stop_call(self):
         '''Call after the opmode's stop() is executed.'''
         with self.opmode_lock:
             self.opmode_state = State.STOPPED
-        print("{} mode stopped.".format(self.name))
+        dg.print("{} mode stopped.".format(self.name))
 
     @classmethod
     def get(cls, name):

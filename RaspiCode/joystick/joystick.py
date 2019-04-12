@@ -1,6 +1,7 @@
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.actuator import Actuator, ActuatorError
 from interfaces.opmode import OpMode, OpModeError
+from coreutils.diagnostics import Diagnostics as dg
 import coreutils.resource_manager as mgr
 
 class Joystick(Receiver, Actuator, OpMode):
@@ -25,7 +26,7 @@ class Joystick(Receiver, Actuator, OpMode):
             x = int(recvd_list[0])
             y = int(recvd_list[1])
         except (ValueError, IndexError) as e:
-            print(str(e))
+            dg.print(str(e))
             return None
         else:
             # all values must be in the right range
@@ -80,7 +81,7 @@ motors so we don't need to query motor_set.'''
 
     def submode_command(self, args):
         '''Implementation of OpMode abstract method submode_command(args). Takes mode-specific commands.'''
-        print('Joystick mode does not take submode commands.')
+        dg.print('Joystick mode does not take submode commands.')
 
     def run_on_connection_interrupted(self):
         '''Overriden from Receiver. Runs if an active connection to remote is interrupted.'''

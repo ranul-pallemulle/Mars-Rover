@@ -46,7 +46,7 @@ using specified settings file.
         terminate.'''
         mock_opmode.opmodes_initialise.side_effect = start_rover.OpModeError
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py','5560'])
+            start_rover.main(['start_rover.py','5560','debug.xml'])
         mock_opmode.opmodes_initialise.assert_called_with()
 
     @patch('start_rover.mgr.global_resources')
@@ -56,7 +56,7 @@ using specified settings file.
         terminate.'''
         mock_mgr.initialise.side_effect = start_rover.mgr.ResourceError
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py', '5560'])
+            start_rover.main(['start_rover.py', '5560', 'debug.xml'])
         mock_mgr.initialise.assert_called_with()
 
     @patch('start_rover.TcpSocket')

@@ -1,6 +1,7 @@
 import sys
 import time
 import coreutils.configure as cfg
+from coreutils.diagnostics import Diagnostics as dg
 from resources.resource import Resource, Policy
 import RPi.GPIO as io
 
@@ -201,7 +202,7 @@ class ArmMotors(Resource):
         self.angle_middle = values[2]
         self.angle_bottom = values[3]
         
-        print("arm motors got values: {}, {}, {},{}".format(values[0], values[1], values[2],
+        dg.print("arm motors got values: {}, {}, {},{}".format(values[0], values[1], values[2],
               values[3]))
         
         self._set_angle()
@@ -223,19 +224,19 @@ class ArmMotors(Resource):
         # Good angle range is 30 - 80 degrees
         if self.angle_grab > grab_lim:
             self.angle_grab = grab_lim
-            print('Grabbing servo angle out of range, limit = {}'.format(grab_lim))
+            dg.print('Grabbing servo angle out of range, limit = {}'.format(grab_lim))
                             
         if self.angle_top > top_lim:
             self.angle_top = top_lim
-            print('Top servo angle out of range, limit = {}'.format(top_lim))
+            dg.print('Top servo angle out of range, limit = {}'.format(top_lim))
             
         if self.angle_middle > middle_lim:
             self.angle_middle = middle_lim
-            print('Middle servo angle out of range, limit = {}'.format(middle_lim))
+            dg.print('Middle servo angle out of range, limit = {}'.format(middle_lim))
 
         if self.angle_bottom > bottom_lim:
             self.angle_bottom = bottom_lim
-            print('Bottom servo angle out of range, limit = {}'.format(bottom_lim))
+            dg.print('Bottom servo angle out of range, limit = {}'.format(bottom_lim))
 
         self.servo_grab.angle = self.angle_grab
         self.servo_middle.angle = self.angle_middle
