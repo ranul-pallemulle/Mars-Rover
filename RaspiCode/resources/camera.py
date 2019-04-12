@@ -1,5 +1,5 @@
 import coreutils.configure as cfg
-from resources.resource import Resource, Policy
+from resources.resource import Resource, ResourceRawError, Policy
 import cv2
 from threading import Thread
 from sys import platform
@@ -12,11 +12,13 @@ class Camera(Resource):
         Resource.__init__(self)
         self.policy = Policy.SHARED
         self.register_name("Camera")
-
-        self.source = cfg.cam_config.device()
-        self.framerate = cfg.cam_config.capture_framerate()
-        self.frame_width=cfg.cam_config.capture_frame_width()
-        self.frame_height=cfg.cam_config.capture_frame_height()
+        try:
+            self.source = cfg.cam_config.device()
+            self.framerate = cfg.cam_config.capture_framerate()
+            self.frame_width=cfg.cam_config.capture_frame_width()
+            self.frame_height=cfg.cam_config.capture_frame_height()
+        except cfg.ConfigurationError as e:
+            raise ResourceRawError(str(e))
         self.gst_comm = None
         self.cap = None
         self.active = False

@@ -21,7 +21,7 @@ class CameraUser:
 
     def _stream(self):
         if self.stream_writer is None:
-            raise CamerUserError('Stream writer not initialised.')
+            raise CameraUserError('Stream writer not initialised.')
         if not self.have_camera():
             raise CameraUserError('Camera not acquired: cannot stream.')
 

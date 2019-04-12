@@ -97,11 +97,54 @@ class TestCamUser(unittest.TestCase):
         with self.assertRaises(cam_user.CameraUserError):
             self.testImpl.end_stream()
 
-    # def test_stream_not_streaming(self):
+    def test_stream_error_none_writer(self):
+        self.testImpl.stream_writer = None
+        with self.assertRaises(cam_user.CameraUserError):
+            self.testImpl._stream()
+
+    def test_stream_error_no_cam(self):
+        have_cam_mock = Mock()
+        have_cam_mock.return_value = False
+        self.testImpl.have_camera = have_cam_mock
+        with self.assertRaises(cam_user.CameraUserError):
+            self.testImpl._stream()
+
+    def test_stream_error_not_active(self):
+        is_active_mock = Mock()
+        is_active_mock.is_active.return_value = False
+        self.testImpl.camera = Mock()
+        self.testImpl.camera.is_active = is_active_mock
+        with self.assertRaises(cam_user.CameraUserError):
+            self.testImpl._stream()
+
+    # def test_stream_error_get_cam_frame(self):
+    #     get_frame = Mock()
+    #     get_frame.side_effect = cam_user.CameraUserError
     #     self.testImpl.stream_writer = Mock()
+    #     self.testImpl.have_camera = Mock()
+    #     self.testImpl.have_camera.return_value = True
     #     self.testImpl.camera = Mock()
-    #     self.assertFalse(self.testImpl.streaming)
-        
+    #     self.testImpl.camera.is_active.return_value = True
+    #     self.testImpl.get_camera_frame = get_frame
+    #     self.testImpl._stream()
+    #     self.testImpl.get_camera_frame.assert_called_with()
+    #     self.testImpl.stream_writer.write.assert_not_called()
+
+    # def test_stream_good(self):
+    #     get_frame = Mock()
+    #     frame = Mock()
+    #     get_frame.return_value = frame
+    #     self.testImpl.stream_writer = Mock()
+    #     self.testImpl.have_camera = Mock()
+    #     self.testImpl.have_camera.return_value = True
+    #     self.testImpl.camera = Mock()
+    #     self.testImpl.camera.is_active.return_value = True
+    #     self.testImpl.get_camera_frame = get_frame
+    #     self.testImpl._stream()
+    #     self.testImpl.get_camera_frame.assert_called_with()
+    #     self.testImpl.stream_writer.write.assert_called_with(frame)
+
+            
     def test_start_camera_capture(self):
         pass
 
