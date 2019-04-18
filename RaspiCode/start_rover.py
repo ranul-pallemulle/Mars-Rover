@@ -2,6 +2,7 @@ import sys
 from coreutils.diagnostics import Diagnostics as dg
 import coreutils.resource_manager as mgr
 import coreutils.configure as cfg
+import coreutils.offload as offload
 from interfaces.opmode import OpMode, OpModeError
 from coreutils.parser import parse_entry, CommandPrefixes, CommandError
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
@@ -9,14 +10,21 @@ import coreutils.launcher as launcher
 from coreutils.launcher import LauncherError
 from threading import Thread
 
+usage_str = "Usage: python3 start_rover.py <port> \n       \
+python3 start_rover.py <port> <settings> \n       \
+python3 start_rover.py --as-unit <unitname> \n       \
+python3 start_rover.py --as-unit <unitname> <settings> \n"
+
 def main(argv):
     '''Rover operation starts here! Wait for a connection from a remote
     computer, interpret commands received and take appropriate action.
     '''
-    if len(argv) != 2 and len(argv) != 3:
-        dg.print("Usage: python3 start_rover.py <port> \n       \
-python3 start_rover.py <port> <settings>")
+    if len(argv) != 2 and len(argv) != 3 and len(argv) != 4:
+        print(usage_str)
         sys.exit(1)
+        
+    if argv[1] == '--as-unit':  # running in unit mode
+        process_as_unit(argv)
         
     try:
         port = int(argv[1])     # port to receive commands on
@@ -143,6 +151,50 @@ def cleanup():
     launcher.release_all()
     # dg.close()
 
+
+def process_as_unit(argv):
+    if len(argv) != 3 and len(argv) != 4:
+        dg.print(usage_str)
+        sys.exit(1)
+
+    unitname = argv[2]
+
+    try:
+        if len(argv) == 4:
+            cfg.Configuration.settings_file(argv[3])
+        else:
+            cfg.Configuration.settings_file()
+    except cfg.ConfigurationError as e:
+        dg.print(str(e) + "\nExiting...")
+        sys.exit(1)
+
+    try:
+        offload.register_name(unitname)
+    except offload.OffloadError as e:
+        dg.print(str(e) + "\nExiting...")
+        sys.exit(1)
+    print("Running as unit with name {}".format(unitname))
+    
+    try:
+        OpMode.opmodes_initialise() # check for available operational modes
+    except OpModeError as e:
+        dg.print(str(e) + "\nExiting...")
+        sys.exit(1)
+    if OpMode.get_all():        # list of registered modes is not empty
+        dg.print("Found operational modes: ")
+    for name in OpMode.get_all_names(): # print registered names of all modes
+        dg.print('  '+name)
         
+    try:
+        mgr.global_resources.initialise() # get all resources ready
+                                          # (motors, camera, etc)
+    except mgr.ResourceError as e:
+        dg.print(str(e) + "\nExiting...")
+        sys.exit(1)        
+
+    while True:
+        pass
+
+    
 if __name__ == '__main__':
     main(sys.argv)
