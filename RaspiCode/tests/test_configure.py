@@ -88,3 +88,7 @@ class TestConfigure(unittest.TestCase):
     def test_resources_directories(self):
         resource = self.testconf.resources_directories()
         self.assertEqual(resource, ['resources/mock_motors.py'])
+
+    def test_main_ip(self):
+        main_ip = self.testconf.main_ip()
+        self.assertEqual(main_ip, '172.24.1.1')

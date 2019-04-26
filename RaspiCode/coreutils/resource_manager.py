@@ -31,12 +31,28 @@ class ResourceManager:
         for name in resource_names:
             dg.print('  '+name)
         for name in resource_names:
+            # policy = rsc.Resource.get(name).get_policy()
             policy = rsc.Resource.get(name).policy
+            # print("POLICY FOR RESOURCE {} == {}".format(name,policy))
             if policy == rsc.Policy.UNIQUE:
                 self.resources_status[name] = Status.FREE # initially free
             elif policy == rsc.Policy.SHARED:
                 self.resources_status[name] = 0 # use count
-            
+
+    def load_remote_resources(self):
+        resource_names = rsc.Resource.get_all_names()
+        for name in resource_names:
+            if name in self.resources_status.keys():
+                continue
+            print("Found remote resource: "+name)
+            resource = rsc.Resource.get(name)
+            if str(resource.policy) == str(rsc.Policy.UNIQUE):
+                resource.policy = rsc.Policy.UNIQUE
+                self.resources_status[name] = Status.FREE
+            elif str(resource.policy) == str(rsc.Policy.UNIQUE):
+                resource.policy = rsc.Policy.SHARED
+                self.resources_status[name] = 0
+                
 
     def get_unique(self, typename):
         '''Provide unique access to a resource. Return None if already acquired.'''

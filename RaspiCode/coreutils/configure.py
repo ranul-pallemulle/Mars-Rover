@@ -109,6 +109,7 @@ class MotorConfiguration(Configuration):
 class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
         Configuration.__init__(self, name)
+        self.running_as_unit = False     # default
 
     def opmodes_directories(self):
         dir_list_str = self.top_level_element_value("OPMODES_DIRECTORIES")
@@ -155,5 +156,11 @@ class OverallConfiguration(Configuration):
         if port < 1000:
             raise ConfigurationError("Error in Diagnostics settings: port number needs to be larger than 1000 to prevent conflict with reserved ports.")
         return port
-        
+
+    def main_ip(self):
+        ip_addr = self.top_level_element_value("MAIN_IP")
+        if ip_addr is None:
+            raise ConfigurationError("No settings found for main unit ip address.")
+        ip_addr = ip_addr.replace(' ','')
+        return ip_addr
 
