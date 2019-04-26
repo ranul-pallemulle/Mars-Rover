@@ -26,6 +26,7 @@ def main(argv):
         
     if argv[1] == '--as-unit':  # running in unit mode
         process_as_unit(argv)
+        return
         
     # Proceed as main unit if --as-unit not specified
     try:
@@ -173,9 +174,6 @@ def process_as_unit(argv):
         dg.print(str(e) + "\nExiting...")
         sys.exit(1)        
 
-    while True:
-        pass
 
-    
 if __name__ == '__main__':
     main(sys.argv)

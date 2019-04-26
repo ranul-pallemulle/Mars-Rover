@@ -7,8 +7,6 @@ import coreutils.unit as unit
 import rpyc
 from threading import Thread
 
-port_offs = 0
-
 class Policy(Enum):
     UNIQUE = 0
     SHARED = 1
@@ -23,7 +21,15 @@ etc) should inherit from this class and register themselves to be
 available to the resource manager and (hence) to the rest of the program.
     '''
 
+    port_offs = 0
     resource_list = dict()      # resource instances stored under their registered names.
+    servers = []
+
+    def on_connect(self, conn):
+        dg.print("Got connection on {}".format(self.__class__.__name__))
+
+    def on_disconnect(self, conn):
+        dg.print("Got disconnect on {}".format(self.__class__.__name__))
 
     @classmethod
     def resources_initialise(cls):
@@ -62,11 +68,15 @@ file. Initialise them to register them and add to resource_list.'''
     def __init__(self):
         self.policy = None
 
-    def exposed_test(self):
-        pass
-
     def _rpyc_setattr(self, name, value):
         return setattr(self, name, value)
+    
+    @classmethod
+    def cleanup_servers(cls):
+        dg.print("server list length: {}".format(len(cls.servers)))
+        while cls.servers:
+            thread = cls.servers.pop()
+            thread.close()
 
     def register_name(self, name):
         '''Store resource instance in the resource_list. The key is the
@@ -74,15 +84,18 @@ provided name. The policy refers to whether access to it should be
 unique or shared. See resource manager for more information on
 policy. 
         '''
-        global port_offs
         if cfg.overall_config.running_as_unit:
-            thisserver = rpyc.utils.server.ThreadedServer(self, port=19200+port_offs, protocol_config={
+            start_port = 19200  # port numbers for use with resources.
+            port_offs = self.__class__.__bases__[0].port_offs
+            thisserver = rpyc.utils.server.ThreadedServer(self, port=start_port+port_offs, protocol_config={
                 'allow_public_attrs': True,
+                'allow_pickle': True,
             })
             thread = Thread(target=thisserver.start, args=[])
             thread.start()
-            unit.main_conn.root.register_resource(name, 19200+port_offs)
-            port_offs += 2
+            self.__class__.__bases__[0].servers.append(thisserver)
+            unit.main_conn.root.register_resource(name, start_port+port_offs)
+            self.__class__.__bases__[0].port_offs += 1
             return
         
         if name in type(self).resource_list:

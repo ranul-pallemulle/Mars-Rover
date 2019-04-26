@@ -33,7 +33,7 @@ class ResourceManager:
         for name in resource_names:
             # policy = rsc.Resource.get(name).get_policy()
             policy = rsc.Resource.get(name).policy
-            # print("POLICY FOR RESOURCE {} == {}".format(name,policy))
+            # dg.print("POLICY FOR RESOURCE {} == {}".format(name,policy))
             if policy == rsc.Policy.UNIQUE:
                 self.resources_status[name] = Status.FREE # initially free
             elif policy == rsc.Policy.SHARED:
@@ -44,12 +44,12 @@ class ResourceManager:
         for name in resource_names:
             if name in self.resources_status.keys():
                 continue
-            print("Found remote resource: "+name)
+            dg.print("Found remote resource: "+name)
             resource = rsc.Resource.get(name)
             if str(resource.policy) == str(rsc.Policy.UNIQUE):
                 resource.policy = rsc.Policy.UNIQUE
                 self.resources_status[name] = Status.FREE
-            elif str(resource.policy) == str(rsc.Policy.UNIQUE):
+            elif str(resource.policy) == str(rsc.Policy.SHARED):
                 resource.policy = rsc.Policy.SHARED
                 self.resources_status[name] = 0
                 
@@ -57,7 +57,7 @@ class ResourceManager:
     def get_unique(self, typename):
         '''Provide unique access to a resource. Return None if already acquired.'''
         if typename in self.resources_status.keys():
-            # print("Refcount for {}: {}".format(typename,sys.getrefcount(rsc.Resource.get(typename))))            
+            # dg.print("Refcount for {}: {}".format(typename,sys.getrefcount(rsc.Resource.get(typename))))            
             resource = rsc.Resource.get(typename)
             if resource.policy == rsc.Policy.UNIQUE:
                 if self.resources_status[typename] == Status.FREE:
@@ -74,7 +74,7 @@ class ResourceManager:
     def get_shared(self, typename):
         '''Provide shared access to a resource.'''
         if typename in self.resources_status.keys():
-            # print("Refcount for {}: {}".format(typename,sys.getrefcount(resource)))            
+            # dg.print("Refcount for {}: {}".format(typename,sys.getrefcount(resource)))            
             resource = rsc.Resource.get(typename)
             if resource.policy == rsc.Policy.SHARED:
                 count = self.resources_status[typename]
@@ -95,8 +95,8 @@ class ResourceManager:
         '''Release ownership of a resource.'''
         if typename in self.resources_status.keys():
             resource = rsc.Resource.get(typename)
-            # print("Refcount for {}: {}".format(typename,sys.getrefcount(rsc.Resource.get(typename))))
-            # print("refererrers: {}".format(gc.get_referrers(rsc.Resource.get(typename))))            
+            # dg.print("Refcount for {}: {}".format(typename,sys.getrefcount(rsc.Resource.get(typename))))
+            # dg.print("refererrers: {}".format(gc.get_referrers(rsc.Resource.get(typename))))            
             if resource.policy == rsc.Policy.UNIQUE:
                 if self.resources_status[typename] == Status.ACQUIRED:
                     self.resources_status[typename] = Status.FREE
