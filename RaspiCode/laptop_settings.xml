@@ -3,7 +3,7 @@
   <MAIN_IP> localhost </MAIN_IP>
 
   <DIAGNOSTICS>
-    <STATE> Enabled </STATE>
+    <STATE> Disabled </STATE>
     <PORT> 5570 </PORT>
   </DIAGNOSTICS>
 

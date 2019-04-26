@@ -1,7 +1,6 @@
 import coreutils.configure as cfg
 from coreutils.diagnostics import Diagnostics as dg
 import coreutils.resource_manager as mgr
-# from coreutils.client_socket import ClientSocket, ClientSocketError
 from functools import wraps
 import rpyc
 from rpyc.utils.server import ThreadedServer, ThreadPoolServer
@@ -17,8 +16,9 @@ main_conn = None
 main_server = None
 
 class MainService(rpyc.Service):
+    unit_list = []
+            
     def on_connect(self, conn):
-        self.unit_list = []
         self.conn = conn
 
     def on_disconnect(self, conn):
@@ -26,7 +26,7 @@ class MainService(rpyc.Service):
 
     def register_unit_name(self, unitname):
         dg.print("Found unit {}".format(unitname))
-        self.unit_list.append(unitname)
+        # self.__class__.unit_list.append(self.conn)
 
     def register_resource(self, resourcename, port):
         if resourcename in rsc.Resource.resource_list:
@@ -38,13 +38,18 @@ class MainService(rpyc.Service):
             mgr.global_resources.load_remote_resources()
         
 
-# class ClientService(rpyc.Service):
-#     def exposed_register_resources(self):
-#         print("Registering resources")
+class ClientService(rpyc.Service):
+    def on_disconnect(self):
+        dg.print("Connection lost - cleaning up...")
+        rsc.Resource.cleanup_servers()n
+        
+    def exposed_cleanup_resources(self):
+        dg.print("cleaning up...")
+        rsc.Resource.cleanup_servers()
 
 def activate_main_unit_services():
     global main_server
-    main_server = ThreadedServer(MainService, port=18861, protocol_config={
+    main_server = ThreadedServer(MainService(), port=18861, protocol_config={
         'allow_public_attrs': True,
     })
     thread = Thread(target=main_server.start, args=[])
@@ -52,7 +57,8 @@ def activate_main_unit_services():
 
 def deactivate_main_unit_services():
     global main_server
-    main_server.close()
+    # MainService.cleanup_remote_resources()
+    main_server.close()    
 
 def register_unit_name(unitname):
     if not cfg.Configuration.ready():
@@ -60,7 +66,7 @@ def register_unit_name(unitname):
     dg.print("Registering unit {}...".format(unitname))
     main_ip = cfg.overall_config.main_ip()
     global main_conn
-    main_conn = rpyc.connect(main_ip, 18861)
+    main_conn = rpyc.connect(main_ip, 18861, service=ClientService)
     dg.print("Found main unit: {}".format(main_conn.root.get_service_name()))
     main_conn.root.register_unit_name(unitname)
     dg.print("Registered.")
