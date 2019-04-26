@@ -2,7 +2,7 @@ import sys
 from coreutils.diagnostics import Diagnostics as dg
 import coreutils.resource_manager as mgr
 import coreutils.configure as cfg
-import coreutils.offload as offload
+import coreutils.unit as unit
 from interfaces.opmode import OpMode, OpModeError
 from coreutils.parser import parse_entry, CommandPrefixes, CommandError
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
@@ -19,13 +19,14 @@ def main(argv):
     '''Rover operation starts here! Wait for a connection from a remote
     computer, interpret commands received and take appropriate action.
     '''
-    if len(argv) != 2 and len(argv) != 3 and len(argv) != 4:
-        print(usage_str)
+    if len(argv) < 2 and len(argv) > 4:
+        dg.print(usage_str)
         sys.exit(1)
         
     if argv[1] == '--as-unit':  # running in unit mode
         process_as_unit(argv)
         
+    # Proceed as main unit if --as-unit not specified
     try:
         port = int(argv[1])     # port to receive commands on
     except ValueError:
@@ -39,8 +40,8 @@ def main(argv):
             cfg.Configuration.settings_file()
     except cfg.ConfigurationError as e: # error related to settings file
         dg.print(str(e) + "\nExiting...")
-        sys.exit(1) # exit with error code
-        
+        sys.exit(1)
+
     try:
         OpMode.opmodes_initialise() # check for available operational modes
     except OpModeError as e:
@@ -59,7 +60,9 @@ def main(argv):
         sys.exit(1) # exit with error code
 
     dg.initialise() # start diagnostics
-    
+
+    unit.activate_main_unit_services()
+        
     # start operation
     while (True):
         dg.print("Waiting for connection...")
@@ -149,8 +152,7 @@ def call_action(arg_list):
 def cleanup():
     '''Run cleaning up functions so that all threads can stop for a clean exit.'''
     launcher.release_all()
-    # dg.close()
-
+    unit.deactivate_main_unit_services()
 
 def process_as_unit(argv):
     if len(argv) != 3 and len(argv) != 4:
@@ -168,12 +170,14 @@ def process_as_unit(argv):
         dg.print(str(e) + "\nExiting...")
         sys.exit(1)
 
+    cfg.overall_config.running_as_unit = True
+
     try:
-        offload.register_name(unitname)
-    except offload.OffloadError as e:
+        unit.register_unit_name(unitname)
+    except unit.UnitError as e:
         dg.print(str(e) + "\nExiting...")
         sys.exit(1)
-    print("Running as unit with name {}".format(unitname))
+    dg.print("Running as unit with name {}".format(unitname))
     
     try:
         OpMode.opmodes_initialise() # check for available operational modes

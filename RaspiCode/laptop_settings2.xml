@@ -1,0 +1,54 @@
+<SETTINGS>
+
+  <MAIN_IP> localhost </MAIN_IP>
+
+  <DIAGNOSTICS>
+    <STATE> Enabled </STATE>
+    <PORT> 5570 </PORT>
+  </DIAGNOSTICS>
+  
+  <MOTORS NAME="Wheels">
+    <MOTOR NAME="Left">
+      <PIN TYPE="PWM"> 13 </PIN>
+      <PIN TYPE="Digital"> 20 </PIN>
+    </MOTOR>
+    <MOTOR NAME="Right">
+      <PIN TYPE="PWM"> 12 </PIN>
+      <PIN TYPE="Digital"> 21 </PIN>
+    </MOTOR>
+  </MOTORS>
+
+  <MOTORS NAME="Arm">
+    <MOTOR NAME="Servo1">
+      <PIN TYPE="PWM"> 22 </PIN>
+      <PIN TYPE="Digital"> 6 </PIN>
+    </MOTOR>
+    <MOTOR NAME="Servo2">
+      <PIN TYPE="PWM"> 23 </PIN>
+      <PIN TYPE="Digital"> 7 </PIN>
+    </MOTOR>
+    <MOTOR NAME="Servo3">
+      <PIN TYPE="PWM"> 24 </PIN>
+      <PIN TYPE="Digital"> 8 </PIN>
+    </MOTOR>
+    <MOTOR NAME="Gripper">
+      <PIN TYPE="PWM"> 25 </PIN>
+      <PIN TYPE="Digital"> 9 </PIN>
+    </MOTOR>
+  </MOTORS>
+
+  <MOTORS NAME="DeployableCamera">
+  </MOTORS>
+
+  <OPMODES_DIRECTORIES>
+    joystick,
+    robotic_arm,
+    dummy_opmode
+  </OPMODES_DIRECTORIES>
+
+  <RESOURCES_DIRECTORIES>
+    <!-- resources/camera.py, -->
+    resources/mock_motors.py
+  </RESOURCES_DIRECTORIES>
+
+</SETTINGS>

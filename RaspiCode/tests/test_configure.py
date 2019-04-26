@@ -78,10 +78,6 @@ class TestConfigure(unittest.TestCase):
         self.assertTrue(isinstance(pin_num, int))
         self.assertEqual(pin_num, 7)
 
-    # def test_hardware_mode(self):
-    #     mode = self.testconf.hardware_mode()
-    #     self.assertEqual(mode, "LAPTOP")
-
     def test_opmodes_directories(self):
         mode = self.testconf.opmodes_directories()
         self.assertEqual(mode, ['joystick', 'robotic_arm'])
@@ -89,6 +85,10 @@ class TestConfigure(unittest.TestCase):
     def test_resources_directories(self):
         resource = self.testconf.resources_directories()
         self.assertEqual(resource, ['resources/mock_motors.py'])
+        
+    def test_main_ip(self):
+        main_ip = self.testconf.main_ip()
+        self.assertEqual(main_ip, '172.24.1.1')        
 
     def test_camera_device(self):
         device = self.testCameraConf.device()
@@ -129,4 +129,4 @@ class TestConfigure(unittest.TestCase):
         frame_height = self.testCameraConf.stream_frame_height()
         self.assertTrue(isinstance(frame_height, int))
         self.assertEqual(frame_height, 480)
-        
+

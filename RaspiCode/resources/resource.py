@@ -3,6 +3,11 @@ import importlib
 import os
 import coreutils.configure as cfg
 from coreutils.diagnostics import Diagnostics as dg
+import coreutils.unit as unit
+import rpyc
+from threading import Thread
+
+port_offs = 0
 
 class Policy(Enum):
     UNIQUE = 0
@@ -12,11 +17,12 @@ class ResourceRawError(Exception):
     '''Exception class raised by Resource.'''
     pass
 
-class Resource:
+class Resource(rpyc.Service):
     '''Base class for all resources. All resources (like motors, camera,
 etc) should inherit from this class and register themselves to be
 available to the resource manager and (hence) to the rest of the program.
     '''
+
     resource_list = dict()      # resource instances stored under their registered names.
 
     @classmethod
@@ -56,12 +62,29 @@ file. Initialise them to register them and add to resource_list.'''
     def __init__(self):
         self.policy = None
 
+    def exposed_test(self):
+        pass
+
+    def _rpyc_setattr(self, name, value):
+        return setattr(self, name, value)
+
     def register_name(self, name):
         '''Store resource instance in the resource_list. The key is the
 provided name. The policy refers to whether access to it should be
 unique or shared. See resource manager for more information on
 policy. 
         '''
+        global port_offs
+        if cfg.overall_config.running_as_unit:
+            thisserver = rpyc.utils.server.ThreadedServer(self, port=19200+port_offs, protocol_config={
+                'allow_public_attrs': True,
+            })
+            thread = Thread(target=thisserver.start, args=[])
+            thread.start()
+            unit.main_conn.root.register_resource(name, 19200+port_offs)
+            port_offs += 2
+            return
+        
         if name in type(self).resource_list:
             dg.print('WARNING: Resource name {} already registered. Skipping...'.format(name))
             return
