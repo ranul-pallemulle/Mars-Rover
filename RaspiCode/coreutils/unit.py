@@ -23,12 +23,17 @@ class MainService(rpyc.Service):
         self.conn = conn
 
     def on_disconnect(self, conn):
-        print("Unit disconnected.")
+        dg.print("Unit disconnected.")
+        unit = self.__class__.unit_list.pop(conn)
+        rsc_list = rsc.Resource.remove_unit_resources(unit)
+        dg.print("The following resources were removed:")        
+        for rsc_name in rsc_list.keys():
+            mgr.global_resources.remove_resource(rsc_name)
+            dg.print("    "+rsc_name)
 
     def register_unit_name(self, unitname):
         dg.print("Found unit {}".format(unitname))
         self.__class__.unit_list[self.conn] = unitname
-        dg.print("unit count: {}".format(len(self.__class__.unit_list)))
 
     def register_resource(self, resourcename, port):
         '''Add remote resource to resource list and have resource manager

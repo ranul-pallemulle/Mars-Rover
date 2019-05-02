@@ -116,7 +116,6 @@ network) then register this resource with the main unit.
             return
         if self.policy is not None:
             self.__class__.__bases__[0].resource_list[name] = self
-            dg.print('ADDED RESOURCE {} to list'.format(name))
         else:
             dg.print('WARNING: Resource access policy for resource {} not \
 specified. Skipping...'.format(name))
@@ -165,6 +164,8 @@ globally.")
     def register_remote_resource(cls, unitname, rscname, proxy_obj):
         '''Executed on the main unit, to register resources located on remote
 units.'''
+        dg.print("Registering remote resource '{}' from unit '{}'"
+        .format(rscname, unitname))
         if rscname in cls.resource_list:
             dg.print("WARNING: Resource name {} already registered. Skipping..."
                      .format(rscname))
@@ -184,23 +185,25 @@ units.'''
 specified. Skipping...'.format(rscname))
             return False
 
+    @classmethod
+    def remove_unit_resources(cls, unitname):
+        if unitname in cls.remote_resource_list:
+            rsc_list = cls.remote_resource_list.pop(unitname)
+            return rsc_list
+        else:
+            raise ResourceRawError("Attempt to remove nonexistant unit's resources")
+
+
 
     @classmethod
     def get(cls, name):
         '''Return the resource instance registered under 'name'.'''
-        dg.print("GET CALLED ON UNIT {}".format(cfg.overall_config.get_unitname()))
-        dg.print("cls name is {}".format(cls.__name__))
-        dg.print("cls list is {}".format(cls.resource_list))
-        dg.print("name to search for is {}".format(name))
         try:
             if name in cls.resource_list.keys():
                 return cls.resource_list[name]
-            dg.print("NAME '{}' NOT IN LOCAL LIST".format(name))
             for unit in cls.remote_resource_list:
-                dg.print("SEARCH REMOTE LIST...")
                 if name in cls.remote_resource_list[unit]:
                     return cls.remote_resource_list[unit][name]
-            dg.print("NAME '{}' NOT IN REMOTE LIST".format(name))
             return None
         except Exception as e:
             raise ResourceRawError(str(e))
@@ -208,7 +211,6 @@ specified. Skipping...'.format(rscname))
     @classmethod
     def get_local_names(cls):
         '''Return a list of names of all registered local resources.'''
-        dg.print("GET_LOCAL_NAMES CALLED ON UNIT {}".format(cfg.overall_config.get_unitname()))
         names_list = []
         for name in cls.resource_list.keys():
             names_list.append(name)
