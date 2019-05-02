@@ -88,3 +88,7 @@ motors so we don't need to query motor_set.'''
         if self.is_running():
             self.stop(None)
 
+    def on_resources_unexp_lost(self):
+        self.actuator_manual_set_released("Wheels")
+        self.stop(None)
+

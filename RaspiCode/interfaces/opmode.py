@@ -192,6 +192,10 @@ file. Initialise them to register them and add to opmodes_list.'''
         '''Instance specific method for handling commands.'''
         pass
 
+    @abstractmethod
+    def on_resources_unexp_lost(self):
+        pass
+
     def is_running(self):
         with self.opmode_lock:
             if self.opmode_state == State.RUNNING:

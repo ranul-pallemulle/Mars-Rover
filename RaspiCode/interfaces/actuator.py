@@ -35,7 +35,7 @@ class Actuator(ABC):
         robotic arm motors.'''
         try:
             with self.list_lock:
-                motor_set = mgr.global_resources.get_unique(motor_type)
+                motor_set = mgr.global_resources.get_unique(self,motor_type)
                 if motor_set is not None:
                     self.motor_list[motor_type] = motor_set
                 else:
@@ -79,7 +79,7 @@ elsewhere.'''
         with self.list_lock:
             if motor_set in self.motor_list:
                 self.motor_list.pop(motor_set)
-                mgr.global_resources.release(motor_set)
+                mgr.global_resources.release(self,motor_set)
                 with self.condition:
                     self.release_was_called = True
                     self.condition.notify()
@@ -96,4 +96,15 @@ elsewhere.'''
                 return True
             else:
                 return False
+
+    def actuator_manual_set_released(self, motor_set):
+        '''Remove a motor set from motor_list without releasing to resource 
+        manager. This is used purely for remote resources which may disconnect
+        unexpectedly and hence they cannot be released to the resource manager
+        as they no longer exist. This exists purely to make have_acquired return
+        false.
+        '''
+        with self.list_lock:
+            if motor_set in self.motor_list:
+                self.motor_list.pop(motor_set)
     

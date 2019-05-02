@@ -1,10 +1,8 @@
 import coreutils.configure as cfg
 from coreutils.diagnostics import Diagnostics as dg
-import coreutils.resource_manager as mgr
 from functools import wraps
 import rpyc
 from rpyc.utils.server import ThreadedServer, ThreadPoolServer
-import resources.resource as rsc
 from threading import Thread
 from socket import socket
 
@@ -23,12 +21,15 @@ class MainService(rpyc.Service):
         self.conn = conn
 
     def on_disconnect(self, conn):
+        import coreutils.resource_manager as mgr
+        import resources.resource as rsc
         dg.print("Unit disconnected.")
         unit = self.__class__.unit_list.pop(conn)
         rsc_list = rsc.Resource.remove_unit_resources(unit)
-        dg.print("The following resources were removed:")        
         for rsc_name in rsc_list.keys():
             mgr.global_resources.remove_resource(rsc_name)
+        dg.print("The following resources were removed:")
+        for rsc_name in rsc_list.keys():
             dg.print("    "+rsc_name)
 
     def register_unit_name(self, unitname):
@@ -38,6 +39,8 @@ class MainService(rpyc.Service):
     def register_resource(self, resourcename, port):
         '''Add remote resource to resource list and have resource manager
 record its access policy.'''
+        import coreutils.resource_manager as mgr
+        import resources.resource as rsc
         cli_ip, _ = socket.getpeername(self.conn._channel.stream.sock)
         rsc_conn = rpyc.connect(cli_ip, port)
         result = rsc.Resource.register_remote_resource(
