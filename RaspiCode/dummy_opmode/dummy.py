@@ -63,3 +63,7 @@ class Dummy(Receiver, Actuator, OpMode):
     def run_on_connection_interrupted(self):
         if self.is_running():
             self.stop(None)
+
+    def on_resources_unexp_lost(self):
+        self.actuator_manual_set_released("Wheels")
+        self.stop(None)

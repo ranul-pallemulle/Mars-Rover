@@ -4,6 +4,7 @@ from enum import Enum
 import resources.resource as rsc
 import coreutils.configure as cfg
 from coreutils.diagnostics import Diagnostics as dg
+from interfaces.opmode import OpMode
 
 class Status(Enum):
     FREE = 0
@@ -16,7 +17,6 @@ class ResourceError(Exception):
 class ResourceManager:
     def __init__(self):
         self.resources_status = dict() # acquisition statuses of resources
-        # TODO : acquisition list
         self.acquisition_list = dict() # key: resource name, value: name of 
                                        # opmode using it
         
@@ -57,13 +57,27 @@ class ResourceManager:
         return False
 
     def remove_resource(self, name):
+        '''Remote unit disconnected - remove any of its resources from the main
+         unit.'''
         if name in self.resources_status.keys():
             self.resources_status.pop(name)
-                
+            if name in self.acquisition_list.keys():
+                obj = self.acquisition_list.pop(name)
+                dg.print("Stopping opmodes using lost resource '"+name+"'...")
+                if isinstance(obj, list):
+                    for name in obj:
+                        acq_opmode = OpMode.opmodes_list[name]
+                        acq_opmode.on_resources_unexp_lost()
+                else:
+                    acq_opmode = OpMode.opmodes_list[obj]
+                    acq_opmode.on_resources_unexp_lost()
+            
 
-    def get_unique(self, typename):
+    def get_unique(self, acq_obj, typename):
         '''Provide unique access to a resource. Return None if already
-acquired.'''
+acquired. acq_obj == acquiring object - i.e the object acquiring the resource.
+Pass self as this argument.'''
+        acq_name = next(key for key, value in OpMode.opmodes_list.items() if value == acq_obj)
         if typename in self.resources_status.keys():
             # dg.print("Refcount for {}:
             # {}".format(typename,sys.getrefcount(rsc.Resource.get(typename))))
@@ -71,8 +85,9 @@ acquired.'''
             if str(resource.policy) == str(rsc.Policy.UNIQUE):
                 if self.resources_status[typename] == Status.FREE:
                     self.resources_status[typename] = Status.ACQUIRED
-                    dg.print("Resource Manager: {} was acquired".
-                             format(typename))
+                    self.acquisition_list[typename] = acq_name
+                    dg.print("Resource Manager: {} was acquired by {}".
+                             format(typename, acq_name))
                     return resource
                 else:
                     return None
@@ -83,8 +98,9 @@ acquired.'''
             raise ResourceError('Resource "{}" requested but not found'.
                                 format(typename))
 
-    def get_shared(self, typename):
+    def get_shared(self, acq_obj, typename):
         '''Provide shared access to a resource.'''
+        acq_name = next(key for key, value in OpMode.opmodes_list.items() if value == acq_obj)
         if typename in self.resources_status.keys():
             # dg.print("Refcount for {}:
             # {}".format(typename,sys.getrefcount(resource)))
@@ -92,6 +108,9 @@ acquired.'''
             if str(resource.policy) == str(rsc.Policy.SHARED):
                 count = self.resources_status[typename]
                 self.resources_status[typename] = count + 1
+                if not self.acquisition_list[typename]:
+                    self.acquisition_list[typename] = []
+                self.acquisition_list[typename].append(acq_name)
                 if self.resources_status[typename] == 1:
                     if resource.shared_init:
                         dg.print("Shared resource {} initialising...".
@@ -108,8 +127,9 @@ acquired.'''
             raise ResourceError('Resource "{}" requested but not found'.
                                 format(typename))
 
-    def release(self, typename):
+    def release(self, acq_obj, typename):
         '''Release ownership of a resource.'''
+        acq_name = next(key for key, value in OpMode.opmodes_list.items() if value == acq_obj)        
         if typename in self.resources_status.keys():
             resource = rsc.Resource.get(typename)
             # dg.print("Refcount for {}:
@@ -119,15 +139,18 @@ acquired.'''
             if str(resource.policy) == str(rsc.Policy.UNIQUE):
                 if self.resources_status[typename] == Status.ACQUIRED:
                     self.resources_status[typename] = Status.FREE
-                    dg.print("Resource Manager: {} was released.".
-                             format(typename))
+                    self.acquisition_list.pop(typename)
+                    dg.print("Resource Manager: {} was released by {}.".
+                             format(typename, acq_name))
                 else:
                     raise ResourceError('Cannot release {}: resource was\
  already free'.format(typename))
             elif str(resource.policy) == str(rsc.Policy.SHARED):
                 count = self.resources_status[typename]
                 self.resources_status[typename] = count - 1
-                dg.print("Resource Manager: {} was released.".format(typename))
+                self.acquisition_list[typename].pop(acq_name)
+                dg.print("Resource Manager: {} was released by {}.".
+                        format(typename, acq_name))
                 if self.resources_status[typename] < 0:
                     raise ResourceError('Shared resource count for {} is less than 0.'.format(typename))
                 if self.resources_status[typename] == 0:
