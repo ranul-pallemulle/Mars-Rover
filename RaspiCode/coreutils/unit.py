@@ -50,13 +50,14 @@ record its access policy.'''
         return result
 
 class ClientService(rpyc.Service):
-    def on_disconnect(self, conn):
-        dg.print("Connection lost - cleaning up...")
-        rsc.Resource.cleanup_servers()
+    pass
+    # def on_disconnect(self, conn):
+    #     dg.print("Connection lost - cleaning up...")
+    #     rsc.Resource.cleanup_servers()
         
-    def exposed_cleanup_resources(self):
-        dg.print("cleaning up...")
-        rsc.Resource.cleanup_servers()
+    # def exposed_cleanup_resources(self):
+    #     dg.print("cleaning up...")
+    #     rsc.Resource.cleanup_servers()
 
 def activate_main_unit_services():
     global main_server

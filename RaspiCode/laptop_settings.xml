@@ -13,8 +13,8 @@
   <!-- <IP_ADDRESS> 10.42.0.69 </IP_ADDRESS> -->
 
   <CAMERA>
-    <DEVICE> v4l2src </DEVICE>
-    <!-- <DEVICE> avfvideosrc </DEVICE> -->
+    <!-- <DEVICE> v4l2src </DEVICE> -->
+    <DEVICE> avfvideosrc </DEVICE>
     <CAPTURE_FRAMERATE> 30 </CAPTURE_FRAMERATE>
     <CAPTURE_FRAME_WIDTH> 640 </CAPTURE_FRAME_WIDTH>
     <CAPTURE_FRAME_HEIGHT> 480 </CAPTURE_FRAME_HEIGHT>
@@ -66,8 +66,8 @@
   </OPMODES_DIRECTORIES>
 
   <RESOURCES_DIRECTORIES>
-    resources/camera.py
-    <!-- resources/mock_motors.py -->
+    <!-- resources/camera.py -->
+    resources/mock_motors.py
   </RESOURCES_DIRECTORIES>
 
 </SETTINGS>

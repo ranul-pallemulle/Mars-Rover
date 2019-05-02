@@ -108,7 +108,7 @@ Pass self as this argument.'''
             if str(resource.policy) == str(rsc.Policy.SHARED):
                 count = self.resources_status[typename]
                 self.resources_status[typename] = count + 1
-                if not self.acquisition_list[typename]:
+                if not typename in self.acquisition_list.keys():
                     self.acquisition_list[typename] = []
                 self.acquisition_list[typename].append(acq_name)
                 if self.resources_status[typename] == 1:
@@ -118,7 +118,8 @@ Pass self as this argument.'''
                         resource.shared_init()
                         dg.print("Shared resource {} initialised".
                                  format(typename))
-                dg.print("Resource Manager: {} was acquired".format(typename))
+                dg.print("Resource Manager: {} was acquired by {}"
+                         .format(typename, acq_name))
                 return resource
             else:
                 raise ResourceError('Resource "{}" does not have a shared\
@@ -151,7 +152,7 @@ Pass self as this argument.'''
             elif str(resource.policy) == str(rsc.Policy.SHARED):
                 count = self.resources_status[typename]
                 self.resources_status[typename] = count - 1
-                self.acquisition_list[typename].pop(acq_name)
+                self.acquisition_list[typename].remove(acq_name)
                 dg.print("Resource Manager: {} was released by {}.".
                         format(typename, acq_name))
                 if self.resources_status[typename] < 0:

@@ -23,3 +23,7 @@ class DefaultStream(CameraUser, OpMode):
 
     def submode_command(self, args):
         print('Stream mode does not take submode commands.')
+
+    def on_resources_unexp_lost(self):
+        self.cam_user_manual_set_released()
+        self.stop(None)

@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 import coreutils.configure as cfg
-from resources.camera import CameraError
+# from resources.camera import CameraError
 import coreutils.resource_manager as mgr
 import cv2
 from threading import Thread
@@ -39,10 +39,10 @@ class CameraUser:
         if self.have_camera():
             try:
                 frame = self.camera.get_frame()
-            except CameraError as e:
+                if frame is not None:
+                    return np.array(frame)
+            except Exception as e:
                 raise CameraUserError(str(e))
-            if frame is not None:
-                return frame
             raise CameraUserError('Error in camera frame.')
         raise CameraUserError('Camera not acquired.')
 
@@ -72,6 +72,9 @@ class CameraUser:
         elif device == 'v4l2src':
             compressor = 'x264enc'
             tune = ' tune=zerolatency '
+        elif device == 'avfvideosrc':
+            compressor = 'x264enc'
+            tune = ' tune=zerolatency '
         comm = 'appsrc ! videoconvert ! video/x-raw,width='+str(src_width)+',height='+str(src_height)+',framerate='+str(src_framerate)+'/1 ! '+compressor+tune+'! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
 
         self.stream_writer = cv2.VideoWriter(comm, cv2.CAP_GSTREAMER, 0, strm_framerate, (strm_width, strm_height),True)
@@ -93,14 +96,14 @@ class CameraUser:
         if self.have_camera():
             raise CameraUserError('Already have camera access: cannot reacquire.')
         try:
-            self.camera = mgr.global_resources.get_shared("Camera")
+            self.camera = mgr.global_resources.get_shared(self,"Camera")
         except mgr.ResourceError as e:
             print(str(e))
             raise CameraUserError('Could not get access to camera.')
 
     def release_camera(self):
         if self.have_camera():
-            mgr.global_resources.release("Camera")
+            mgr.global_resources.release(self,"Camera")
             self.camera = None
         else:
             print ("Warning (camera): release_camera called while not acquired.")
@@ -110,5 +113,8 @@ class CameraUser:
         if self.camera is not None:
             return True
         return False
+
+    def cam_user_manual_set_released(self):
+        self.camera = None
 
 
