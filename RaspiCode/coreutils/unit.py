@@ -16,32 +16,35 @@ main_conn = None
 main_server = None
 
 class MainService(rpyc.Service):
-    unit_list = []
+    ALIASES = ['CENTRALSERVER']
+    unit_list = dict()
             
     def on_connect(self, conn):
         self.conn = conn
 
     def on_disconnect(self, conn):
-        pass
+        print("Unit disconnected.")
 
     def register_unit_name(self, unitname):
         dg.print("Found unit {}".format(unitname))
-        # self.__class__.unit_list.append(self.conn)
+        self.__class__.unit_list[self.conn] = unitname
+        dg.print("unit count: {}".format(len(self.__class__.unit_list)))
 
     def register_resource(self, resourcename, port):
-        if resourcename in rsc.Resource.resource_list:
-            dg.print("WARNING: Resource name {} already registered. Skipping...".format(resourcename))
-        else:
-            cli_ip, _ = socket.getpeername(self.conn._channel.stream.sock)
-            rsc_conn = rpyc.connect(cli_ip, port)
-            rsc.Resource.resource_list[resourcename] = rsc_conn.root
-            mgr.global_resources.load_remote_resources()
-        
+        '''Add remote resource to resource list and have resource manager
+record its access policy.'''
+        cli_ip, _ = socket.getpeername(self.conn._channel.stream.sock)
+        rsc_conn = rpyc.connect(cli_ip, port)
+        result = rsc.Resource.register_remote_resource(
+            self.__class__.unit_list[self.conn],resourcename, rsc_conn.root)
+        if result:
+            result = mgr.global_resources.load_remote_resource(resourcename)
+        return result
 
 class ClientService(rpyc.Service):
-    def on_disconnect(self):
+    def on_disconnect(self, conn):
         dg.print("Connection lost - cleaning up...")
-        rsc.Resource.cleanup_servers()n
+        rsc.Resource.cleanup_servers()
         
     def exposed_cleanup_resources(self):
         dg.print("cleaning up...")
@@ -64,6 +67,7 @@ def register_unit_name(unitname):
     if not cfg.Configuration.ready():
         raise UnitError("Settings file not parsed.")
     dg.print("Registering unit {}...".format(unitname))
+    cfg.overall_config.set_unitname(unitname)
     main_ip = cfg.overall_config.main_ip()
     global main_conn
     main_conn = rpyc.connect(main_ip, 18861, service=ClientService)
@@ -77,7 +81,7 @@ def maybe_runs_on_unit(func):
 unit.'''
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if cfg.OverallConfiguration.running_as_unit:
+        if cfg.overall_config.running_as_unit:
             res = None          # TODO
         else:
             res = func(*args, **kwargs)

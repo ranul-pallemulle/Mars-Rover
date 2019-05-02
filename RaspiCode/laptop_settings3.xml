@@ -48,7 +48,7 @@
 
   <RESOURCES_DIRECTORIES>
     <!-- resources/camera.py, -->
-    <!-- resources/mock_motors.py -->
+    <!-- resources/mock_motors.py, -->
     resources/dummy_resource.py
   </RESOURCES_DIRECTORIES>
 
