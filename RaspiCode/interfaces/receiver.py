@@ -53,7 +53,7 @@ for a connection on specified port. Overall state change is CLOSED to READY.'''
             self.disconnect_internal()
             raise ReceiverError('Error creating TcpSocket object')
         try:
-            self.socket.wait_for_connection();
+            self.socket.wait_for_connection()
         except TcpSocketError as e:
             dg.print(str(e))
             self.disconnect_internal()

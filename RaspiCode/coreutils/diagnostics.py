@@ -18,6 +18,7 @@ class Diagnostics:
     buf = deque(maxlen = 20)    # buffer of unsent messages
     state_lock = Lock()
     state = DiagState.CLOSED
+
     @classmethod
     def initialise(cls):
         enabled = cfg.overall_config.diagnostics_enabled()
@@ -34,7 +35,7 @@ class Diagnostics:
             cls.socket.set_max_recv_bytes(1024)
         except TcpSocketError as e:
             raise DiagnosticsError(str(e))
-        cls.print("Waiting for diagnostics connection...")
+        cls.print("Waiting for diagnostics connection on port {}...".format(port))
         with cls.state_lock:
             cls.state = DiagState.PENDING
         try:
@@ -42,10 +43,29 @@ class Diagnostics:
         except TcpSocketError as e:
             with cls.state_lock:
                 cls.state = DiagState.CLOSED
-            raise DiagnosticsError(str(e))
+            cls.print("Diagnostics closed.")
+            return
         with cls.state_lock:
             cls.state = DiagState.ESTABLISHED
-        cls.print("Diagnostics connection established.")            
+        cls.print("Diagnostics connection established.")  
+        thread = Thread(target=cls._detect_close, args=[])
+        thread.start()
+
+    @classmethod
+    def _detect_close(cls):
+        while True:
+            try:
+                data = cls.socket.read()
+            except TcpSocketError:
+                with cls.state_lock:
+                    cls.state = DiagState.CLOSED
+                cls.print("Diagnostics closed (connection error).")
+                return
+            if data is None:
+                with cls.state_lock:
+                    cls.state = DiagState.CLOSED
+                cls.print("Diagnostics closed by remote.")
+                return
 
     @classmethod
     def print(cls, msg):
@@ -59,8 +79,15 @@ class Diagnostics:
             while cls.buf:
                 cls.socket.reply(cls.buf.popleft()) # send unsent messages first
             cls.socket.reply(msg)
-        except TcpSocketError as e:
+        except TcpSocketError:
             with cls.state_lock:
                 cls.state = DiagState.CLOSED
-            raise DiagnosticsError(str(e))
+            cls.print("Diagnostics connection lost.")
 
+    @classmethod
+    def close(cls):
+        '''If diagnostics connection is pending, stop waiting for connection.'''
+        with cls.state_lock:
+            if cls.state == DiagState.PENDING or \
+                cls.state == DiagState.ESTABLISHED:
+                cls.socket.unblock()

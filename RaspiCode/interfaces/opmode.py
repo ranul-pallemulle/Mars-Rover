@@ -88,6 +88,7 @@ file. Initialise them to register them and add to opmodes_list.'''
                 try:
                     for filename in os.listdir(folder):
                         if str(filename).endswith('.py'):
+                            folder = folder.replace('/','.')
                             importlib.import_module(folder+'.'+str(filename).split('.')[0])
                 except FileNotFoundError as e:
                     raise OpModeError('Error in opmode directories list. Check settings file. : \n'+str(e))

@@ -11,11 +11,17 @@ class MockWheelMotors(Resource):
         self._ymax = 100
         self._xmax = 100
         self.duty_cycle = 4095
+        dg.print("Mock wheel motors settings:")     
 
         left_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Left")
         left_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Left")
         right_pwm_pin = cfg.motor_config.get_pwm_pin("Wheels", "Right")
         right_digital_pin = cfg.motor_config.get_digital_pin("Wheels", "Right")
+
+        dg.print("    Left PWM pin: {}".format(left_pwm_pin))
+        dg.print("    Left digital pin: {}".format(left_digital_pin))
+        dg.print("    Right PWM pin: {}".format(right_pwm_pin))
+        dg.print("    Right digital pin: {}".format(right_digital_pin))
 
     def set_values(self, values):
         x = values[0]
@@ -60,6 +66,7 @@ class MockArmMotors(Resource):
         Resource.__init__(self)
         self.policy = Policy.UNIQUE
         self.register_name("Arm")
+        dg.print("Mock arm motors settings:")
         
         servo1_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo1")
         servo1_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo1")
@@ -68,12 +75,18 @@ class MockArmMotors(Resource):
         servo3_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo3")
         servo3_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo3")
         gripper_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Gripper")
-        gripper_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Gripper")        
+        gripper_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Gripper")
+
+        dg.print("    Servo 1 PWM pin: {}".format(servo1_pwm_pin))
+        dg.print("    Servo 1 digital pin: {}".format(servo1_digital_pin))
+        dg.print("    Servo 2 PWM pin: {}".format(servo2_pwm_pin))
+        dg.print("    Servo 2 digital pin: {}".format(servo2_digital_pin))
+        dg.print("    Servo 3 PWM pin: {}".format(servo3_pwm_pin))
+        dg.print("    Servo 3 digital pin: {}".format(servo3_digital_pin))
+        dg.print("    Gripper PWM pin: {}".format(gripper_pwm_pin))
+        dg.print("    Gripper digital pin: {}".format(gripper_digital_pin))
 
     def set_values(self, values):
-        offset_1 = 160
-        offset_2 = 180
-        offset_3 = 105
         self.angle_grab = values[0]
         self.angle_top = values[1]
         self.angle_middle = values[2]

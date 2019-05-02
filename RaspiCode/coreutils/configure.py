@@ -18,6 +18,7 @@ class Configuration:
         self.root = self.tree.getroot()
         self.tree_lock = Lock()
 
+    @staticmethod
     def ready():
         global overall_config
         global motor_config
@@ -26,6 +27,7 @@ class Configuration:
             return False
         return True
 
+    @staticmethod
     def settings_file(name="settings.xml"):
         global overall_config
         global motor_config
@@ -38,7 +40,7 @@ class Configuration:
                 try:
                     if subthing.attrib[pred] == match:
                         return subthing
-                except KeyError as e:
+                except KeyError:
                     return None
 
     def _make_searchstr_list(self, req_list):
@@ -107,12 +109,6 @@ class MotorConfiguration(Configuration):
 class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
         Configuration.__init__(self, name)
-
-    # def hardware_mode(self):
-    #     val = self.top_level_element_value("MODE")
-    #     if val is None:
-    #         raise ConfigurationError("No settings found for hardware mode.")
-    #     return val
 
     def opmodes_directories(self):
         dir_list_str = self.top_level_element_value("OPMODES_DIRECTORIES")

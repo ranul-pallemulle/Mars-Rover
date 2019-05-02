@@ -67,12 +67,12 @@ python3 start_rover.py <port> <settings>")
             comm_str = main_sock.read() # wait for a command
             if comm_str is None:
                 dg.print("Connection lost")
-                launcher.release_all() # stop all operational modes
+                cleanup()
                 sys.exit(1)
             result = parse_entry(comm_str) # command received; interpret it
         except TcpSocketError as e:        # connection error occurred
             dg.print(str(e))
-            launcher.release_all()
+            cleanup()
             sys.exit(1)
         except CommandError as e: # received command could not be interpreted
             main_sock.reply(str(e)) # send reply to remote with error message
@@ -83,7 +83,7 @@ python3 start_rover.py <port> <settings>")
                 main_sock.reply(reply)
             except TcpSocketError as e: # connection error occurred
                 dg.print(str(e))
-                launcher.release_all()
+                cleanup()
                 sys.exit(1)
             action_thread = Thread(target=call_action,args=[result])
             action_thread.start() # carry out action directed by the received
@@ -111,6 +111,12 @@ def call_action(arg_list):
     except Exception as e:      # unhandled exception: something is really wrong
         dg.print(str(e))
         sys.exit(1)
+
+def cleanup():
+    '''Run cleaning up functions so that all threads can stop for a clean exit.'''
+    launcher.release_all()
+    dg.close()
+
         
 if __name__ == '__main__':
     main(sys.argv)

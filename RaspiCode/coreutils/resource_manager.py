@@ -49,7 +49,6 @@ class ResourceManager:
                     dg.print("Resource Manager: {} was acquired".format(typename))
                     return resource
                 else:
-                    # raise ResourceError('Cannot provide access to resource "{}": currently in use.'.format(typename))
                     return None
             else:
                 raise ResourceError('Resource "{}" does not have a unique access policy.'.format(typename))

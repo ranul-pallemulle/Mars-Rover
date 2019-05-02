@@ -4,21 +4,21 @@ import start_rover
 
 class TestStartRover(unittest.TestCase):
 
-    @patch('start_rover.cfg.Configuration')
-    def test_wrong_args(self, unused_mock_cfg):
+    #@patch('start_rover.cfg.Configuration')
+    def test_wrong_args(self):
         '''Invalid arguments to start the program. 
         > Program must terminate.'''
         with self.assertRaises(SystemExit):
             # too many arguments
-            start_rover.main(['start_rover.py','3500','blablba','debug.xml'])
+            start_rover.main(['start_rover.py','3500','blablba','RaspiCode/debug.xml'])
         with self.assertRaises(SystemExit):
             start_rover.main(['start_rover.py', '-2']) # negative
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py','-2','debug.xml']) # negative
+            start_rover.main(['start_rover.py','-2','RaspiCode/debug.xml']) # negative
         with self.assertRaises(SystemExit):
             start_rover.main(['start_rover.py', '2.5']) # float
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py','2.5','debug.xml']) # float
+            start_rover.main(['start_rover.py','2.5','RaspiCode/debug.xml']) # float
         with self.assertRaises(SystemExit):
             start_rover.main(['start_rover.py','100']) # too small
         with self.assertRaises(SystemExit):
@@ -26,7 +26,7 @@ class TestStartRover(unittest.TestCase):
         with self.assertRaises(SystemExit):
             start_rover.main(['start_rover.py','one']) # port should be int
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py', 'debug.xml']) # no port
+            start_rover.main(['start_rover.py', 'RaspiCode/debug.xml']) # no port
 
     @patch('start_rover.cfg.Configuration')
     def test_bad_settings(self, mock_cfg):
@@ -46,7 +46,7 @@ using specified settings file.
         terminate.'''
         mock_opmode.opmodes_initialise.side_effect = start_rover.OpModeError
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py','5560','debug.xml'])
+            start_rover.main(['start_rover.py','5560','RaspiCode/debug.xml'])
         mock_opmode.opmodes_initialise.assert_called_with()
 
     @patch('start_rover.mgr.global_resources')
@@ -56,7 +56,7 @@ using specified settings file.
         terminate.'''
         mock_mgr.initialise.side_effect = start_rover.mgr.ResourceError
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py', '5560', 'debug.xml'])
+            start_rover.main(['start_rover.py', '5560', 'RaspiCode/debug.xml'])
         mock_mgr.initialise.assert_called_with()
 
     @patch('start_rover.TcpSocket')
@@ -66,7 +66,7 @@ using specified settings file.
         mock_sock.return_value.wait_for_connection.side_effect\
             = start_rover.TcpSocketError
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py','2409','debug.xml'])
+            start_rover.main(['start_rover.py','2409','RaspiCode/debug.xml'])
 
     @patch('start_rover.TcpSocket')
     def test_read_connection_drop(self, mock_sock):
@@ -77,7 +77,7 @@ any active modes.'''
         start_rover.launcher.release_all)        
         mock_sock.return_value.read.return_value = None
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py','2409','debug.xml'])
+            start_rover.main(['start_rover.py','2409','RaspiCode/debug.xml'])
         assert(start_rover.launcher.release_all.was_called)
 
     @patch('start_rover.TcpSocket')
@@ -89,7 +89,7 @@ any active modes.'''
         start_rover.launcher.release_all)
         mock_sock.return_value.read.side_effect = start_rover.TcpSocketError
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py','2409','debug.xml'])
+            start_rover.main(['start_rover.py','2409','RaspiCode/debug.xml'])
         assert(start_rover.launcher.release_all.was_called)
 
     @patch('start_rover.TcpSocket')
@@ -105,7 +105,7 @@ TcpSocket.reply() should have been called with 'ACK'.'''
         mock_sock.return_value.read.return_value = 'STOP_JOYSTICK'
         mock_sock.return_value.reply.side_effect = start_rover.TcpSocketError
         with self.assertRaises(SystemExit):
-            start_rover.main(['start_rover.py','2409','debug.xml'])
+            start_rover.main(['start_rover.py','2409','RaspiCode/debug.xml'])
         mock_parser.assert_called_with('STOP_JOYSTICK')
         mock_sock.return_value.reply.assert_called_with('ACK')
         assert(start_rover.launcher.release_all.was_called)
@@ -121,7 +121,7 @@ TcpSocket.reply() should have been called with 'ACK'.'''
         err_string = "bad command"
         mock_parser.side_effect = start_rover.CommandError(err_string)
         with self.assertRaises(start_rover.TcpSocketError):
-            start_rover.main(['start_rover.py', '3500', 'debug.xml'])
+            start_rover.main(['start_rover.py', '3500', 'RaspiCode/debug.xml'])
         mock_sock.return_value.reply.assert_called_with(err_string)
 
     @patch('start_rover.OpMode')
