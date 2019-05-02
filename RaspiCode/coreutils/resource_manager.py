@@ -15,7 +15,10 @@ class ResourceError(Exception):
 
 class ResourceManager:
     def __init__(self):
-        self.resources_status = dict()
+        self.resources_status = dict() # acquisition statuses of resources
+        # TODO : acquisition list
+        self.acquisition_list = dict() # key: resource name, value: name of 
+                                       # opmode using it
         
     def initialise(self):
         '''Load all available local resources.'''
@@ -26,16 +29,12 @@ class ResourceManager:
         except rsc.ResourceRawError as e:
             raise ResourceError(str(e))
         resource_names = rsc.Resource.get_local_names()
-        dg.print("LOCAL NAMES: {}".format(resource_names))
         if resource_names:
             dg.print("Found resources: ")
         for name in resource_names:
             dg.print('  '+name)
         for name in resource_names:
-            # policy = rsc.Resource.get(name).get_policy()
-            dg.print("CALLING GET FROM UNIT {} WITH RESOURCE NAME {}".format(cfg.overall_config.get_unitname(), name))
             policy = rsc.Resource.get(name).policy
-            dg.print("POLICY FOR RESOURCE {} == {}".format(name,policy))
             if policy == rsc.Policy.UNIQUE:
                 self.resources_status[name] = Status.FREE # initially free
             elif policy == rsc.Policy.SHARED:
@@ -49,14 +48,17 @@ class ResourceManager:
             dg.print("Found remote resource "+name)
             resource = rsc.Resource.get(name)
             if str(resource.policy) == str(rsc.Policy.UNIQUE):
-                resource.policy = rsc.Policy.UNIQUE
+                # resource.policy = rsc.Policy.UNIQUE # makes this a netref :/
                 self.resources_status[name] = Status.FREE
             elif str(resource.policy) == str(rsc.Policy.SHARED):
-                resource.policy = rsc.Policy.SHARED
+                #resource.policy = rsc.Policy.SHARED
                 self.resources_status[name] = 0
-            dg.print("LOAD REMOTE RESOURCES RETURNING")
             return True
         return False
+
+    def remove_resource(self, name):
+        if name in self.resources_status.keys():
+            self.resources_status.pop(name)
                 
 
     def get_unique(self, typename):
@@ -66,7 +68,7 @@ acquired.'''
             # dg.print("Refcount for {}:
             # {}".format(typename,sys.getrefcount(rsc.Resource.get(typename))))
             resource = rsc.Resource.get(typename)
-            if resource.policy == rsc.Policy.UNIQUE:
+            if str(resource.policy) == str(rsc.Policy.UNIQUE):
                 if self.resources_status[typename] == Status.FREE:
                     self.resources_status[typename] = Status.ACQUIRED
                     dg.print("Resource Manager: {} was acquired".
@@ -87,7 +89,7 @@ acquired.'''
             # dg.print("Refcount for {}:
             # {}".format(typename,sys.getrefcount(resource)))
             resource = rsc.Resource.get(typename)
-            if resource.policy == rsc.Policy.SHARED:
+            if str(resource.policy) == str(rsc.Policy.SHARED):
                 count = self.resources_status[typename]
                 self.resources_status[typename] = count + 1
                 if self.resources_status[typename] == 1:
@@ -116,7 +118,7 @@ acquired.'''
             # {}".format(typename,sys.getrefcount(rsc.Resource.get(typename))))
             # dg.print("refererrers:
             # {}".format(gc.get_referrers(rsc.Resource.get(typename))))
-            if resource.policy == rsc.Policy.UNIQUE:
+            if str(resource.policy) == str(rsc.Policy.UNIQUE):
                 if self.resources_status[typename] == Status.ACQUIRED:
                     self.resources_status[typename] = Status.FREE
                     dg.print("Resource Manager: {} was released.".
@@ -124,7 +126,7 @@ acquired.'''
                 else:
                     raise ResourceError('Cannot release {}: resource was\
  already free'.format(typename))
-            elif resource.policy == rsc.Policy.SHARED:
+            elif str(resource.policy) == str(rsc.Policy.SHARED):
                 count = self.resources_status[typename]
                 self.resources_status[typename] = count - 1
                 dg.print("Resource Manager: {} was released.".format(typename))
