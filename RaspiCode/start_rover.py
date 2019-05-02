@@ -180,15 +180,15 @@ def process_as_unit(argv):
         sys.exit(1)
     dg.print("Running as unit with name {}".format(unitname))
     
-    try:
-        OpMode.opmodes_initialise() # check for available operational modes
-    except OpModeError as e:
-        dg.print(str(e) + "\nExiting...")
-        sys.exit(1)
-    if OpMode.get_all():        # list of registered modes is not empty
-        dg.print("Found operational modes: ")
-    for name in OpMode.get_all_names(): # print registered names of all modes
-        dg.print('  '+name)
+    # try:
+    #     OpMode.opmodes_initialise() # check for available operational modes
+    # except OpModeError as e:
+    #     dg.print(str(e) + "\nExiting...")
+    #     sys.exit(1)
+    # if OpMode.get_all():        # list of registered modes is not empty
+    #     dg.print("Found operational modes: ")
+    # for name in OpMode.get_all_names(): # print registered names of all modes
+    #     dg.print('  '+name)
         
     try:
         mgr.global_resources.initialise() # get all resources ready

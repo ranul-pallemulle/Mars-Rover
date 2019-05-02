@@ -264,6 +264,7 @@ class OverallConfiguration(Configuration):
         Configuration.__init__(self, name)
         self.connected_ip = '0.0.0.0' # ip address to which remote has connected
         self.running_as_unit = False     # default
+        self.unitname = ""
 
     def opmodes_directories(self):
         dir_list_str = self.top_level_element_value("OPMODES_DIRECTORIES")
@@ -324,3 +325,8 @@ class OverallConfiguration(Configuration):
         ip_addr = ip_addr.replace(' ','')
         return ip_addr
 
+    def set_unitname(self, unitname):
+        self.unitname = unitname
+
+    def get_unitname(self):
+        return self.unitname
