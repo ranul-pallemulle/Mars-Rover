@@ -72,6 +72,8 @@ class CameraUser:
             tune = ' '
         elif device == 'v4l2src':
             compressor = 'x264enc'
+        elif device == 'avfvideosrc':
+            compressor = 'x264enc'            
             tune = ' tune=zerolatency '
         elif device == 'avfvideosrc':
             compressor = 'x264enc'            
