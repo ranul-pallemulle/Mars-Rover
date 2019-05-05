@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 import coreutils.configure as cfg
 from resources.camera import CameraError
 import coreutils.resource_manager as mgr
+from coreutils.diagnostics import Diagnostics as dg
 import cv2
 from threading import Thread
 import numpy as np
@@ -72,6 +73,9 @@ class CameraUser:
         elif device == 'v4l2src':
             compressor = 'x264enc'
             tune = ' tune=zerolatency '
+        elif device == 'avfvideosrc':
+            compressor = 'x264enc'            
+            tune = ' tune=zerolatency '
         comm = 'appsrc ! videoconvert ! video/x-raw,width='+str(src_width)+',height='+str(src_height)+',framerate='+str(src_framerate)+'/1 ! '+compressor+tune+'! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
 
         self.stream_writer = cv2.VideoWriter(comm, cv2.CAP_GSTREAMER, 0, strm_framerate, (strm_width, strm_height),True)
@@ -95,7 +99,7 @@ class CameraUser:
         try:
             self.camera = mgr.global_resources.get_shared("Camera")
         except mgr.ResourceError as e:
-            print(str(e))
+            dg.print(str(e))
             raise CameraUserError('Could not get access to camera.')
 
     def release_camera(self):
@@ -103,7 +107,7 @@ class CameraUser:
             mgr.global_resources.release("Camera")
             self.camera = None
         else:
-            print ("Warning (camera): release_camera called while not acquired.")
+            dg.print ("Warning (camera): release_camera called while not acquired.")
 
     def have_camera(self):
         '''Check if camera has been acquired.'''

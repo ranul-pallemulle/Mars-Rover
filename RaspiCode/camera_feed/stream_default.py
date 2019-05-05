@@ -1,5 +1,6 @@
 from interfaces.cam_user import CameraUser, CameraUserError
 from interfaces.opmode import OpMode, OpModeError
+from coreutils.diagnostics import Diagnostics as dg
 
 class DefaultStream(CameraUser, OpMode):
 
@@ -22,4 +23,5 @@ class DefaultStream(CameraUser, OpMode):
             self.release_camera()
 
     def submode_command(self, args):
-        print('Stream mode does not take submode commands.')
+        dg.print('Stream mode does not take submode commands.')
+        
