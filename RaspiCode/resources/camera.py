@@ -1,7 +1,7 @@
 import coreutils.configure as cfg
 from resources.resource import Resource, ResourceRawError, Policy
 import cv2
-from threading import Thread
+from threading import Lock
 from sys import platform
 
 class CameraError(Exception):
@@ -22,6 +22,7 @@ class Camera(Resource):
         self.gst_comm = None
         self.cap = None
         self.active = False
+        self.camlock = Lock()
 
     def shared_init(self):
        self.start_capture()
@@ -47,7 +48,8 @@ class Camera(Resource):
 
     def get_frame(self):
         if self.active:
-            ret,frame = self.cap.read()
+            with self.camlock:
+                ret,frame = self.cap.read()
             if ret:
                 return frame
             return None
