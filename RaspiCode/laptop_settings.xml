@@ -60,7 +60,8 @@
     joystick,
     robotic_arm,
     dummy_opmode,
-    camera_feed
+    camera_feed,
+    autonomous
   </OPMODES_DIRECTORIES>
 
   <RESOURCES_DIRECTORIES>
