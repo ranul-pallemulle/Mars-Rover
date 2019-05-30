@@ -10,7 +10,7 @@ import busio
 from resources.adafruit_servokit import ServoKit
 import resources.PCA9685_servo as PCA9685_servo
 import resources.PCA9685_motor as PCA9685_motor
-
+import adafruit_pca9685
 
 class WheelMotors(Resource):
     def __init__(self):
@@ -157,7 +157,8 @@ class ArmMotors(Resource):
         self.register_name("Arm")
 
         self.i2c = busio.I2C(board.SCL, board.SDA)
-        self.servo = PCA9685_servo.PCA9685(self.i2c)
+        # self.servo = PCA9685_servo.PCA9685(self.i2c)
+        self.servo = adafruit_pca9685.PCA9685(self.i2c)
         self.kit = ServoKit(channels=16)
 
         gripper_pin = cfg.motor_config.get_pin("Arm", "Gripper")
@@ -241,5 +242,6 @@ class ArmMotors(Resource):
         self.servo_grab.angle = self.angle_grab
         self.servo_middle.angle = self.angle_middle
         self.servo_bottom.angle = self.angle_bottom
+        self.servo_top.angle = self.angle_top
 
-        time.sleep(1)
+        time.sleep(0.03)
