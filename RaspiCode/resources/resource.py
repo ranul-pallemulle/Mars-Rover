@@ -38,14 +38,14 @@ file. Initialise them to register them and add to resource_list.'''
                 path = folder.replace('/','.')                
                 try:
                     importlib.import_module(path)
-                except FileNotFoundError as e:
+                except (FileNotFoundError,ModuleNotFoundError) as e:
                     raise ResourceRawError('Error in resource files list. Check settings file. : \n'+str(e))
             else:               # is a folder; check inside
                 try:
                     for filename in os.listdir(folder):
                         if str(filename).endswith('.py'):
                             importlib.import_module(folder+'.'+str(filename).split('.')[0])
-                except FileNotFoundError as e:
+                except (FileNotFoundError,ModuleNotFoundError) as e:
                     raise ResourceRawError('Error in resource directories list. Check settings file. : \n'+str(e))
         for subcls in cls.__subclasses__():
             try:
