@@ -21,6 +21,8 @@ class "+name)
                         res = runmeth(self, *args, **kwargs)
                     except GoalError as e:
                         dg.print(str(e))
+                        self.running = True
+                        self.cleanup()
                         return
                     self.running = True
                     dg.print("Goal {} started.".format(self.name))
@@ -133,11 +135,6 @@ them and add to goals_list.'''
 
     def submode_command(self, args):
         '''All goals activated via submode commands.'''
-        # dg.print("Command received is: ")
-        # subcomm = ""
-        # for x in args:
-        #     subcomm += (x + ' ')
-        # dg.print("    "+subcomm)
         thread = Thread(target=self.parse_submode_comm, args=[args])
         thread.start()
 
