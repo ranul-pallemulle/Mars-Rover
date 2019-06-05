@@ -111,6 +111,16 @@ class MotorConfiguration(Configuration):
         except ValueError as e:
              raise ConfigurationError("Bad value in settings file for digital pin of motor '"+motor_name+"'. Error: "+str(e))
 
+    def get_pin(self, motor_group, motor_name):
+        req = ["{Motors}[name]"+motor_group+".{Motor}[name]"
+               +motor_name]
+        motor = self.provide_settings(req)
+        pin = self._getsubelemvalue(motor[0], "TYPE", "Other")
+        try:
+            return int(pin.text)
+        except ValueError as e:
+            raise ConfigurationError("Bad value in settings file for pin of motor '"+motor_name+"'. Error: "+str(e))         
+
 class CameraConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
         Configuration.__init__(self,name)

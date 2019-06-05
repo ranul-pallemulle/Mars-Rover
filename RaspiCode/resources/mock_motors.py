@@ -68,23 +68,15 @@ class MockArmMotors(Resource):
         self.register_name("Arm")
         dg.print("Mock arm motors settings:")
         
-        servo1_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo1")
-        servo1_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo1")
-        servo2_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo2")
-        servo2_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo2")
-        servo3_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo3")
-        servo3_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo3")
-        gripper_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Gripper")
-        gripper_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Gripper")
+        servo1_pin = cfg.motor_config.get_pin("Arm", "Servo1")
+        servo2_pin = cfg.motor_config.get_pin("Arm", "Servo2")
+        servo3_pin = cfg.motor_config.get_pin("Arm", "Servo3")
+        gripper_pin = cfg.motor_config.get_pin("Arm", "Gripper")
 
-        dg.print("    Servo 1 PWM pin: {}".format(servo1_pwm_pin))
-        dg.print("    Servo 1 digital pin: {}".format(servo1_digital_pin))
-        dg.print("    Servo 2 PWM pin: {}".format(servo2_pwm_pin))
-        dg.print("    Servo 2 digital pin: {}".format(servo2_digital_pin))
-        dg.print("    Servo 3 PWM pin: {}".format(servo3_pwm_pin))
-        dg.print("    Servo 3 digital pin: {}".format(servo3_digital_pin))
-        dg.print("    Gripper PWM pin: {}".format(gripper_pwm_pin))
-        dg.print("    Gripper digital pin: {}".format(gripper_digital_pin))
+        dg.print("    Servo 1 pin: {}".format(servo1_pin))
+        dg.print("    Servo 2 pin: {}".format(servo2_pin))
+        dg.print("    Servo 3 pin: {}".format(servo3_pin))
+        dg.print("    Gripper pin: {}".format(gripper_pin))
 
     def set_values(self, values):
         self.angle_grab = values[0]
@@ -116,9 +108,9 @@ class MockArmMotors(Resource):
             self.angle_bottom = bottom_lim
             dg.print('Bottom servo angle out of range, limit = {}'.format(bottom_lim))
 
-        dg.print("Pwm value for grab servo: {}".format(self.angle_grab))
-        dg.print("Pwm value for top servo: {}".format(self.angle_top))
-        dg.print("Pwm value for middle servo: {}".format(self.angle_middle))
-        dg.print("Pwm value for bottom servo: {}".format(self.angle_bottom))
+        dg.print("PWM value for grab servo: {}".format(self.angle_grab))
+        dg.print("PWM value for top servo: {}".format(self.angle_top))
+        dg.print("PWM value for middle servo: {}".format(self.angle_middle))
+        dg.print("PWM value for bottom servo: {}".format(self.angle_bottom))
 
         time.sleep(1)

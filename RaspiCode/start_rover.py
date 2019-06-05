@@ -32,8 +32,6 @@ python3 start_rover.py <port> <settings>")
     except cfg.ConfigurationError as e: # error related to settings file
         print(str(e) + "\nExiting...")
         sys.exit(1)
-
-    dg.initialise()             # start diagnostics connection
         
     try:
         OpMode.opmodes_initialise() # check for available operational modes
@@ -52,6 +50,8 @@ python3 start_rover.py <port> <settings>")
         dg.print(str(e) + "\nExiting...")
         sys.exit(1)
         
+    dg.initialise()             # start diagnostics connection
+
     dg.print("Waiting for connection...")
     try:
         main_sock = TcpSocket(port)
