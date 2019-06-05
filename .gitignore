@@ -11,3 +11,7 @@ __pycache__/
 .AppleDouble
 .AppleDouble/
 .Parent
+/Java_Backend/nbproject/private/
+/Java_Backend/build/
+/Java_Backend/dist/
+
