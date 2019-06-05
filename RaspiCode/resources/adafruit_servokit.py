@@ -142,7 +142,7 @@ class _Servo:
         self.kit = kit
 
     def __getitem__(self, servo_channel):
-        import servopackage
+        import resources.servopackage as servopackage
         num_channels = self.kit._channels
         if servo_channel >= num_channels or servo_channel < 0:
             raise ValueError("servo must be 0-{}!".format(num_channels - 1))

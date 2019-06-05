@@ -24,7 +24,6 @@ def parse_entry(command_string):
     global OP_MODES
     OP_MODES = gen_enum()
     
-    command_string_bak = command_string
     command_string = command_string.rstrip('\r\n')
     parsed_list = []
     

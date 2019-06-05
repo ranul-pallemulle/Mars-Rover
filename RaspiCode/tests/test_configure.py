@@ -5,8 +5,8 @@ import coreutils.configure as cfg
 class TestConfigure(unittest.TestCase):
 
     def setUp(self):
-        self.testconf = cfg.OverallConfiguration("tests/testsettings.xml")
-        self.testMotorConf = cfg.MotorConfiguration("tests/testsettings.xml")
+        self.testconf = cfg.OverallConfiguration("RaspiCode/tests/testsettings.xml")
+        self.testMotorConf = cfg.MotorConfiguration("RaspiCode/tests/testsettings.xml")
         
     def test_make_searchstr_valid(self):
         req_list = ["{Motors}[nonexit]Fake.{Motor}[name]Left"]

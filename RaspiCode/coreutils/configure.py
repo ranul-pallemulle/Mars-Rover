@@ -18,6 +18,7 @@ class Configuration:
         self.root = self.tree.getroot()
         self.tree_lock = Lock()
 
+    @staticmethod
     def ready():
         global overall_config
         global motor_config
@@ -26,6 +27,7 @@ class Configuration:
             return False
         return True
 
+    @staticmethod
     def settings_file(name="settings.xml"):
         global overall_config
         global motor_config
@@ -38,7 +40,7 @@ class Configuration:
                 try:
                     if subthing.attrib[pred] == match:
                         return subthing
-                except KeyError as e:
+                except KeyError:
                     return None
 
     def _make_searchstr_list(self, req_list):
@@ -104,15 +106,19 @@ class MotorConfiguration(Configuration):
         except ValueError as e:
              raise ConfigurationError("Bad value in settings file for digital pin of motor '"+motor_name+"'. Error: "+str(e))
 
+    def get_pin(self, motor_group, motor_name):
+        req = ["{Motors}[name]"+motor_group+".{Motor}[name]"
+               +motor_name]
+        motor = self.provide_settings(req)
+        pin = self._getsubelemvalue(motor[0], "TYPE", "Other")
+        try:
+            return int(pin.text)
+        except ValueError as e:
+            raise ConfigurationError("Bad value in settings file for pin of motor '"+motor_name+"'. Error: "+str(e))
+
 class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
         Configuration.__init__(self, name)
-
-    # def hardware_mode(self):
-    #     val = self.top_level_element_value("MODE")
-    #     if val is None:
-    #         raise ConfigurationError("No settings found for hardware mode.")
-    #     return val
 
     def opmodes_directories(self):
         dir_list_str = self.top_level_element_value("OPMODES_DIRECTORIES")
@@ -133,4 +139,31 @@ class OverallConfiguration(Configuration):
         if '' in dir_list and len(dir_list) > 1:
             raise ConfigurationError("Error in resource settings: probably extra comma in list.")
         return dir_list
+
+    def diagnostics_enabled(self):
+        req = ["{Diagnostics}.{state}"]
+        elem_list = self.provide_settings(req)
+        if not elem_list:
+            raise ConfigurationError("No settings found for Diagnostics state.")
+        en_str = elem_list[0][0].text.strip()
+        if en_str == "Enabled":
+            return True
+        elif en_str == "Disabled":
+            return False
+        raise ConfigurationError("Error in Diagnostics settings: invalid state, can only be 'Enabled' or 'Disabled'.")
+
+    def diagnostics_port(self):
+        req = ["{Diagnostics}.{port}"]
+        elem_list = self.provide_settings(req)
+        if not elem_list:
+            raise ConfigurationError("No settings found for Diagnostics.")
+        port_str = elem_list[0][0].text.strip()
+        try:
+            port = int(port_str)
+        except TypeError:
+            raise ConfigurationError("Error in Diagnostics settings: port number setting must be an integer.")
+        if port < 1000:
+            raise ConfigurationError("Error in Diagnostics settings: port number needs to be larger than 1000 to prevent conflict with reserved ports.")
+        return port
+        
 

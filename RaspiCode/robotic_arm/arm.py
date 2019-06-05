@@ -1,3 +1,4 @@
+from coreutils.diagnostics import Diagnostics as dg
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.actuator import Actuator, ActuatorError
 from interfaces.opmode import OpMode, OpModeError
@@ -29,7 +30,7 @@ class RoboticArm(Receiver, Actuator, OpMode):
             thet_3 = int(recvd_list[2])
             gripval = int(recvd_list[3])
         except (ValueError, IndexError) as e:
-            print(str(e))
+            dg.print(str(e))
             return None
         else:
             # all values must be in the right range
@@ -86,7 +87,7 @@ class RoboticArm(Receiver, Actuator, OpMode):
 
     def submode_command(self, args):
         '''Implementation of OpMode abstract method submode_command(args). Takes mode-specific commands.'''
-        print('RoboticArm mode does not take submode commands.')
+        dg.print('RoboticArm mode does not take submode commands.')
 
     def run_on_connection_interrupted(self):
         '''Overridden from Receiver. Runs if an active connection to remote is interrupted.'''

@@ -3,6 +3,7 @@ from threading import RLock, Lock
 from enum import Enum
 import importlib
 import os
+from coreutils.diagnostics import Diagnostics as dg
 import coreutils.configure as cfg
 
 class State(Enum):
@@ -71,10 +72,10 @@ file. Initialise them to register them and add to opmodes_list.'''
         except cfg.ConfigurationError as e:
             raise OpModeError(str(e))
         if not dir_list:
-            print("WARNING: no operational mode directories specified.")
+            dg.print("WARNING: no operational mode directories specified.")
         for folder in dir_list:
             if not folder:
-                print("WARNING: no operational modes found.")
+                dg.print("WARNING: no operational modes found.")
                 return
             if folder.endswith('.py'):
                 folder = folder.split('.py')[0]
@@ -87,6 +88,7 @@ file. Initialise them to register them and add to opmodes_list.'''
                 try:
                     for filename in os.listdir(folder):
                         if str(filename).endswith('.py'):
+                            folder = folder.replace('/','.')
                             importlib.import_module(folder+'.'+str(filename).split('.')[0])
                 except FileNotFoundError as e:
                     raise OpModeError('Error in opmode directories list. Check settings file. : \n'+str(e))
@@ -98,6 +100,7 @@ file. Initialise them to register them and add to opmodes_list.'''
 
     def __init__(self):
         ''' Wrap the start and stop functions. Initialise locks.'''
+        self.name = ''          # initialise registered name
         self.opmode_state = State.STOPPED
         self.opmode_lock = RLock()
         self.start_lock = Lock()
@@ -116,39 +119,40 @@ file. Initialise them to register them and add to opmodes_list.'''
     def register_name(self, name):
         '''Store opmode instance in opmode_list.'''
         if name in type(self).opmodes_list:
-            print('WARNING: Operational mode name {} already registered. Skipping...'.format(name))
+            dg.print('WARNING: Operational mode name {} already registered. Skipping...'.format(name))
             return
         type(self).opmodes_list[name] = self
+        self.name = name
 
     def before_start_call(self):
         '''Call before the opmode's start() is executed.'''
         with self.opmode_lock:
             if not self.is_stopped():
-                raise OpModeError('Cannot start {}: mode already active'.format(self.__class__.__name__))
+                raise OpModeError('Cannot start {}: mode already active'.format(self.name))
             self.opmode_state = State.STARTING
-        print("Starting {} mode...".format(self.__class__.__name__))
+        dg.print("Starting {} mode...".format(self.name))
 
     def after_start_call(self):
         '''Call after the opmode's start() is executed.'''
         with self.opmode_lock:
             self.opmode_state = State.RUNNING
-        print("{} mode started.".format(self.__class__.__name__))
+        dg.print("{} mode started.".format(self.name))
 
     def before_stop_call(self):
         '''Call before the opmode's stop() is executed.'''
         with self.opmode_lock:
             if self.is_stopped():
-                raise OpModeError('Cannot stop {}: already stopped'.format(self.__class__.__name__))
+                raise OpModeError('Cannot stop {}: already stopped'.format(self.name))
             elif self.is_stopping():
-                raise OpModeError('Cannot stop {}: busy processing previous stop request.'.format(self.__class__.__name__))
+                raise OpModeError('Cannot stop {}: busy processing previous stop request.'.format(self.name))
             self.opmode_state = State.STOPPING
-        print("Stopping {} mode...".format(self.__class__.__name__))
+        dg.print("Stopping {} mode...".format(self.name))
 
     def after_stop_call(self):
         '''Call after the opmode's stop() is executed.'''
         with self.opmode_lock:
             self.opmode_state = State.STOPPED
-        print("{} mode stopped.".format(self.__class__.__name__))
+        dg.print("{} mode stopped.".format(self.name))
 
     @classmethod
     def get(cls, name):

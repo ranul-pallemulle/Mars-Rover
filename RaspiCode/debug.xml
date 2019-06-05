@@ -1,8 +1,9 @@
 <SETTINGS>
 
-  <!-- <MODE> LAPTOP </MODE> -->
-  <!-- <MODE> RASPBERRYPI </MODE> -->
-  <!-- <MODE> RASPBERRYPI_NO_MOTORS </MODE> -->
+  <DIAGNOSTICS>
+    <STATE> Disabled </STATE>
+    <PORT> 5570 </PORT>
+  </DIAGNOSTICS>
   
   <MOTORS NAME="Wheels">
     <MOTOR NAME="Left">
@@ -38,9 +39,9 @@
   </MOTORS>
 
   <OPMODES_DIRECTORIES>
-    joystick,
-    robotic_arm,
-    dummy_opmode
+    RaspiCode/joystick,
+    RaspiCode/robotic_arm,
+    RaspiCode/dummy_opmode
   </OPMODES_DIRECTORIES>
 
   <RESOURCES_DIRECTORIES>

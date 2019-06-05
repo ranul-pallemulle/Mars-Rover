@@ -22,7 +22,7 @@ def launch_opmode(name, arg_list=[]):
     try:
         mode.start(arg_list)
     except OpModeError as e:
-        raise LauncherError('Failed to start {}: '.format(mode.__class__.__name__)+str(e))
+        raise LauncherError('Failed to start {}: '.format(mode.name)+str(e))
 
 
 def kill_opmode(name, arg_list=[]):
@@ -32,4 +32,4 @@ def kill_opmode(name, arg_list=[]):
     try:
         mode.stop(arg_list)
     except OpModeError as e:
-        raise LauncherError('Failed to stop {}: '.format(mode.__class__.__name__)+str(e))
+        raise LauncherError('Failed to stop {}: '.format(mode.name)+str(e))

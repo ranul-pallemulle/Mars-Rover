@@ -2,6 +2,7 @@ from enum import Enum
 import importlib
 import os
 import coreutils.configure as cfg
+from coreutils.diagnostics import Diagnostics as dg
 
 class Policy(Enum):
     UNIQUE = 0
@@ -27,24 +28,24 @@ file. Initialise them to register them and add to resource_list.'''
         except cfg.ConfigurationError as e:
             raise ResourceRawError(str(e))
         if not dir_list:
-            print("WARNING: no resource directories specified.")
+            dg.print("WARNING: no resource directories specified.")
         for folder in dir_list:
             if not folder:
-                print("WARNING: no resource modules found.")
+                dg.print("WARNING: no resource modules found.")
                 return
             if folder.endswith('.py'): # not a folder but a file
                 folder = folder.split('.py')[0]
                 path = folder.replace('/','.')                
                 try:
                     importlib.import_module(path)
-                except FileNotFoundError as e:
+                except (FileNotFoundError,ModuleNotFoundError) as e:
                     raise ResourceRawError('Error in resource files list. Check settings file. : \n'+str(e))
             else:               # is a folder; check inside
                 try:
                     for filename in os.listdir(folder):
                         if str(filename).endswith('.py'):
                             importlib.import_module(folder+'.'+str(filename).split('.')[0])
-                except FileNotFoundError as e:
+                except (FileNotFoundError,ModuleNotFoundError) as e:
                     raise ResourceRawError('Error in resource directories list. Check settings file. : \n'+str(e))
         for subcls in cls.__subclasses__():
             try:
@@ -62,13 +63,14 @@ unique or shared. See resource manager for more information on
 policy. 
         '''
         if name in type(self).resource_list:
-            print('WARNING: Resource name {} already registered. Skipping...'.format(name))
+            dg.print('WARNING: Resource name {} already registered. Skipping...'.format(name))
             return
         if self.policy is not None:
             type(self).resource_list[name] = self
         else:
-            print('WARNING: Resource access policy for resource {} not specified. Skipping...'.format(name))
+            dg.print('WARNING: Resource access policy for resource {} not specified. Skipping...'.format(name))
             return
+        self.name = name
 
     @classmethod
     def get(cls, name):
