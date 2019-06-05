@@ -12,13 +12,23 @@
 <AnchorPane id="AnchorPane" prefHeight="300.0" prefWidth="600.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.ARMController">
     <children>
         <Rectangle fx:id="blocker" fill="#FF000055" x="0" y="0" height="500" width="500"/>
-        <Text id="Freearmlabel" x="430" y="70" text="Seg3down"/>
+        <Text id="FreearmLabel" x="430" y="70" text="Seg3down"/>
         <Text id="Arm3downLabel" x="360" y="70" text="Freearm"/>
+        <Text id="ResetarmLabel" x="82" y="70" text="Reset"/>
+        <Text id="SetarmdropLabel" x="40" y="70" text="Drop"/>
+        
+        <Circle fx:id="setarmdrop" radius="20" centerX="50.0" centerY="100.0" onMouseClicked="#setarmdrop"/>
+        <Circle fx:id="resetarm" radius="20" centerX="100.0" centerY="100.0" onMouseClicked="#resetarm"/>
         <Circle fx:id="buttonarm3" radius="20" fill="RED" stroke="GREY" centerX="450.0" centerY="100.0" onMouseClicked="#arm3down"/>
         <Circle fx:id="freearm" radius="20" fill="GREEN" stroke="GREY" centerX="400.0" centerY="100.0" onMouseClicked="#freearm"/>
+        
         <Circle id="Armrange" centerX="250" centerY="250" radius="150"/>
         <Rectangle id="ground" x="0" y="380" width="500" height="120"/>
         <Line id="groundline" endX="500" endY="380" startX="0" startY="380"/>
+        <Line id="sliderline" strokeWidth="5" endX="300" endY="50" startX="200" startY="50"/>
+        <Circle fx:id="sliderball" radius="5" centerX="200.0" centerY="50.0" onMouseDragged="#updateslider"/>
+        <Circle fx:id="slidersnap" radius="5" centerX="180.0" centerY="50.0" onMouseClicked="#snapslider"/>
+        
         <!--<Circle id="wheel" radius="30" fill="GRAY" centerX="150" centerY="350"/>-->
         <Line fx:id="lineseg1" strokeWidth="8" endX="300" endY="250" startX="250" startY="250"/>
         <Line fx:id="lineseg2" strokeWidth="8" endX="350" endY="250" startX="300" startY="250"/>

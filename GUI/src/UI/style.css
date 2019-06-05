@@ -26,6 +26,62 @@ and open the template in the editor.
     -fx-background-color: -fx-theme-background-color;
 }
 
+#resetarm{
+    -fx-fill: -fx-theme-button-color;
+    -fx-stroke: #000000;
+}
+
+#setarmdrop{
+    -fx-fill: -fx-theme-button-color;
+    -fx-stroke: #000000;
+}
+
+#sliderline{
+    -fx-stroke: #000000;
+}
+
+#sliderball{
+    -fx-fill: -fx-theme-button-color;
+    -fx-stroke: #000000;
+}
+
+#sliderball:hover{
+    -fx-fill: -fx-theme-button-hover-color;
+}
+
+#sliderball:pressed{
+    -fx-stroke: -fx-theme-button-hover-color;
+}
+
+#slidersnap{
+    -fx-fill: -fx-theme-button-color;
+    -fx-stroke: #000000;
+}
+
+#slidersnap:hover{
+    -fx-fill: -fx-theme-button-hover-color;
+}
+
+#slidersnap:pressed{
+    -fx-stroke: -fx-theme-button-hover-color;
+}
+
+#resetarm:hover{
+    -fx-fill: -fx-theme-button-hover-color;
+}
+
+#setarmdrop:hover{
+    -fx-fill: -fx-theme-button-hover-color;
+}
+
+#resetarm:pressed{
+    -fx-stroke: -fx-theme-button-hover-color;
+}
+
+#setarmdrop:pressed{
+    -fx-stroke: -fx-theme-button-hover-color;
+}
+
 #freearm:hover{
     -fx-stroke: #000000;
 }

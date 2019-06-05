@@ -86,9 +86,9 @@ public class Sender {
         }
     }
     
-    public void sendData(int base_angle, int joint_angle, int arm_angle){  //used to send controls to motor speeds
+    public void sendData(int base_angle, int joint_angle, int arm_angle, int gripper_angle){  //used to send controls to motor speeds
         try{
-            String sendingstr = Integer.toString(base_angle) + "," + Integer.toString(joint_angle) + "," + Integer.toString(arm_angle);
+            String sendingstr = Integer.toString(base_angle) + "," + Integer.toString(joint_angle) + "," + Integer.toString(arm_angle) + "," + Integer.toString(gripper_angle);
             byte[] sendingByte= sendingstr.getBytes();
             if(SuccessInit){
                 output.write(sendingByte);

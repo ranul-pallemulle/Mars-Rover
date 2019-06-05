@@ -13,7 +13,7 @@
     <children>
 <!--        <VBox id="VBox" alignment="CENTER" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
             <HBox id="HBox" alignment="CENTER" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">-->
-                <Circle fx:id="JoyBack" radius="150" centerX="250.0" centerY="250.0"/>
+                <Circle id="JoyBack" radius="150" centerX="250.0" centerY="250.0"/>
                 <Circle fx:id="JoyButton" radius="50" centerX="250.0" centerY="250.0" onMouseReleased="#snapback" onMouseDragged="#updatelocation"/>
                 <Circle fx:id="ButtonArm" radius="20" centerX="400.0" centerY="450.0" onMouseClicked="#openArm"/>
                 <Rectangle fx:id="ButtonJoystickStart" fill="RED" stroke="GREY" x="200" y="430" height="40" width="100" arcWidth="5" arcHeight="5" onMouseClicked="#connectjoystick" />
