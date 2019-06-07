@@ -243,9 +243,9 @@ public class ARMController implements Initializable {
     
     public void setarmdrop(MouseEvent e) {
         if(enablearm){
-            double servo1 = 100;
-            double servo2 = 60;
-            double servo3 = 65;
+            double servo1 = 51;
+            double servo2 = 58;
+            double servo3 = 117;
             armx[1] = armx[0] + cos(-servo1 * Math.PI / 180) * segLength;
             army[1] = army[0] + sin(-servo1 * Math.PI / 180) * segLength;
             armx[2] = armx[1] + cos(-(servo1 + servo2) * Math.PI / 180) * segLength;
