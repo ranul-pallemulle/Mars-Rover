@@ -238,10 +238,10 @@ class ArmMotors(Resource):
         # if self.angle_bottom > bottom_lim:
         #     self.angle_bottom = bottom_lim
         #     dg.print('Bottom servo angle out of range, limit = {}'.format(bottom_lim))
-
-        self.servo_grab.angle = self.angle_grab
-        self.servo_middle.angle = self.angle_middle
+        
         self.servo_bottom.angle = self.angle_bottom
+        self.servo_middle.angle = self.angle_middle
         self.servo_top.angle = self.angle_top
+        self.servo_grab.angle = self.angle_grab
 
         time.sleep(0.03)
