@@ -24,11 +24,11 @@
   
   <MOTORS NAME="Wheels">
     <MOTOR NAME="Left">
-      <PIN TYPE="PWM"> 13 </PIN>
+      <PIN TYPE="PWM"> 10 </PIN>
       <PIN TYPE="Digital"> 20 </PIN>
     </MOTOR>
     <MOTOR NAME="Right">
-      <PIN TYPE="PWM"> 12 </PIN>
+      <PIN TYPE="PWM"> 11 </PIN>
       <PIN TYPE="Digital"> 21 </PIN>
     </MOTOR>
   </MOTORS>
