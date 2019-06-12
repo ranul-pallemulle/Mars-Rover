@@ -80,6 +80,7 @@ class Samples(Goal, Actuator):
         self.angle_middle = 0
         self.angle_top = 0
         self.angle_gripper = 0
+        self.rate_list = []
                                         
     def run(self):
         self.acquire_motors("Wheels")
@@ -131,7 +132,13 @@ class Samples(Goal, Actuator):
         centre_x = frame_width/2
         centre_y = frame_height/2
         while self.cv_engine.is_active():
+            t0 = time.time()
             sample_bbox = self.cv_engine.find_obj() # sample bounding box
+            t1 = time.time()
+            self.rate_list.append(1.0/(t1-t0))
+            if len(self.rate_list) == 100:
+                print("Image processing rate: {} FPS".format(sum(self.rate_list)/100))
+                self.rate_list = []
             if len(sample_bbox) == 0:
                 continue
             else:
@@ -140,9 +147,9 @@ class Samples(Goal, Actuator):
                 z = sample_bbox[0][2]
                 relx = (x-centre_x)*100.0/centre_x
                 rely = (y-centre_y)*100.0/centre_y
-                print("{}, {}".format(relx, rely))
-                if abs(relx) > 1:
-                    self.pid_wheels(relx)
-                else:
-                    self.pid_arm_y(rely)
-                    self.pid_arm_height(z)
+                # print("{}, {}".format(relx, rely))
+                # if abs(relx) > 1:
+                #     self.pid_wheels(relx)
+                # else:
+                #     self.pid_arm_y(rely)
+                #     self.pid_arm_height(z)
