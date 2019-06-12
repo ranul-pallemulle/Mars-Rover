@@ -1,8 +1,8 @@
 import coreutils.configure as cfg
+from coreutils.rwlock import RWLock
 from resources.resource import Resource, ResourceRawError, Policy
 import cv2
-from threading import Lock
-from sys import platform
+from threading import Thread
 
 class CameraError(Exception):
     pass
@@ -22,7 +22,8 @@ class Camera(Resource):
         self.gst_comm = None
         self.cap = None
         self.active = False
-        self.camlock = Lock()
+        self.camlock = RWLock()
+        self.frame = None
 
     def shared_init(self):
        self.start_capture()
@@ -30,29 +31,37 @@ class Camera(Resource):
     def shared_deinit(self):
         self.stop_capture()
 
+    def _capture(self):
+        while self.active:
+            ret,img = self.cap.read()
+            if ret:
+                self.camlock.acquire_write()
+                self.frame = img
+                self.camlock.release()
+
     def start_capture(self):
         if self.cap is None and not self.active:
             self._eval_gst_comm()
             self.cap = cv2.VideoCapture(self.gst_comm)
             self.active = True
+            Thread(target=self._capture, args=()).start()
         else:
             raise CameraError('Camera already initialised: release before reinitialising.')
 
     def stop_capture(self):
         if self.cap is not None and self.active:
+            self.active = False
             self.cap.release()
             self.cap = None
-            self.active = False
         else:
             raise CameraError('Camera already released: cannot release.')
 
     def get_frame(self):
         if self.active:
-            with self.camlock:
-                ret,frame = self.cap.read()
-            if ret:
-                return frame
-            return None
+            self.camlock.acquire_read()
+            frame = self.frame.copy()
+            self.camlock.release()
+            return frame
         raise CameraError('Camera not active: cannot get frame.')
             
     def _eval_gst_comm(self):
