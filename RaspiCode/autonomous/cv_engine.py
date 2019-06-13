@@ -45,8 +45,6 @@ class OpenCVHaar(CVEngine):
 
     def initialise(self):
         self.cascade = cv2.CascadeClassifier('autonomous/haarcascade_frontalface_default.xml')
-        for i in range(5):
-            self.camera.get_frame() # read a few frames
         
     def find_obj(self):
         # try:
