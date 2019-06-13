@@ -2,6 +2,7 @@ import coreutils.configure as cfg
 from coreutils.rwlock import RWLock
 from resources.resource import Resource, ResourceRawError, Policy
 import cv2
+import numpy as np
 from threading import Thread
 
 class CameraError(Exception):
@@ -28,7 +29,7 @@ class Camera(Resource):
         self.cap = None         # opencv capture object
         self.active = False
         self.camlock = RWLock() # allow multiple readers, single writer
-        self.frame = None       # current camera frame
+        self.frame = np.zeros(3)       # current camera frame
 
     def shared_init(self):
         '''Called by resource manager when camera is acquired for the first
@@ -72,12 +73,12 @@ reinitialising.')
     def get_frame(self):
         '''If camera is active, return (a deep copy of) the current frame. Else,
         throw an exception.'''
-        if self.active:
-            self.camlock.acquire_read()
-            frame = self.frame.copy()
-            self.camlock.release()
-            return frame
-        raise CameraError('Camera not active: cannot get frame.')
+        # if self.active:
+        self.camlock.acquire_read()
+        frame = self.frame.copy()
+        self.camlock.release()
+        return frame
+        # raise CameraError('Camera not active: cannot get frame.')
             
     def _eval_gst_comm(self):
         '''Evaluate a gstreamer pipeline string to initialise the OpenCV 
