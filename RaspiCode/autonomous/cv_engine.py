@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from coreutils.diagnostics import Diagnostics as dg
-from interfaces.cam_user import CameraUser, CameraUserError
+from interfaces.cam_user import CameraUser, CameraUserError, Streamable
 from threading import Lock
 import cv2
 import time
@@ -41,22 +41,45 @@ current camera fram.'''
         pass
 
 
-class OpenCVHaar(CVEngine):
+class OpenCVHaar(CVEngine, Streamable):
+    
+    def __init__(self):
+        CVEngine.__init__(self)
+        Streamable.__init__(self)
 
     def initialise(self):
         self.cascade = cv2.CascadeClassifier('autonomous/haarcascade_frontalface_default.xml')
         
     def find_obj(self):
-        # try:
         frame = self.camera.get_frame()
-        # except CameraUserError as e:
-        #     dg.print(str(e))
-        #     self.deactivate()
-        #     return
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         objects = []
         try:
             objects = self.cascade.detectMultiScale(gray)
         except Exception as e:
             dg.print(str(e))
+        for (x,y,w,h) in objects:
+            cv2.rectangle(frame, (x,y), (x+w, y+h), (255,0,0), 2)
+        self.update_frame(frame) # for streaming
         return objects
+    
+    def stream_port(self):
+        return 5593
+
+    def stream_framerate(self):
+        return 60
+    
+    def stream_frame_width(self):
+        return 640
+    
+    def stream_frame_height(self):
+        return 480
+    
+    def capture_framerate(self):
+        return 60
+    
+    def capture_frame_width(self):
+        return 640
+    
+    def capture_frame_height(self):
+        return 480
