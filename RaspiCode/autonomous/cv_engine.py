@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from coreutils.diagnostics import Diagnostics as dg
+import coreutils.configure as cfg
 from interfaces.cam_user import CameraUser, CameraUserError, Streamable
 from threading import Lock
 import cv2
@@ -64,22 +65,29 @@ class OpenCVHaar(CVEngine, Streamable):
         return objects
     
     def stream_port(self):
-        return 5593
+        port = cfg.auto_config.stream_port()
+        return port
 
     def stream_framerate(self):
-        return 60
+        frate = cfg.auto_config.stream_framerate()
+        return frate
     
     def stream_frame_width(self):
-        return 640
+        width = cfg.auto_config.stream_frame_width()
+        return width
     
     def stream_frame_height(self):
-        return 480
+        height = cfg.auto_config.stream_frame_height()
+        return height
     
     def capture_framerate(self):
-        return 60
+        frate = cfg.auto_config.capture_framerate()
+        return frate
     
     def capture_frame_width(self):
-        return 640
+        width = cfg.auto_config.capture_frame_width()
+        return width
     
     def capture_frame_height(self):
-        return 480
+        height = cfg.auto_config.capture_frame_height()
+        return height
