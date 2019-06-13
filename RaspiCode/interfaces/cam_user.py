@@ -5,11 +5,11 @@ import coreutils.resource_manager as mgr
 from coreutils.diagnostics import Diagnostics as dg
 import cv2
 from threading import Thread
-import numpy as np
 import time
 
 class CameraUserError(Exception):
-    '''Exception class that will be raised by classes implementiong CameraUser.'''
+    '''Exception class that will be raised by classes implementing 
+    CameraUser.'''
     pass
 
 class CameraUser:
@@ -33,30 +33,18 @@ class CameraUser:
         
         while self.streaming:
             t0 = time.time()
-            try:
-                frame = self.get_camera_frame()
-            except CameraUserError:
-                continue
+            frame = self.camera.get_frame()
             self.stream_writer.write(frame)
             t1 = time.time()
             self.framerate_list.append(1.0/(t1-t0))
             if len(self.framerate_list) == 100:
-                print("Stream framerate: {} FPS".format(sum(self.framerate_list)/100))
+                dg.print("Stream framerate: {} FPS".format(
+                    sum(self.framerate_list)/100))
                 self.framerate_list = []
-                
-    def get_camera_frame(self):
-        if self.have_camera():
-            try:
-                frame = self.camera.get_frame()
-            except CameraError as e:
-                raise CameraUserError(str(e))
-            # if frame is not None:
-            return frame
-            # raise CameraUserError('Error in camera frame.')
-        raise CameraUserError('Camera not acquired.')
 
     def begin_stream(self, source=None):
-        '''Stream source (default is direct camera output) to the specified port.'''
+        '''Stream source (default is direct camera output) to the specified \
+        port.'''
         if self.streaming:
             raise CameraUserError('Already streaming: cannot start new stream.')
         if not self.have_camera():
@@ -84,9 +72,13 @@ class CameraUser:
         elif device == 'avfvideosrc':
             compressor = 'x264enc'            
             tune = ' tune=zerolatency '
-        comm = 'appsrc ! videoconvert ! video/x-raw,width='+str(src_width)+',height='+str(src_height)+',framerate='+str(src_framerate)+'/1 ! '+compressor+tune+'! rtph264pay config-interval=1 pt=96 ! gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
+        comm = 'appsrc ! videoconvert ! video/x-raw,width='+str(src_width)+\
+            ',height='+str(src_height)+',framerate='+str(src_framerate)+\
+            '/1 ! '+compressor+tune+'! rtph264pay config-interval=1 pt=96 ! \
+gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
 
-        self.stream_writer = cv2.VideoWriter(comm, cv2.CAP_GSTREAMER, 0, strm_framerate, (strm_width, strm_height),True)
+        self.stream_writer = cv2.VideoWriter(comm, cv2.CAP_GSTREAMER, 0, 
+                            strm_framerate, (strm_width, strm_height),True)
         self.streaming = True
 
         thread = Thread(target=self._stream, args=())
@@ -103,7 +95,8 @@ class CameraUser:
     def acquire_camera(self):
         '''Get shared access to the camera.'''
         if self.have_camera():
-            raise CameraUserError('Already have camera access: cannot reacquire.')
+            raise CameraUserError('Already have camera access: cannot \
+reacquire.')
         try:
             self.camera = mgr.global_resources.get_shared("Camera")
         except mgr.ResourceError as e:
@@ -115,7 +108,8 @@ class CameraUser:
             mgr.global_resources.release("Camera")
             self.camera = None
         else:
-            dg.print ("Warning (camera): release_camera called while not acquired.")
+            dg.print ("Warning (camera): release_camera called while not \
+acquired.")
 
     def have_camera(self):
         '''Check if camera has been acquired.'''
