@@ -1,9 +1,11 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 import coreutils.configure as cfg
 from resources.camera import CameraError
 import coreutils.resource_manager as mgr
 from coreutils.diagnostics import Diagnostics as dg
+from coreutils.rwlock import RWLock
 import cv2
+import numpy as np
 from threading import Thread
 import time
 
@@ -41,6 +43,21 @@ class CameraUser:
                 dg.print("Stream framerate: {} FPS".format(
                     sum(self.framerate_list)/100))
                 self.framerate_list = []
+                
+    def _stream_nondefault(self, source):
+        if self.stream_writer is None:
+            raise CameraUserError('Stream writer not initialised.')
+        
+        while self.streaming:
+            t0 = time.time()
+            frame = source.get_frame()
+            self.stream_writer.write(frame)
+            t1 = time.time()
+            self.framerate_list.append(1.0/(t1-t0))
+            if len(self.framerate_list) == 100:
+                dg.print("(Non-default) stream framerate: {} FPS".format(
+                    sum(self.framerate_list)/100))
+                self.framerate_list = []
 
     def begin_stream(self, source=None):
         '''Stream source (default is direct camera output) to the specified \
@@ -61,7 +78,15 @@ class CameraUser:
             src_width = cfg.cam_config.capture_frame_width()
             src_height = cfg.cam_config.capture_frame_height()
         else:
-            pass
+            strm_port = source.stream_port()
+            strm_framerate = source.stream_framerate()
+            strm_width = source.stream_frame_width()
+            strm_height = source.stream_frame_height()
+            
+            src_framerate = source.capture_framerate()
+            src_width = source.capture_frame_width()
+            src_height = source.capture_frame_height()
+            
         device = cfg.cam_config.device()
         if device == 'rpicamsrc':
             compressor = 'omxh264enc'
@@ -80,8 +105,11 @@ gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
         self.stream_writer = cv2.VideoWriter(comm, cv2.CAP_GSTREAMER, 0, 
                             strm_framerate, (strm_width, strm_height),True)
         self.streaming = True
-
-        thread = Thread(target=self._stream, args=())
+        
+        if source is None:
+            thread = Thread(target=self._stream, args=())
+        else:
+            thread = Thread(target=self._stream_nondefault, args=[source])
         thread.start()
 
     def end_stream(self):
@@ -117,4 +145,46 @@ acquired.")
             return True
         return False
 
+class Streamable(ABC):
+    def __init__(self):
+        self.frame_lock = RWLock()
+        self.frame = np.zeros(3)
+        
+    def get_frame(self):
+        self.frame_lock.acquire_read()
+        frame = self.frame.copy()
+        self.frame_lock.release()
+        return frame
 
+    def update_frame(self, frame):
+        self.frame_lock.acquire_write()
+        self.frame = frame
+        self.frame_lock.release()
+  
+    @abstractmethod
+    def stream_port(self):
+        pass
+
+    @abstractmethod
+    def stream_framerate(self):
+        pass
+
+    @abstractmethod
+    def stream_frame_width(self):
+        pass
+    
+    @abstractmethod
+    def stream_frame_height(self):
+        pass
+
+    @abstractmethod
+    def capture_framerate(self):
+        pass
+
+    @abstractmethod
+    def capture_frame_width(self):
+        pass
+
+    @abstractmethod
+    def capture_frame_height(self):
+        pass
