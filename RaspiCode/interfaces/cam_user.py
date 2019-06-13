@@ -31,6 +31,9 @@ class CameraUser:
         if not self.camera.is_active():
             raise CameraUserError('Camera not active: cannot stream.')
         
+        for i in range(5):
+            self.camera.get_frame() # read a few frames
+        
         while self.streaming:
             t0 = time.time()
             frame = self.camera.get_frame()
