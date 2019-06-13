@@ -56,7 +56,10 @@ class Camera(Resource):
         if not self.active:
             self._eval_gst_comm()
             self.cap = cv2.VideoCapture(self.gst_comm) # get camera access
-            self.active = True  # Allow _capture loop to start
+            for i in range(5):
+                ret, img = self.cap.read()
+                self.frame = img # initialise self.frame with a valid frame
+            self.active = True  # Allow _capture loop to start                
             Thread(target=self._capture, args=()).start()
         else:
             raise CameraError('Camera already initialised: release before \
