@@ -58,7 +58,7 @@ public class FXMLController implements Initializable {
     double initialoffsetx = 0;
     double initialoffsety = 0;    
     boolean test = false;
-    String IPADDRESS = "146.169.128.174";
+    String IPADDRESS = "172.24.1.1";
     
     Sender command_sender = new Sender(IPADDRESS,5560);
     Sender joystick_sender;
@@ -125,6 +125,12 @@ public class FXMLController implements Initializable {
                 DispJoyX.setText(dispx);
                 DispJoyY.setText(dispy);
             }else{
+                joystick_sender.sendData(0, 0);
+                joystick_sender.sendData(0, 0);
+                joystick_sender.sendData(0, 0);
+                joystick_sender.sendData(0, 0);
+                joystick_sender.sendData(0, 0);
+                joystick_sender.sendData(0, 0);
                 joystick_sender.sendData(0, 0);
                 joystick_sender.sendData(0, 0);
                 joystick_sender.sendData(0, 0);
@@ -252,19 +258,20 @@ public class FXMLController implements Initializable {
     // TODO    
     public void openVid(MouseEvent e){
         try {
-            final FXMLLoader vidloader = new FXMLLoader(getClass().getResource("Vid.fxml"));
-            final Parent vidroot = (Parent) vidloader.load();
-            Stage vidStage = new Stage();
-            vidroot.getStylesheets().add("UI/style.css");
-
-            Scene vidscene = new Scene(vidroot, 600, 400);
-
-            vidStage.setTitle("VIDEO");
-            vidStage.setScene(vidscene);
-            vidStage.setResizable(false);
-            vidStage.show();
+//            final FXMLLoader vidloader = new FXMLLoader(getClass().getResource("Vid.fxml"));
+//            final Parent vidroot = (Parent) vidloader.load();
+//            Stage vidStage = new Stage();
+//            vidroot.getStylesheets().add("UI/style.css");
+//
+//            Scene vidscene = new Scene(vidroot, 600, 400);
+//
+//            vidStage.setTitle("VIDEO");
+//            vidStage.setScene(vidscene);
+//            vidStage.setResizable(false);
+//            vidStage.show();
+              command_sender.startPiApp("STREAM");
         }
-        catch (IOException a) {
+        catch (Exception a) {
         }
     }
     @Override

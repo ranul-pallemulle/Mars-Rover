@@ -15,10 +15,14 @@
         <Text id="FreearmLabel" x="430" y="70" text="Seg3down"/>
         <Text id="Arm3downLabel" x="360" y="70" text="Freearm"/>
         <Text id="ResetarmLabel" x="82" y="70" text="Reset"/>
+        <Text id="SetarmwatchLabel" x="30" y="190" text="Watch"/>       
+        <Text id="SetarmpickLabel" x="80" y="190" text="Pick"/>            
         <Text id="SetarmdropLabel" x="40" y="70" text="Drop"/>
         
         <Circle fx:id="setarmdrop" radius="20" centerX="50.0" centerY="100.0" onMouseClicked="#setarmdrop"/>
+        <Circle fx:id="setarmpick" radius="20" centerX="100.0" centerY="150.0" onMouseClicked="#setarmpick"/>        
         <Circle fx:id="resetarm" radius="20" centerX="100.0" centerY="100.0" onMouseClicked="#resetarm"/>
+        <Circle fx:id="setarmwatch" radius="20" centerX="50.0" centerY="150.0" onMouseClicked="#setarmwatch"/>
         <Circle fx:id="buttonarm3" radius="20" fill="RED" stroke="GREY" centerX="450.0" centerY="100.0" onMouseClicked="#arm3down"/>
         <Circle fx:id="freearm" radius="20" fill="GREEN" stroke="GREY" centerX="400.0" centerY="100.0" onMouseClicked="#freearm"/>
         

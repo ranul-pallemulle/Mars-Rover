@@ -104,6 +104,27 @@ public class Sender {
             Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);   
         }
     }
+     
+    public void startPiApp(String Application){
+        try{
+            String sendingstr = "START_" + Application;
+            System.out.println(sendingstr);
+            byte[] sendingByte= sendingstr.getBytes();
+            if(SuccessInit){
+                output.write(sendingByte);
+                System.out.println("Sent");
+                String response;
+                if((response = input.readLine())!=null) {
+                    System.out.println(response);
+                    System.out.println(this.IP);
+                }
+            }
+            
+        }
+        catch(IOException ex){
+            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);   
+        }
+    }   
     
     public void startPiApp(String Application, int port_num){
         try{
