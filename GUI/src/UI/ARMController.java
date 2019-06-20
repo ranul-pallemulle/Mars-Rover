@@ -46,6 +46,9 @@ public class ARMController implements Initializable {
     @FXML private Circle armseg1;
     @FXML private Circle armseg2;
     @FXML private Circle armseg3;
+    @FXML private Circle armseglim1;
+    @FXML private Circle armseglim2;
+    @FXML private Circle armseglim3;
     @FXML private Rectangle blocker;
     @FXML private Circle setarmdrop;
     @FXML private Circle resetarm;
@@ -66,7 +69,7 @@ public class ARMController implements Initializable {
     double segLength = 50;
     double sliderx = 200;
     double grippc = (sliderx-200)/100;
-    boolean test = false;
+    boolean test = true;
     String IPADDRESS = "172.24.1.1";
     
     Sender command_sender;
@@ -101,22 +104,40 @@ public class ARMController implements Initializable {
     }
     
     void setarmlocation(double xjoint1, double xjoint2, double xjoint3, double yjoint1, double yjoint2, double yjoint3){
-        armseg1.setCenterX(xjoint1);
-        armseg1.setCenterY(yjoint1);
-        armseg2.setCenterX(xjoint2);
-        armseg2.setCenterY(yjoint2);
-        armseg3.setCenterX(xjoint3);
-        armseg3.setCenterY(yjoint3);
-        lineseg1.setEndX(xjoint1);
-        lineseg1.setEndY(yjoint1);
-        lineseg2.setStartX(xjoint1);
-        lineseg2.setStartY(yjoint1);
-        lineseg2.setEndX(xjoint2);
-        lineseg2.setEndY(yjoint2);
-        lineseg3.setStartX(xjoint2);
-        lineseg3.setStartY(yjoint2);
-        lineseg3.setEndX(xjoint3);
-        lineseg3.setEndY(yjoint3);
+        double limjoint0ang = servoangle(xjoint1,250,250,yjoint1,250,250);
+        double limjoint1ang = servoangle(xjoint2,xjoint1,250,yjoint2,yjoint1,250);
+        double limjoint2ang = servoangle(xjoint3,xjoint2,xjoint1,yjoint3,yjoint2,yjoint1);
+        if(limjoint0ang > 110 || limjoint0ang < -110 || limjoint1ang > 120 || limjoint1ang < -120 || limjoint2ang > 120 || limjoint2ang < -120){
+            armseglim1.setCenterX(xjoint1);
+            armseglim1.setCenterY(yjoint1);
+            armseglim2.setCenterX(xjoint2);
+            armseglim2.setCenterY(yjoint2);
+            armseglim3.setCenterX(xjoint3);
+            armseglim3.setCenterY(yjoint3);
+        }else{
+            armseglim1.setCenterX(xjoint1);
+            armseglim1.setCenterY(yjoint1);
+            armseglim2.setCenterX(xjoint2);
+            armseglim2.setCenterY(yjoint2);
+            armseglim3.setCenterX(xjoint3);
+            armseglim3.setCenterY(yjoint3);
+            armseg1.setCenterX(xjoint1);
+            armseg1.setCenterY(yjoint1);
+            armseg2.setCenterX(xjoint2);
+            armseg2.setCenterY(yjoint2);
+            armseg3.setCenterX(xjoint3);
+            armseg3.setCenterY(yjoint3);
+            lineseg1.setEndX(xjoint1);
+            lineseg1.setEndY(yjoint1);
+            lineseg2.setStartX(xjoint1);
+            lineseg2.setStartY(yjoint1);
+            lineseg2.setEndX(xjoint2);
+            lineseg2.setEndY(yjoint2);
+            lineseg3.setStartX(xjoint2);
+            lineseg3.setStartY(yjoint2);
+            lineseg3.setEndX(xjoint3);
+            lineseg3.setEndY(yjoint3);
+        }
     }
     
     /**

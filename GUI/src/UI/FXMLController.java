@@ -57,7 +57,7 @@ public class FXMLController implements Initializable {
     boolean firstjoyclick = true;
     double initialoffsetx = 0;
     double initialoffsety = 0;    
-    boolean test = false;
+    boolean test = true;
     String IPADDRESS = "172.24.1.1";
     
     Sender command_sender = new Sender(IPADDRESS,5560);
@@ -170,34 +170,7 @@ public class FXMLController implements Initializable {
             System.out.println("DISCONNECTING FROM JOYSTICK");
         }
     }
-    
-//    public void connecttest(MouseEvent e){
-//        if(enableTEST == false){
-//            enableTEST = true;
-//            TEST.setFill(Color.web("#00FF00"));
-//            System.out.println("CONNECTING TO TEST");
-//            command_sender.startPiApp("ARM", 5564);
-////            System.out.println("returned 0");
-//            test_sender = new Sender("172.24.1.1", 5564);
-//            try{
-//            test_sender.initialise();
-//            } catch(UnknownHostException ex) {
-//                System.out.println("unknown host");
-//                return;
-//            }
-//            catch(IOException ex) {
-//                System.out.println("io exception");
-//                return;
-//            }
-//            //System.out.println("returned 1");
-//        }else{
-//            test_sender.stopPiApp("ARM");
-//            enableTEST = false;
-//            TEST.setFill(Color.web("#FF0000"));
-//            System.out.println("DISCONNECTING FROM JOYSTICK");
-//        }
-//    }
-//    
+
     public void connectrover(MouseEvent e){
         if(enablerover == false){
             try{
@@ -255,6 +228,7 @@ public class FXMLController implements Initializable {
             
         }
     }
+    
     // TODO    
     public void openVid(MouseEvent e){
         try {
@@ -269,7 +243,9 @@ public class FXMLController implements Initializable {
 //            vidStage.setScene(vidscene);
 //            vidStage.setResizable(false);
 //            vidStage.show();
-              command_sender.startPiApp("STREAM");
+            if(!test){
+                command_sender.startPiApp("STREAM");
+            }
         }
         catch (Exception a) {
         }
