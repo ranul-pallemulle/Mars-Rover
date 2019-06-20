@@ -57,8 +57,8 @@ public class FXMLController implements Initializable {
     boolean firstjoyclick = true;
     double initialoffsetx = 0;
     double initialoffsety = 0;    
-    boolean test = true;
-    String IPADDRESS = "172.24.1.1";
+    boolean test = false;
+    String IPADDRESS = "192.168.4.1";
     
     Sender command_sender = new Sender(IPADDRESS,5560);
     Sender joystick_sender;

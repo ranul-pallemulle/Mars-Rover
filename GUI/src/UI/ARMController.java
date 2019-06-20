@@ -69,8 +69,11 @@ public class ARMController implements Initializable {
     double segLength = 50;
     double sliderx = 200;
     double grippc = (sliderx-200)/100;
-    boolean test = true;
-    String IPADDRESS = "172.24.1.1";
+    boolean test = false;
+    String IPADDRESS = "192.168.4.1";
+    double globprevs1 = 0;
+    double globprevs2 = 0;
+    double globprevs3 = 0;
     
     Sender command_sender;
     Sender joystick_sender;
@@ -86,6 +89,72 @@ public class ARMController implements Initializable {
     public void pass_main_sender(Sender some_sender)
     {
         command_sender = some_sender;
+    }
+    
+    void smoothmove(double prevservo1, double prevservo2, double prevservo3, double newservo1, double newservo2, double newservo3){
+        boolean done1 = false, done2 = false, done3 = false;
+        double prevs1 = prevservo1;
+        double prevs2 = prevservo2;
+        double prevs3 = prevservo3;
+        boolean servo1dir = false;
+        boolean servo2dir = false;
+        boolean servo3dir = false;
+        double s1mamt = 0.1*(newservo1 - prevs1);
+        double s2mamt = 0.1*(newservo2 - prevs2);
+        double s3mamt = 0.1*(newservo3 - prevs3);
+//        if(newservo1 - prevservo1 > 0){
+//            servo1dir = true;
+//        }
+//        if(newservo2 - prevservo2 > 0){
+//            servo2dir = true;
+//        }
+//        if(newservo3 - prevservo3 > 0){
+//            servo3dir = true;
+//        }
+        while(!(done1 && done2 && done3)){
+            if(!done1 && prevs1 < newservo1 + 1 && prevs1 > newservo1 - 1){
+//                System.out.println("done servo1");
+                done1 = true;
+            }else if(!done1){
+//                System.out.println("moving servo1");
+//                if(servo1dir){
+                    prevs1 = prevs1 + s1mamt;
+//                }else{
+//                    prevs1 = prevs1 - s1mamt;
+//                }
+            }
+            if(!done2 && prevs2 < newservo2 + 1 && prevs2 > newservo2 - 1){
+//                System.out.println("done servo2");
+                done2 = true;
+            }else if(!done2){
+//                System.out.println("moving servo2");
+//                if(servo2dir){
+                    prevs2 = prevs2 + s2mamt;
+//                }else{
+//                    prevs2 = prevs2 - s2mamt;
+//                }
+            }
+            if(!done3 && prevs3 < newservo3 + 1 && prevs3 > newservo3 - 1){
+//                System.out.println("done servo3");
+                done3 = true;
+            }else if(!done3){
+//                System.out.println("moving servo3");
+//                if(servo3dir){
+                    prevs3 = prevs3 + s3mamt;
+//                }else{
+//                    prevs3 = prevs3 - s3mamt;
+//                }
+            }
+            String bleh1 = String.format ("%.1f", prevs1);
+            String bleh2 = String.format ("%.1f", prevs2);
+            String bleh3 = String.format ("%.1f", prevs3);
+//            System.out.println("servo1 = " + bleh1 + ", servo2 = " + bleh2 + ", servo3 = " + bleh3);
+            arm_sender.sendData((int)(grippc*90),(int)prevs3,(int)prevs2, (int)prevs1);
+        }
+        globprevs1 = newservo1;
+        globprevs2 = newservo2;
+        globprevs3 = newservo3;
+        arm_sender.sendData((int)(grippc*90),(int)newservo3,(int)newservo2, (int)newservo1);
     }
     
     double servoangle(double x3, double x2, double x1, double y3, double y2, double y1){
@@ -169,16 +238,21 @@ public class ARMController implements Initializable {
             armseg3.setRadius(8-(grippc*4));
             
             if(test){
-                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
-                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
-                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                double servo0ang = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double servo1ang = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double servo2ang = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                joint0ang = String.format ("%.1f", servo0ang);
+                joint1ang = String.format ("%.1f", servo1ang);
+                joint2ang = String.format ("%.1f", servo2ang);
                 String grippcstr = String.format ("%.1f",grippc*100);
                 System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+                smoothmove(globprevs1, globprevs2,globprevs3,servo0ang,servo1ang,servo2ang);
             }else{
                 double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
                 double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
                 double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+                smoothmove(globprevs1, globprevs2,globprevs3,joint0angd,joint1angd,joint2angd);
+//                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
             }
         }
     }
@@ -203,16 +277,21 @@ public class ARMController implements Initializable {
             armseg3.setRadius(8-(grippc*4));
             
             if(test){
-                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
-                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
-                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                double servo0ang = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double servo1ang = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double servo2ang = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                joint0ang = String.format ("%.1f", servo0ang);
+                joint1ang = String.format ("%.1f", servo1ang);
+                joint2ang = String.format ("%.1f", servo2ang);
                 String grippcstr = String.format ("%.1f",grippc*100);
                 System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+                smoothmove(globprevs1, globprevs2,globprevs3,servo0ang,servo1ang,servo2ang);
             }else{
                 double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
                 double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
                 double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+                smoothmove(globprevs1, globprevs2,globprevs3,joint0angd,joint1angd,joint2angd);
+//                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
             }
         }
     }
@@ -281,16 +360,21 @@ public class ARMController implements Initializable {
 //            armseg3.setRadius(8-(grippc*4));
             
             if(test){
-                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
-                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
-                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                double servo0ang = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double servo1ang = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double servo2ang = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                joint0ang = String.format ("%.1f", servo0ang);
+                joint1ang = String.format ("%.1f", servo1ang);
+                joint2ang = String.format ("%.1f", servo2ang);
                 String grippcstr = String.format ("%.1f",grippc*100);
                 System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+                smoothmove(globprevs1, globprevs2,globprevs3,servo0ang,servo1ang,servo2ang);
             }else{
                 double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
                 double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
                 double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+                smoothmove(globprevs1, globprevs2,globprevs3,joint0angd,joint1angd,joint2angd);
+//                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
             }
         }
     }
@@ -314,16 +398,21 @@ public class ARMController implements Initializable {
 //            armseg3.setRadius(8-(grippc*4));
             
             if(test){
-                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
-                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
-                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                double servo0ang = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double servo1ang = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double servo2ang = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                joint0ang = String.format ("%.1f", servo0ang);
+                joint1ang = String.format ("%.1f", servo1ang);
+                joint2ang = String.format ("%.1f", servo2ang);
                 String grippcstr = String.format ("%.1f",grippc*100);
                 System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+                smoothmove(globprevs1, globprevs2,globprevs3,servo0ang,servo1ang,servo2ang);
             }else{
                 double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
                 double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
                 double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+                smoothmove(globprevs1, globprevs2,globprevs3,joint0angd,joint1angd,joint2angd);
+//                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
             }
         }
     }
@@ -347,16 +436,21 @@ public class ARMController implements Initializable {
 //            armseg3.setRadius(8-(grippc*4));
             
             if(test){
-                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
-                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
-                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                double servo0ang = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double servo1ang = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double servo2ang = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                joint0ang = String.format ("%.1f", servo0ang);
+                joint1ang = String.format ("%.1f", servo1ang);
+                joint2ang = String.format ("%.1f", servo2ang);
                 String grippcstr = String.format ("%.1f",grippc*100);
                 System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+                smoothmove(globprevs1, globprevs2,globprevs3,servo0ang,servo1ang,servo2ang);
             }else{
                 double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
                 double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
                 double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-                arm_sender.sendData((int)(grippc),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+                smoothmove(globprevs1, globprevs2,globprevs3,joint0angd,joint1angd,joint2angd);
+//                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
             }
         }
     }    
@@ -380,16 +474,21 @@ public void setarmpick(MouseEvent e) {
 //            armseg3.setRadius(8-(grippc*4));
             
             if(test){
-                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
-                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
-                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                double servo0ang = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double servo1ang = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double servo2ang = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                joint0ang = String.format ("%.1f", servo0ang);
+                joint1ang = String.format ("%.1f", servo1ang);
+                joint2ang = String.format ("%.1f", servo2ang);
                 String grippcstr = String.format ("%.1f",grippc*100);
                 System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+                smoothmove(globprevs1, globprevs2,globprevs3,servo0ang,servo1ang,servo2ang);
             }else{
                 double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
                 double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
                 double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-                arm_sender.sendData((int)(grippc),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+                smoothmove(globprevs1, globprevs2,globprevs3,joint0angd,joint1angd,joint2angd);
+//                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
             }
         }
     }        
@@ -409,16 +508,21 @@ public void setarmpick(MouseEvent e) {
             armseg3.setRadius(8-(grippc*4));
             
             if(test){
-                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
-                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
-                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                double servo0ang = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double servo1ang = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double servo2ang = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                joint0ang = String.format ("%.1f", servo0ang);
+                joint1ang = String.format ("%.1f", servo1ang);
+                joint2ang = String.format ("%.1f", servo2ang);
                 String grippcstr = String.format ("%.1f",grippc*100);
                 System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+                smoothmove(globprevs1, globprevs2,globprevs3,servo0ang,servo1ang,servo2ang);
             }else{
                 double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
                 double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
                 double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+                smoothmove(globprevs1, globprevs2,globprevs3,joint0angd,joint1angd,joint2angd);
+//                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
             }
         }
     }
@@ -449,16 +553,21 @@ public void setarmpick(MouseEvent e) {
             setarmlocation(armx[1], armx[2], armx[3], army[1], army[2], army[3]);
             
             if(test){
-                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
-                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
-                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                double servo0ang = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double servo1ang = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double servo2ang = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                joint0ang = String.format ("%.1f", servo0ang);
+                joint1ang = String.format ("%.1f", servo1ang);
+                joint2ang = String.format ("%.1f", servo2ang);
                 String grippcstr = String.format ("%.1f",grippc*100);
                 System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+                smoothmove(globprevs1, globprevs2,globprevs3,servo0ang,servo1ang,servo2ang);
             }else{
                 double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
                 double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
                 double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+                smoothmove(globprevs1, globprevs2,globprevs3,joint0angd,joint1angd,joint2angd);
+//                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
             }
         }
     }
@@ -546,16 +655,21 @@ public void setarmpick(MouseEvent e) {
             setarmlocation(armx[1], armx[2], armx[3], army[1], army[2], army[3]);
             
             if(test){
-                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
-                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
-                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                double servo0ang = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double servo1ang = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double servo2ang = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                joint0ang = String.format ("%.1f", servo0ang);
+                joint1ang = String.format ("%.1f", servo1ang);
+                joint2ang = String.format ("%.1f", servo2ang);
                 String grippcstr = String.format ("%.1f",grippc*100);
                 System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+                smoothmove(globprevs1, globprevs2,globprevs3,servo0ang,servo1ang,servo2ang);
             }else{
                 double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
                 double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
                 double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+                smoothmove(globprevs1, globprevs2,globprevs3,joint0angd,joint1angd,joint2angd);
+//                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
             }
         }
     }
@@ -682,16 +796,21 @@ public void setarmpick(MouseEvent e) {
             setarmlocation(armx[1], armx[2], armx[3], army[1], army[2], army[3]);
             
             if(test){
-                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
-                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
-                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                double servo0ang = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double servo1ang = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double servo2ang = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                joint0ang = String.format ("%.1f", servo0ang);
+                joint1ang = String.format ("%.1f", servo1ang);
+                joint2ang = String.format ("%.1f", servo2ang);
                 String grippcstr = String.format ("%.1f",grippc*100);
                 System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+                smoothmove(globprevs1, globprevs2,globprevs3,servo0ang,servo1ang,servo2ang);
             }else{
                 double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
                 double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
                 double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
-                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+                smoothmove(globprevs1, globprevs2,globprevs3,joint0angd,joint1angd,joint2angd);
+//                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
             }
         }
     }
