@@ -274,6 +274,7 @@ public class ARMController implements Initializable {
             armx[3] = armx[2] + cos(-(servo1 + servo2 + servo3) * Math.PI / 180) * segLength;
             army[3] = army[2] + sin(-(servo1 + servo2 + servo3) * Math.PI / 180) * segLength;
             setarmlocation(armx[1], armx[2], armx[3], army[1], army[2], army[3]);
+            flip = 1;
 //            sliderx = 200;
 //            sliderball.setCenterX(sliderx);
 //            grippc = 0;
