@@ -277,7 +277,40 @@ public class ARMController implements Initializable {
             flip = 1;
 //            sliderx = 200;
 //            sliderball.setCenterX(sliderx);
-//            grippc = 0;
+            grippc = 0;
+//            armseg3.setRadius(8-(grippc*4));
+            
+            if(test){
+                joint0ang = String.format ("%.1f", servoangle(armx[1],armx[0],250,army[1],army[0],250));
+                joint1ang = String.format ("%.1f", servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]));
+                joint2ang = String.format ("%.1f", servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]));
+                String grippcstr = String.format ("%.1f",grippc*100);
+                System.out.println("servo1 = " + joint0ang + ", servo2 = " + joint1ang + ", servo3 = " + joint2ang + ", gripper = " + grippcstr + "%");
+            }else{
+                double joint0angd = servoangle(armx[1],armx[0],250,army[1],army[0],250);
+                double joint1angd = servoangle(armx[2],armx[1],armx[0],army[2],army[1],army[0]);
+                double joint2angd = servoangle(armx[3],armx[2],armx[1],army[3],army[2],army[1]);
+                arm_sender.sendData((int)(grippc*90),(int)joint2angd,(int)joint1angd, (int)joint0angd);
+            }
+        }
+    }
+    
+    public void setarmdrop2(MouseEvent e) {
+        if(enablearm){
+            double servo1 = 53;
+            double servo2 = 86;
+            double servo3 = 75;
+            armx[1] = armx[0] + cos(-servo1 * Math.PI / 180) * segLength;
+            army[1] = army[0] + sin(-servo1 * Math.PI / 180) * segLength;
+            armx[2] = armx[1] + cos(-(servo1 + servo2) * Math.PI / 180) * segLength;
+            army[2] = army[1] + sin(-(servo1 + servo2) * Math.PI / 180) * segLength;
+            armx[3] = armx[2] + cos(-(servo1 + servo2 + servo3) * Math.PI / 180) * segLength;
+            army[3] = army[2] + sin(-(servo1 + servo2 + servo3) * Math.PI / 180) * segLength;
+            setarmlocation(armx[1], armx[2], armx[3], army[1], army[2], army[3]);
+            flip = 1;
+//            sliderx = 200;
+//            sliderball.setCenterX(sliderx);
+            grippc = 0;
 //            armseg3.setRadius(8-(grippc*4));
             
             if(test){
