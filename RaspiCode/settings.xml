@@ -49,13 +49,13 @@
 
   <MOTORS NAME="Arm">
     <MOTOR NAME="Servo1">
-      <PIN TYPE="Other"> 13 </PIN>
+      <PIN TYPE="Other"> 13 </PIN> <!--top-->
     </MOTOR>
     <MOTOR NAME="Servo2">
-      <PIN TYPE="Other"> 14 </PIN>
+      <PIN TYPE="Other"> 14 </PIN> <!--middle-->
     </MOTOR>
     <MOTOR NAME="Servo3">
-      <PIN TYPE="Other"> 15 </PIN>
+      <PIN TYPE="Other"> 15 </PIN> <!--bottom-->
     </MOTOR>
     <MOTOR NAME="Gripper">
       <PIN TYPE="Other"> 12 </PIN>
