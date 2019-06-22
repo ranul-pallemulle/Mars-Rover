@@ -4,6 +4,7 @@ from threading import Lock
 # global configuration managers
 overall_config = None
 motor_config = None
+cam_config = None
 
 class ConfigurationError(Exception):
     '''Exception class for configuration.'''
@@ -22,8 +23,10 @@ class Configuration:
     def ready():
         global overall_config
         global motor_config
+        global cam_config
         if overall_config is None \
-           or motor_config is None:
+           or motor_config is None \
+           or cam_config is None:
             return False
         return True
 
@@ -31,8 +34,10 @@ class Configuration:
     def settings_file(name="settings.xml"):
         global overall_config
         global motor_config
+        global cam_config
         overall_config = OverallConfiguration(name)
         motor_config = MotorConfiguration(name)
+        cam_config = CameraConfiguration(name)
 
     def _getsubelemvalue(self,elem, pred, match):
         for things in elem:
@@ -114,7 +119,60 @@ class MotorConfiguration(Configuration):
         try:
             return int(pin.text)
         except ValueError as e:
-            raise ConfigurationError("Bad value in settings file for pin of motor '"+motor_name+"'. Error: "+str(e))
+            raise ConfigurationError("Bad value in settings file for pin of motor '"+motor_name+"'. Error: "+str(e))         
+
+class CameraConfiguration(Configuration):
+    def __init__(self, name="settings.xml"):
+        Configuration.__init__(self,name)
+
+    def _generic_integer_setting(self, name):
+        req = ["{Camera}.{"+name+"}"]
+        elem_list = self.provide_settings(req)
+        if not elem_list:
+            return None
+        val = int(elem_list[0][0].text.strip())
+        return val
+
+    def _generic_string_setting(self, name):
+        req = ["{Camera}.{"+name+"}"]
+        elem_list = self.provide_settings(req)
+        if not elem_list:
+            return None
+        val = elem_list[0][0].text.strip()
+        return val
+
+    def device(self):
+        dev = self._generic_string_setting('device')
+        if dev == 'rpicamsrc' or dev == 'v4l2src' or dev == 'avfvideosrc':
+            return dev
+        raise ConfigurationError("Error in camera settings: invalid device specified, can only be 'rpicamsrc','v4l2src' or 'avfvideosrc'.")
+           
+
+    def capture_framerate(self):
+        return self._generic_integer_setting('capture_framerate')
+
+    def capture_frame_width(self):
+        return self._generic_integer_setting('capture_frame_width')
+
+    def capture_frame_height(self):
+        return self._generic_integer_setting('capture_frame_height')
+
+    def stream_port(self):
+        return self._generic_integer_setting('stream_port')
+
+    def stream_framerate(self):
+        return self._generic_integer_setting('stream_framerate')
+    def stream_frame_width(self):
+        return self._generic_integer_setting('stream_frame_width')
+
+    def stream_frame_height(self):
+        return self._generic_integer_setting('stream_frame_height')
+
+    def ip_address(self):
+        val = self.top_level_element_value("IP_ADDRESS")
+        if val is None:
+            raise ConfigurationError("No settings found for IP address.")
+        return val    
 
 class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):

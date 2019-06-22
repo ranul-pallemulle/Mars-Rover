@@ -2,8 +2,8 @@ import unittest
 from unittest.mock import patch, Mock
 import interfaces.actuator as act
 import coreutils.resource_manager as mgr
-from threading import Thread
-import time
+# from threading import Thread
+# import time
 
 class ActImpl(act.Actuator):
     '''An implementation of Actuator.'''

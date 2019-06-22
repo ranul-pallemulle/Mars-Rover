@@ -127,6 +127,9 @@ Pass self as this argument.'''
             raise ResourceError('Resource "{}" requested but not found'.
                                 format(typename))
 
+    def get_camera_use_count(self):
+        return self.resources[Camera.FEED]        
+
     def release(self, acq_obj, typename):
         '''Release ownership of a resource.'''
         acq_name = next(key for key, value in OpMode.opmodes_list.items() if value == acq_obj)        
@@ -160,6 +163,5 @@ Pass self as this argument.'''
                         dg.print("Shared resource {} deinitialised".format(typename))
         else:
             raise ResourceError('Resource "{}" not found'.format(typename))
-                        
-
+        
 global_resources = ResourceManager()
