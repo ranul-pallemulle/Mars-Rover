@@ -56,17 +56,36 @@ class UltrasoundSensor(Resource):
         self.lock.release()
         return distance
 
+    def _send_pulse(self):
+        GPIO.output(self.trigger_pin, GPIO.HIGH)
+        time.sleep(0.00001)     # 0.00001
+        GPIO.output(self.trigger_pin, GPIO.LOW)
+
     def _capture(self):
         while self.active:
-            GPIO.output(self.trigger_pin, GPIO.HIGH)
-            time.sleep(0.00001)
-            GPIO.output(self.trigger_pin, GPIO.LOW)
-            
+            start_fresh = False
+            timeout_count = 0
+            # print("sending pulse")
+            self._send_pulse()
+
             while self.active and GPIO.input(self.echo_pin) == 0:
+                # print("IN ONE")
+                # print("IN ONE: {}".format(timeout_count))
+                timeout_count += 1
+                if timeout_count == 200:
+                    start_fresh = True
+                    break
                 pulse_start = time.time()
 
+
             while self.active and GPIO.input(self.echo_pin) == 1:
+                # print("IN TWO")
                 pulse_end = time.time()
+
+            if start_fresh:
+                # print("Starting fresh")
+                time.sleep(0.2)
+                continue
 
             if not self.active:
                 break
@@ -77,4 +96,4 @@ class UltrasoundSensor(Resource):
             self.lock.acquire_write()
             self.distance = distance
             self.lock.release()
-            print("Distance: {}".format(distance))
+            # print("Distance: {}".format(distance))

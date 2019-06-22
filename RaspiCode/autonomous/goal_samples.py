@@ -58,21 +58,21 @@ class Samples(Goal, Actuator):
         with self.condition:
             self.xval = self.k1*relx
             self.yval = self.k1*rely
-            print("xval: {}, yval: {}".format(self.xval,self.yval))
+            # print("xval: {}, yval: {}".format(self.xval,self.yval))
             self.condition.notify()
             
     def pid_arm_y(self, rely):
         with self.condition:
             self.xval = 0
             self.yval = 0
-            print("xval: {}, yval: {}".format(self.xval,self.yval))
+            # print("xval: {}, yval: {}".format(self.xval,self.yval))
             self.condition.notify()
             
     def pid_arm_height(self, height):
         with self.condition:
             self.xval = 0
             self.yval = 0
-            print("xval: {}, yval: {}".format(self.xval,self.yval))
+            # print("xval: {}, yval: {}".format(self.xval,self.yval))
             self.condition.notify()
     
     def pick_samples(self):
@@ -98,7 +98,7 @@ class Samples(Goal, Actuator):
                 z = self.ultrasound.read()
                 relx = (x-centre_x)*100.0/centre_x
                 rely = -(y-centre_y)*100.0/centre_y
-                # print("{}, {}".format(relx, rely))
+                print("{}, {}, {}".format(relx, rely, z))
                 if abs(relx) > 5 or abs(rely) > 5:
                     self.pid_wheels(relx,rely)
                 else:
