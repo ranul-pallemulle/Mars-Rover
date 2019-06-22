@@ -10,6 +10,7 @@ import busio
 from resources.adafruit_servokit import ServoKit
 import resources.PCA9685_servo as PCA9685_servo
 import resources.PCA9685_motor as PCA9685_motor
+import adafruit_pca9685
 
 class WheelMotors(Resource):
     def __init__(self):
@@ -147,7 +148,6 @@ class WheelMotors(Resource):
 
 class ArmMotors(Resource):
     def __init__(self):
-        
         """
         Call set_values to set angles ofs servos.
         Will need to callibrate for limits
@@ -157,13 +157,14 @@ class ArmMotors(Resource):
         self.register_name("Arm")
 
         self.i2c = busio.I2C(board.SCL, board.SDA)
-        self.servo = PCA9685_servo.PCA9685(self.i2c)
+        # self.servo = PCA9685_servo.PCA9685(self.i2c)
+        self.servo = adafruit_pca9685.PCA9685(self.i2c)
         self.kit = ServoKit(channels=16)
-        
-        gripper_pin = cfg.motor_config.get_pin("Arm","Gripper")
-        servo1_pin = cfg.motor_config.get_pin("Arm","Servo1")
-        servo2_pin = cfg.motor_config.get_pin("Arm","Servo2")
-        servo3_pin = cfg.motor_config.get_pin("Arm","Servo3")
+
+        gripper_pin = cfg.motor_config.get_pin("Arm", "Gripper")
+        servo1_pin = cfg.motor_config.get_pin("Arm", "Servo1")
+        servo2_pin = cfg.motor_config.get_pin("Arm", "Servo2")
+        servo3_pin = cfg.motor_config.get_pin("Arm", "Servo3")
 
         #servo1_pwm_pin = cfg.motor_config.get_pwm_pin("Arm", "Servo1")
         #servo1_digital_pin = cfg.motor_config.get_digital_pin("Arm", "Servo1")
@@ -185,61 +186,62 @@ class ArmMotors(Resource):
         self.servo_middle.actuation_range = 360
         self.servo_bottom.actuation_range = 360
 
-        self.servo_grab.set_pulse_width_range(100, 4000)
-        self.servo_top.set_pulse_width_range(100, 4000)
-        self.servo_middle.set_pulse_width_range(100, 4000)
-        self.servo_bottom.set_pulse_width_range(100, 4000)
-
+        # Callibrated to Proper Servo values.
+        self.servo_grab.set_pulse_width_range(500, 3250)
+        self.servo_top.set_pulse_width_range(500, 3250)
+        self.servo_middle.set_pulse_width_range(500, 3250)
+        self.servo_bottom.set_pulse_width_range(500, 3250)
 
     def set_values(self, values):
+        """
+        Receives value as -135 to 135 so there is an offset
+        put into place. 
+        """
 
+        offset = 135  # Goes from 0 to 270, but takes values from -135 to 135
 
-        offset_1 = 160
-        offset_2 = 180
-        offset_3 = 105
-        self.angle_grab = values[0]
-        self.angle_top = values[1] - offs
-        self.angle_middle = values[2]
-        self.angle_bottom = values[3]
-        
+        self.angle_grab = values[0] + offset
+        self.angle_top = values[1] + offset
+        self.angle_middle = values[2] + offset
+        self.angle_bottom = values[3] + offset
+
         dg.print("arm motors got values: {}, {}, {},{}".format(values[0], values[1], values[2],
-              values[3]))
-        
+                                                               values[3]))
+
         self._set_angle()
-         
 
     def _set_angle(self):
         """
         Sets angles of servos, limits defined in the top of the function
         all angles are in degrees. 
         """
+
+        # ------ Software set limit of servo angles -------
+        # grab_lim = 90
+        # top_lim = 90
+        # middle_lim = 90
+        # bottom_lim = 90
+
+        # # Good angle range is 30 - 80 degrees
+        # if self.angle_grab > grab_lim:
+        #     self.angle_grab = grab_lim
+        #     dg.print('Grabbing servo angle out of range, limit = {}'.format(grab_lim))
+
+        # if self.angle_top > top_lim:
+        #     self.angle_top = top_lim
+        #     dg.print('Top servo angle out of range, limit = {}'.format(top_lim))
+
+        # if self.angle_middle > middle_lim:
+        #     self.angle_middle = middle_lim
+        #     dg.print('Middle servo angle out of range, limit = {}'.format(middle_lim))
+
+        # if self.angle_bottom > bottom_lim:
+        #     self.angle_bottom = bottom_lim
+        #     dg.print('Bottom servo angle out of range, limit = {}'.format(bottom_lim))
         
-
-        #Limit of servo angles 
-        grab_lim = 90
-        top_lim = 90
-        middle_lim = 90
-        bottom_lim = 90
-                                    
-        # Good angle range is 30 - 80 degrees
-        if self.angle_grab > grab_lim:
-            self.angle_grab = grab_lim
-            dg.print('Grabbing servo angle out of range, limit = {}'.format(grab_lim))
-                            
-        if self.angle_top > top_lim:
-            self.angle_top = top_lim
-            dg.print('Top servo angle out of range, limit = {}'.format(top_lim))
-            
-        if self.angle_middle > middle_lim:
-            self.angle_middle = middle_lim
-            dg.print('Middle servo angle out of range, limit = {}'.format(middle_lim))
-
-        if self.angle_bottom > bottom_lim:
-            self.angle_bottom = bottom_lim
-            dg.print('Bottom servo angle out of range, limit = {}'.format(bottom_lim))
-
-        self.servo_grab.angle = self.angle_grab
-        self.servo_middle.angle = self.angle_middle
         self.servo_bottom.angle = self.angle_bottom
+        self.servo_middle.angle = self.angle_middle
+        self.servo_top.angle = self.angle_top
+        self.servo_grab.angle = self.angle_grab
 
-        time.sleep(1)
+        time.sleep(0.03)

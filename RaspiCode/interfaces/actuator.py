@@ -19,6 +19,8 @@ class Actuator(ABC):
     
     def begin_actuate(self):
         '''Run update_motors in a new thread, if the motor_list is not empty.'''
+        if self.release_was_called:
+            self.release_was_called = False
         thread = Thread(target=self.update_motors, args=())
         thread.start()
 
@@ -67,7 +69,8 @@ class Actuator(ABC):
                             # (already received) are updated.
                 for motor_set in self.motor_list.keys():
                     values = self.get_values(motor_set)
-                    self.motor_list[motor_set].set_values(values)
+                    if values is not None:
+                        self.motor_list[motor_set].set_values(values)
 
 
     def release_motors(self, motor_set):

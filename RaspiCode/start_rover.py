@@ -43,8 +43,6 @@ def main(argv):
     except cfg.ConfigurationError as e: # error related to settings file
         dg.print(str(e) + "\nExiting...")
         sys.exit(1)
-
-    dg.initialise()             # start diagnostics connection
         
     try:
         OpMode.opmodes_initialise() # check for available operational modes
@@ -65,6 +63,8 @@ def main(argv):
 
     unit.activate_main_unit_services()
         
+    dg.initialise()             # start diagnostics connection
+
     dg.print("Waiting for connection...")
     try:
         main_sock = TcpSocket(port)
