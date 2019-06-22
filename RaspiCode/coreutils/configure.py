@@ -213,7 +213,18 @@ class AutonomousConfiguration(Configuration):
 
     def stream_frame_height(self):
         return self._generic_integer_setting('stream_frame_height')
-            
+
+    def ultrasound_trigger_pin(self):
+        return self._generic_integer_setting('ultrasound_trigger_pin')
+
+    def ultrasound_echo_pin(self):
+        return self._generic_integer_setting('ultrasound_echo_pin')
+    
+    def ultrasound_power_pin(self):
+        return self._generic_integer_setting('ultrasound_power_pin')
+    
+    def ultrasound_ground_pin(self):
+        return self._generic_integer_setting('ultrasound_ground_pin')
 
 class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
