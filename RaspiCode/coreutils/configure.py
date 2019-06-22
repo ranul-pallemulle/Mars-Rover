@@ -5,6 +5,7 @@ from threading import Lock
 overall_config = None
 motor_config = None
 cam_config = None
+auto_config = None
 
 class ConfigurationError(Exception):
     '''Exception class for configuration.'''
@@ -24,9 +25,11 @@ class Configuration:
         global overall_config
         global motor_config
         global cam_config
+        global auto_config
         if overall_config is None \
            or motor_config is None \
-           or cam_config is None:
+           or cam_config is None \
+           or auto_config is None:
             return False
         return True
 
@@ -35,9 +38,11 @@ class Configuration:
         global overall_config
         global motor_config
         global cam_config
+        global auto_config
         overall_config = OverallConfiguration(name)
         motor_config = MotorConfiguration(name)
         cam_config = CameraConfiguration(name)
+        auto_config = AutonomousConfiguration(name)
 
     def _getsubelemvalue(self,elem, pred, match):
         for things in elem:
@@ -172,7 +177,60 @@ class CameraConfiguration(Configuration):
         val = self.top_level_element_value("IP_ADDRESS")
         if val is None:
             raise ConfigurationError("No settings found for IP address.")
-        return val    
+        return val
+    
+class AutonomousConfiguration(Configuration):
+    def __init__(self, name="settings.xml"):
+        Configuration.__init__(self,name)
+        
+    def _generic_integer_setting(self,name):
+        req = ["{Autonomous}.{"+name+"}"]
+        elem_list = self.provide_settings(req)
+        if not elem_list:
+            return None
+        val = int(elem_list[0][0].text.strip())
+        return val
+    
+    def _generic_string_setting(self,name):
+        req = ["{Autonomous}.{"+name+"}"]
+        elem_list = self.provide_settings(req)
+        if not elem_list:
+            return None
+        val = elem_list[0][0].text.strip()
+        return val
+    
+    def capture_framerate(self):
+        return self._generic_integer_setting('capture_framerate')
+
+    def capture_frame_width(self):
+        return self._generic_integer_setting('capture_frame_width')
+
+    def capture_frame_height(self):
+        return self._generic_integer_setting('capture_frame_height')
+
+    def stream_port(self):
+        return self._generic_integer_setting('stream_port')
+
+    def stream_framerate(self):
+        return self._generic_integer_setting('stream_framerate')
+    
+    def stream_frame_width(self):
+        return self._generic_integer_setting('stream_frame_width')
+
+    def stream_frame_height(self):
+        return self._generic_integer_setting('stream_frame_height')
+
+    def ultrasound_trigger_pin(self):
+        return self._generic_integer_setting('ultrasound_trigger_pin')
+
+    def ultrasound_echo_pin(self):
+        return self._generic_integer_setting('ultrasound_echo_pin')
+    
+    def ultrasound_power_pin(self):
+        return self._generic_integer_setting('ultrasound_power_pin')
+    
+    def ultrasound_ground_pin(self):
+        return self._generic_integer_setting('ultrasound_ground_pin')
 
 class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):

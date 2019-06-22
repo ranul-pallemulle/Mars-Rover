@@ -5,10 +5,13 @@
     <PORT> 5570 </PORT>
   </DIAGNOSTICS>
   
-  <IP_ADDRESS> 172.24.1.1 </IP_ADDRESS>
+  <!-- <IP_ADDRESS> 172.24.1.1 </IP_ADDRESS> -->
   <!-- <IP_ADDRESS> localhost </IP_ADDRESS> -->
   <!-- <IP_ADDRESS> 192.168.2.3 </IP_ADDRESS> -->
   <!-- <IP_ADDRESS> 10.42.0.69 </IP_ADDRESS> -->
+  <IP_ADDRESS> 10.42.0.137 </IP_ADDRESS>
+  <!-- <IP_ADDRESS>  192.168.4.1 </IP_ADDRESS> -->
+
 
   <CAMERA>
     <DEVICE> rpicamsrc </DEVICE>
@@ -25,6 +28,21 @@
     <STREAM_FRAME_WIDTH> 640 </STREAM_FRAME_WIDTH> <!--640-->
     <STREAM_FRAME_HEIGHT> 400 </STREAM_FRAME_HEIGHT> <!--400-->
   </CAMERA>
+
+  <AUTONOMOUS>
+    <CAPTURE_FRAMERATE> 60 </CAPTURE_FRAMERATE>
+    <CAPTURE_FRAME_WIDTH> 640 </CAPTURE_FRAME_WIDTH>
+    <CAPTURE_FRAME_HEIGHT> 400 </CAPTURE_FRAME_HEIGHT>
+    <STREAM_PORT> 5593 </STREAM_PORT>
+    <STREAM_FRAMERATE> 60 </STREAM_FRAMERATE>
+    <STREAM_FRAME_WIDTH> 640 </STREAM_FRAME_WIDTH>
+    <STREAM_FRAME_HEIGHT> 400 </STREAM_FRAME_HEIGHT>
+
+    <ULTRASOUND_POWER_PIN> 12 </ULTRASOUND_POWER_PIN>
+    <ULTRASOUND_GROUND_PIN> 13 </ULTRASOUND_GROUND_PIN>
+    <ULTRASOUND_TRIGGER_PIN> 16 </ULTRASOUND_TRIGGER_PIN>
+    <ULTRASOUND_ECHO_PIN> 19 </ULTRASOUND_ECHO_PIN>
+  </AUTONOMOUS>  
   
   <MOTORS NAME="Wheels">
     <MOTOR NAME="Left">
@@ -39,13 +57,13 @@
 
   <MOTORS NAME="Arm">
     <MOTOR NAME="Servo1">
-      <PIN TYPE="Other"> 13 </PIN>
+      <PIN TYPE="Other"> 13 </PIN> <!--top-->
     </MOTOR>
     <MOTOR NAME="Servo2">
-      <PIN TYPE="Other"> 14 </PIN>
+      <PIN TYPE="Other"> 14 </PIN> <!--middle-->
     </MOTOR>
     <MOTOR NAME="Servo3">
-      <PIN TYPE="Other"> 15 </PIN>
+      <PIN TYPE="Other"> 15 </PIN> <!--bottom-->
     </MOTOR>
     <MOTOR NAME="Gripper">
       <PIN TYPE="Other"> 12 </PIN>
@@ -58,12 +76,14 @@
   <OPMODES_DIRECTORIES>
     joystick,
     robotic_arm,
-    camera_feed
+    camera_feed,
+    autonomous
   </OPMODES_DIRECTORIES>
 
   <RESOURCES_DIRECTORIES>
     resources/camera.py,
-    resources/motors.py
+    resources/motors.py,
+    resources/ultrasound_sensor.py
   </RESOURCES_DIRECTORIES>
 
 </SETTINGS>

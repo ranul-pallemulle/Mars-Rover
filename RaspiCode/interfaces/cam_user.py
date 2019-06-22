@@ -99,7 +99,7 @@ class CameraUser:
             tune = ' tune=zerolatency '
         comm = 'appsrc ! videoconvert ! video/x-raw,width='+str(src_width)+\
             ',height='+str(src_height)+',framerate='+str(src_framerate)+\
-            '/1 ! '+compressor+tune+'! rtph264pay config-interval=1 pt=96 ! \
+            '/1,format=I420 ! '+compressor+tune+'! rtph264pay config-interval=1 pt=96 ! \
 gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
 
         self.stream_writer = cv2.VideoWriter(comm, cv2.CAP_GSTREAMER, 0, 
