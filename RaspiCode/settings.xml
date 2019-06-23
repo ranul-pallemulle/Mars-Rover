@@ -83,8 +83,8 @@
   </OPMODES_DIRECTORIES>
 
   <RESOURCES_DIRECTORIES>
-    resources/camera.py,
-    resources/motors.py,
+    <!-- resources/camera.py, -->
+    <!-- resources/motors.py, -->
     resources/ultrasound_sensor.py
   </RESOURCES_DIRECTORIES>
 
