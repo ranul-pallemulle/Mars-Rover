@@ -1,6 +1,6 @@
 from abc import ABC, ABCMeta, abstractmethod
 import coreutils.configure as cfg
-from resources.camera import CameraError
+# from resources.camera import CameraError
 import coreutils.resource_manager as mgr
 from coreutils.diagnostics import Diagnostics as dg
 from coreutils.rwlock import RWLock
@@ -39,7 +39,7 @@ class CameraUser:
         while self.streaming:
             t0 = time.time()
             frame = self.camera.get_frame()
-            self.stream_writer.write(frame)
+            self.stream_writer.write(np.array(frame))
             t1 = time.time()
             self.framerate_list.append(1.0/(t1-t0))
             if len(self.framerate_list) == 100:
