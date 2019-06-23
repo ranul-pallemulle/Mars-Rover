@@ -1,5 +1,7 @@
 <SETTINGS>
 
+  <MAIN_IP> 10.42.0.137 </MAIN_IP>
+
   <DIAGNOSTICS>
     <STATE> Enabled </STATE>
     <PORT> 5570 </PORT>
