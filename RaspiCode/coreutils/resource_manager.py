@@ -5,6 +5,8 @@ import resources.resource as rsc
 import coreutils.configure as cfg
 from coreutils.diagnostics import Diagnostics as dg
 from interfaces.opmode import OpMode
+from autonomous.auto_mode import Goal
+from autonomous.cv_engine import CVEngine
 
 class Status(Enum):
     FREE = 0
@@ -77,7 +79,14 @@ class ResourceManager:
         '''Provide unique access to a resource. Return None if already
 acquired. acq_obj == acquiring object - i.e the object acquiring the resource.
 Pass self as this argument.'''
-        acq_name = next(key for key, value in OpMode.opmodes_list.items() if value == acq_obj)
+        acq_name = next((key for key, value in OpMode.opmodes_list.items() if value == acq_obj), "_NOTFOUND")
+        if acq_name == '_NOTFOUND':
+            acq_name = next((key for key, value in Goal.goals_list.items() if value == acq_obj), "_NOTFOUND")
+        if acq_name == '_NOTFOUND':
+            if acq_obj.__class__ in CVEngine.__subclasses__():
+                acq_name = 'CVEngine'                    
+        if acq_name == '_NOTFOUND':
+            raise ResourceError('Could not locate acquirer for resource {}'.format(typename))
         if typename in self.resources_status.keys():
             # dg.print("Refcount for {}:
             # {}".format(typename,sys.getrefcount(rsc.Resource.get(typename))))
@@ -100,7 +109,15 @@ Pass self as this argument.'''
 
     def get_shared(self, acq_obj, typename):
         '''Provide shared access to a resource.'''
-        acq_name = next(key for key, value in OpMode.opmodes_list.items() if value == acq_obj)
+        # print("TRYING TO GET {} FROM {}".format(typename, acq_obj))
+        acq_name = next((key for key, value in OpMode.opmodes_list.items() if value == acq_obj), "_NOTFOUND")
+        if acq_name == '_NOTFOUND':
+            acq_name = next((key for key, value in Goal.goals_list.items() if value == acq_obj), "_NOTFOUND")
+        if acq_name == '_NOTFOUND':
+            if acq_obj.__class__ in CVEngine.__subclasses__():
+                acq_name = 'CVEngine'
+        if acq_name == '_NOTFOUND':
+            raise ResourceError('Could not locate acquirer "{}" for resource {}'.format(acq_obj,typename))
         if typename in self.resources_status.keys():
             # dg.print("Refcount for {}:
             # {}".format(typename,sys.getrefcount(resource)))
@@ -108,8 +125,12 @@ Pass self as this argument.'''
             if str(resource.policy) == str(rsc.Policy.SHARED):
                 count = self.resources_status[typename]
                 self.resources_status[typename] = count + 1
-                if not self.acquisition_list[typename]:
+                # print("Got here")
+                # print("HELLO: {}".format(self.acquisition_list[typename]))
+                # if not self.acquisition_list[typename]:
+                if not typename in self.acquisition_list.keys():
                     self.acquisition_list[typename] = []
+
                 self.acquisition_list[typename].append(acq_name)
                 if self.resources_status[typename] == 1:
                     if resource.shared_init:
@@ -131,7 +152,14 @@ Pass self as this argument.'''
 
     def release(self, acq_obj, typename):
         '''Release ownership of a resource.'''
-        acq_name = next(key for key, value in OpMode.opmodes_list.items() if value == acq_obj)        
+        acq_name = next((key for key, value in OpMode.opmodes_list.items() if value == acq_obj), "_NOTFOUND")
+        if acq_name == '_NOTFOUND':
+            acq_name = next((key for key, value in Goal.goals_list.items() if value == acq_obj), "_NOTFOUND")
+        if acq_name == '_NOTFOUND':
+            if acq_obj.__class__ in CVEngine.__subclasses__():
+                acq_name = 'CVEngine'
+        if acq_name == '_NOTFOUND':
+            raise ResourceError('Could not locate releaser "{}" for resource {}'.format(acq_obj,typename))
         if typename in self.resources_status.keys():
             resource = rsc.Resource.get(typename)
             # dg.print("Refcount for {}:
@@ -150,7 +178,7 @@ Pass self as this argument.'''
             elif str(resource.policy) == str(rsc.Policy.SHARED):
                 count = self.resources_status[typename]
                 self.resources_status[typename] = count - 1
-                self.acquisition_list[typename].pop(acq_name)
+                self.acquisition_list[typename].remove(acq_name)
                 dg.print("Resource Manager: {} was released by {}.".
                         format(typename, acq_name))
                 if self.resources_status[typename] < 0:

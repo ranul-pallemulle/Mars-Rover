@@ -129,14 +129,14 @@ gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
             raise CameraUserError('Already have camera access: cannot \
 reacquire.')
         try:
-            self.camera = mgr.global_resources.get_shared("Camera")
+            self.camera = mgr.global_resources.get_shared(self,"Camera")
         except mgr.ResourceError as e:
             dg.print(str(e))
             raise CameraUserError('Could not get access to camera.')
 
     def release_camera(self):
         if self.have_camera():
-            mgr.global_resources.release("Camera")
+            mgr.global_resources.release(self,"Camera")
             self.camera = None
         else:
             dg.print ("Warning (camera): release_camera called while not \

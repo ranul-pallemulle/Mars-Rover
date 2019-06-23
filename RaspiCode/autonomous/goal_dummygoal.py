@@ -12,6 +12,9 @@ class DummyGoal(Goal):
 
     def cleanup(self):
         dg.print("Dummy goal doing cleanup.")
+
+    def _on_resources_unexp_lost_callback(self):
+        pass
     
 class DummyGoal2(Goal):
     def __init__(self):
@@ -24,4 +27,5 @@ class DummyGoal2(Goal):
     def cleanup(self):
         dg.print("Dummy goal 2 doing cleanup.")
 
-
+    def _on_resources_unexp_lost_callback(self):
+        pass

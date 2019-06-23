@@ -318,6 +318,12 @@ class OverallConfiguration(Configuration):
     def get_connected_ip(self):
         return self.connected_ip
 
+    def ip_address(self):
+        val = self.top_level_element_value("IP_ADDRESS")
+        if val is None:
+            raise ConfigurationError("No settings found for IP address.")
+        return val    
+
     def main_ip(self):
         ip_addr = self.top_level_element_value("MAIN_IP")
         if ip_addr is None:
