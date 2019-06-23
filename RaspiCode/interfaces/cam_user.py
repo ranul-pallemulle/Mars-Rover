@@ -142,6 +142,25 @@ reacquire.')
             dg.print ("Warning (camera): release_camera called while not \
 acquired.")
 
+    def acquire_ip_camera(self):
+        '''Get shared access to the IP camera.'''
+        if self.have_camera():
+            raise CameraUserError('Already have camera access: cannot \
+reacquire.')
+        try:
+            self.camera = mgr.global_resources.get_shared(self,"IPCamera")
+        except mgr.ResourceError as e:
+            dg.print(str(e))
+            raise CameraUserError('Could not get access to camera.')
+
+    def release_ip_camera(self):
+        if self.have_camera():
+            mgr.global_resources.release(self,"IPCamera")
+            self.camera = None
+        else:
+            dg.print ("Warning (camera): release_camera called while not \
+acquired.")        
+
     def have_camera(self):
         '''Check if camera has been acquired.'''
         if self.camera is not None:
