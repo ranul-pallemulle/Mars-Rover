@@ -15,7 +15,7 @@ class Samples(Goal, Actuator):
         Actuator.__init__(self)
         self.register_name("Samples")
         self.cv_engine = OpenCVHaar()
-        self.ultrasound = None
+        # self.ultrasound = None
         self.k1 = 1.0
         self.xval = 0
         self.yval = 0
@@ -30,9 +30,9 @@ class Samples(Goal, Actuator):
         self.acquire_motors("Arm")
         if not self.have_acquired("Wheels") or not self.have_acquired("Arm"):
             raise GoalError("Could not get access to motors.")
-        self.ultrasound = mgr.global_resources.get_shared("Ultrasound")
-        if self.ultrasound is None:
-            raise GoalError("Could not get access to ultrasound sensor.")
+        # self.ultrasound = mgr.global_resources.get_shared(self,"Ultrasound")
+        # if self.ultrasound is None:
+        #     raise GoalError("Could not get access to ultrasound sensor.")
         thread_samples = Thread(target=self.pick_samples, args=[])
         thread_samples.start()
         self.begin_actuate()
@@ -43,8 +43,8 @@ class Samples(Goal, Actuator):
             self.release_motors("Wheels")
         if self.have_acquired("Arm"):
             self.release_motors("Arm")
-        if self.ultrasound is not None:
-            mgr.global_resources.release("Ultrasound")
+        # if self.ultrasound is not None:
+        #     mgr.global_resources.release("Ultrasound")
         
     def get_values(self, motor_set):
         if motor_set == "Wheels":
@@ -95,12 +95,17 @@ class Samples(Goal, Actuator):
             else:
                 x,y = (sample_bbox[0][0]+sample_bbox[0][2]/2,
                           sample_bbox[0][1]+sample_bbox[0][3]/2)
-                z = self.ultrasound.read()
+                # z = self.ultrasound.read()
                 relx = (x-centre_x)*100.0/centre_x
                 rely = -(y-centre_y)*100.0/centre_y
-                print("{}, {}, {}".format(relx, rely, z))
+                print("{}, {}".format(relx, rely))
+                # print("{}, {}, {}".format(relx, rely, z))
                 if abs(relx) > 5 or abs(rely) > 5:
                     self.pid_wheels(relx,rely)
                 else:
                     self.pid_arm_y(rely)
-                    self.pid_arm_height(z)
+                    # self.pid_arm_height(z)
+
+    def _on_resources_unexp_lost_callback(self):
+        self.actuator_manual_set_released("Wheels")
+        self.actuator_manual_set_released("Arm")

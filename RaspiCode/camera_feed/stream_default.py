@@ -24,4 +24,7 @@ class DefaultStream(CameraUser, OpMode):
 
     def submode_command(self, args):
         dg.print('Stream mode does not take submode commands.')
+
+    def on_resources_unexp_lost(self):
+        self.stop(None)
         

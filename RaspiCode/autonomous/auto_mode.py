@@ -85,6 +85,12 @@ class Goal(ABC,metaclass=MetaGoal):
         '''Do any optional cleanup (e.g. resource release.)'''
         pass
 
+    @abstractmethod
+    def _on_resources_unexp_lost_callback(self):
+        '''If the goal is using remote resources, and these
+    disconnect unexpectedly, do some cleanup.'''
+        pass
+
     @classmethod
     def get_list(cls):
         return cls.goals_list
@@ -162,4 +168,9 @@ arguments")
             
         else:
             dg.print("Warning: Non-goal Auto mode sub-commands unimplemented.")
-            
+
+    def on_resources_unexp_lost(self):
+        for goal_name in Goal.get_list():
+            goal = Goal.get_list()[goal_name]
+            if goal.is_running():
+                goal._on_resources_unexp_lost_callback()

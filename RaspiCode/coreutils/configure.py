@@ -173,11 +173,7 @@ class CameraConfiguration(Configuration):
     def stream_frame_height(self):
         return self._generic_integer_setting('stream_frame_height')
 
-    def ip_address(self):
-        val = self.top_level_element_value("IP_ADDRESS")
-        if val is None:
-            raise ConfigurationError("No settings found for IP address.")
-        return val
+
     
 class AutonomousConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
@@ -283,6 +279,12 @@ class OverallConfiguration(Configuration):
         if port < 1000:
             raise ConfigurationError("Error in Diagnostics settings: port number needs to be larger than 1000 to prevent conflict with reserved ports.")
         return port
+
+    def ip_address(self):
+        val = self.top_level_element_value("IP_ADDRESS")
+        if val is None:
+            raise ConfigurationError("No settings found for IP address.")
+        return val    
 
     def main_ip(self):
         ip_addr = self.top_level_element_value("MAIN_IP")

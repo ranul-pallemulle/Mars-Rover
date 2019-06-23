@@ -24,3 +24,7 @@ class Stream(Goal):
     def cleanup(self):
         self.cv_engine.end_stream()        
         self.cv_engine.deactivate()
+
+    def _on_resources_unexp_lost_callback(self):
+        "TODO"
+        pass
