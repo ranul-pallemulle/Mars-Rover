@@ -12,8 +12,8 @@
   <!-- <IP_ADDRESS> localhost </IP_ADDRESS> -->
   <!-- <IP_ADDRESS> 192.168.2.3 </IP_ADDRESS> -->
   <!-- <IP_ADDRESS> 10.42.0.69 </IP_ADDRESS> -->
-  <!-- <IP_ADDRESS> 10.42.0.137 </IP_ADDRESS> -->
-  <IP_ADDRESS>  192.168.4.1 </IP_ADDRESS>
+  <IP_ADDRESS> 10.42.0.137 </IP_ADDRESS>
+  <!-- <IP_ADDRESS>  192.168.4.1 </IP_ADDRESS> -->
 
 
   <CAMERA>
@@ -84,9 +84,9 @@
   </OPMODES_DIRECTORIES>
 
   <RESOURCES_DIRECTORIES>
-    resources/camera.py
+    <!-- resources/camera.py, -->
     <!-- resources/motors.py, -->
-    <!-- resources/ultrasound_sensor.py -->
+    resources/ultrasound_sensor.py
   </RESOURCES_DIRECTORIES>
 
 </SETTINGS>
