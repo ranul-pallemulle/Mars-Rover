@@ -5,6 +5,7 @@ import rpyc
 from rpyc.utils.server import ThreadedServer, ThreadPoolServer
 from threading import Thread
 from socket import socket
+import socket as basesock
 
 ''' Utilities for multiprocessing through attached units. '''
 class UnitError(Exception):
@@ -78,7 +79,7 @@ def register_unit_name(unitname):
     cfg.overall_config.set_unitname(unitname)
     # main_ip = cfg.overall_config.main_ip()
     main_hostname = cfg.overall_config.main_hostname()
-    main_ip = socket.gethostbyname(main_hostname)
+    main_ip = basesock.gethostbyname(main_hostname)
     global main_conn
     main_conn = rpyc.connect(main_ip, 18861, service=ClientService)
     dg.print("Found main unit: {}".format(main_conn.root.get_service_name()))
