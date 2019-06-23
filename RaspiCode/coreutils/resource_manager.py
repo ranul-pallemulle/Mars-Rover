@@ -6,7 +6,7 @@ import coreutils.configure as cfg
 from coreutils.diagnostics import Diagnostics as dg
 from interfaces.opmode import OpMode
 from autonomous.auto_mode import Goal
-from autonomous.cv_engine import CVEngine
+# from autonomous.cv_engine import CVEngine
 
 class Status(Enum):
     FREE = 0
@@ -83,8 +83,9 @@ Pass self as this argument.'''
         if acq_name == '_NOTFOUND':
             acq_name = next((key for key, value in Goal.goals_list.items() if value == acq_obj), "_NOTFOUND")
         if acq_name == '_NOTFOUND':
-            if acq_obj.__class__ in CVEngine.__subclasses__():
-                acq_name = 'CVEngine'                    
+            # if acq_obj.__class__ in CVEngine.__subclasses__():
+            #     acq_name = 'CVEngine'
+            acq_name = acq_obj.__class__.__name__
         if acq_name == '_NOTFOUND':
             raise ResourceError('Could not locate acquirer for resource {}'.format(typename))
         if typename in self.resources_status.keys():
@@ -114,8 +115,9 @@ Pass self as this argument.'''
         if acq_name == '_NOTFOUND':
             acq_name = next((key for key, value in Goal.goals_list.items() if value == acq_obj), "_NOTFOUND")
         if acq_name == '_NOTFOUND':
-            if acq_obj.__class__ in CVEngine.__subclasses__():
-                acq_name = 'CVEngine'
+            # if acq_obj.__class__ in CVEngine.__subclasses__():
+            #     acq_name = 'CVEngine'
+            acq_name = acq_obj.__class__.__name__
         if acq_name == '_NOTFOUND':
             raise ResourceError('Could not locate acquirer "{}" for resource {}'.format(acq_obj,typename))
         if typename in self.resources_status.keys():
@@ -157,8 +159,9 @@ Pass self as this argument.'''
         if acq_name == '_NOTFOUND':
             acq_name = next((key for key, value in Goal.goals_list.items() if value == acq_obj), "_NOTFOUND")
         if acq_name == '_NOTFOUND':
-            if acq_obj.__class__ in CVEngine.__subclasses__():
-                acq_name = 'CVEngine'
+            # if acq_obj.__class__ in CVEngine.__subclasses__():
+            #     acq_name = 'CVEngine'
+            acq_name = acq_obj.__class__.__name__
         if acq_name == '_NOTFOUND':
             raise ResourceError('Could not locate releaser "{}" for resource {}'.format(acq_obj,typename))
         if typename in self.resources_status.keys():
