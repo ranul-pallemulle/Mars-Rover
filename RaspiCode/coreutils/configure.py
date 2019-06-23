@@ -284,7 +284,14 @@ class OverallConfiguration(Configuration):
         val = self.top_level_element_value("IP_ADDRESS")
         if val is None:
             raise ConfigurationError("No settings found for IP address.")
-        return val    
+        return val
+
+    def main_hostname(self):
+        hostname = self.top_level_element_value("MAIN_HOSTNAME")
+        if hostname is None:
+            raise ConfigurationError("No settings found for main unit hostname.")
+        hostname = hostname.replace(' ','')
+        return hostname
 
     def main_ip(self):
         ip_addr = self.top_level_element_value("MAIN_IP")

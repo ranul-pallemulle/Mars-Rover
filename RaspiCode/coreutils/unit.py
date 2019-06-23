@@ -76,7 +76,9 @@ def register_unit_name(unitname):
         raise UnitError("Settings file not parsed.")
     dg.print("Registering unit {}...".format(unitname))
     cfg.overall_config.set_unitname(unitname)
-    main_ip = cfg.overall_config.main_ip()
+    # main_ip = cfg.overall_config.main_ip()
+    main_hostname = cfg.overall_config.main_hostname()
+    main_ip = socket.gethostbyname(main_hostname)
     global main_conn
     main_conn = rpyc.connect(main_ip, 18861, service=ClientService)
     dg.print("Found main unit: {}".format(main_conn.root.get_service_name()))

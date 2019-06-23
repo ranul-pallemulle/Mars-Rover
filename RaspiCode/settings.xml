@@ -1,6 +1,7 @@
 <SETTINGS>
 
-  <MAIN_IP> 10.42.0.137 </MAIN_IP>
+  <!-- <MAIN_IP> 10.42.0.137 </MAIN_IP> -->
+  <MAIN_HOSTNAME> raspberrypi.local </MAIN_HOSTNAME>
 
   <DIAGNOSTICS>
     <STATE> Enabled </STATE>
