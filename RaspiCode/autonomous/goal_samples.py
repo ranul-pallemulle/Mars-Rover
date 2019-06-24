@@ -27,11 +27,12 @@ class Samples(Goal, Actuator):
         self.arm_l1 = 1 # length of first arm segment
         self.arm_l2 = 1 # length of second arm segment
         self.arm_l3 = 1 # length of gripper segment
-        self.angle_bottom = 0
+        self.servo_limit = math.pi/2
+        self.angle_bottom = 0 # actual servo angles
         self.angle_middle = 0
         self.angle_top = 0
         self.angle_gripper = 0
-        self.gripper_x = 0 # gripper tip x position relative to base servo
+        self.gripper_x = self.arm_l1 + self.arm_l2 + self.arm_l3 # gripper tip x position relative to base servo
         self.gripper_y = 0
         self.gripper_gamma = 0 # gripper angle relative to ground
                                         
@@ -43,6 +44,7 @@ class Samples(Goal, Actuator):
         self.ultrasound = mgr.global_resources.get_shared("Ultrasound")
         if self.ultrasound is None:
             raise GoalError("Could not get access to ultrasound sensor.")
+        self.set_initial_arm_position()
         self.cv_engine.activate()
         thread_samples = Thread(target=self.pick_samples, args=[])
         thread_samples.start()
@@ -72,13 +74,21 @@ class Samples(Goal, Actuator):
             self.yval = self.k1*rely
             # print("xval: {}, yval: {}".format(self.xval,self.yval))
             self.condition.notify() # actuate
-            
+
+    def set_initial_arm_position(self):
+        thet1,thet2,thet3 = self._inverse_kinematics(self.gripper_x,self.gripper_y,self.gripper_gamma)
+        with self.condition:
+            self.angle_bottom = thet1
+            self.angle_middle = thet2
+            self.angle_top = thet3
+            self.condition.notify()
 
     def _inverse_kinematics(self, x, y, gamma):
         '''
         x and y are measured relative to the base servo. They are the coordinates of the tip of the gripper.
         positive x is in the forward driving direction, positive y is away from the ground. 
         gamma is the orientation of the gripper. gamma=0 means the gripper segment is parallel to the ground.
+        Note that self.gamma is the current orientation, while gamma is the orientation to set.
         gamma=-pi/2 means the gripper is pointing at the ground.
         angles theta1,theta2,theta3 are the servo angles at base,middle,top along the arm.
         they are assumed to be -pi/2 < theta < pi/2.
@@ -114,44 +124,83 @@ class Samples(Goal, Actuator):
         dthet3 = (theta3 - self.angle_top) / self.smooth_param
         dgrip = (gripper - self.angle_gripper) / self.smooth_param
         for x in range(self.smooth_param):
-            # do object detection here for pid!
+            new_thet1 = self.angle_bottom + dthet1
+            new_thet2 = self.angle_middle + dthet2
+            new_thet3 = self.angle_top + dthet3
+            new_gripper = self.angle_gripper + dgrip
             with self.condition:
-                self.angle_bottom = self.angle_bottom + dthet1
-                self.angle_middle = self.angle_middle + dthet2
-                self.angle_top = self.angle_top + dthet3
-                self.angle_gripper = self.angle_gripper + dgrip
+                if abs(new_thet1) < self.servo_limit:
+                    self.angle_bottom = new_thet1
+                if abs(new_thet2) < self.servo_limit:
+                    self.angle_middle = new_thet2
+                if abs(new_thet3) < self.servo_limit:
+                    self.angle_top = new_thet3
+                if abs(new_gripper) < self.servo_limit:
+                    self.angle_gripper = new_gripper
                 self.condition.notify()
+        self.gripper_gamma = self.angle_bottom + self.angle_middle + self.angle_top
+        self.gripper_x = self.arm_l1*math.cos(self.angle_bottom) + \
+                         self.arm_l2*math.cos(self.angle_bottom + self.angle_middle) + \
+                         self.arm_l3*math.cos(self.angle_bottom + self.angle_middle + self.angle_top)
+        self.gripper_y = self.arm_l1*math.sin(self.angle_bottom) + \
+                         self.arm_l2*math.sin(self.angle_bottom + self.angle_middle) + \
+                         self.arm_l3*math.sin(self.angle_bottom + self.angle_middle + self.angle_top)
         
 
     def _slight_change(self,theta1, theta2, theta3, gripper):
         ''' Moves the arm a certain amount towards the final position '''
-        dthet = []
-        dthet.append(theta1 - self.angle_bottom)
-        dthet.append(theta2 - self.angle_middle)
-        dthet.append(theta3 - self.angle_top)
-        dthet.append(gripper - self.angle_gripper)
+        dthet = [               # angle changes required
+            theta1 - self.angle_bottom,
+            theta2 - self.angle_middle,
+            theta3 - self.angle_top,
+            gripper - self.angle_gripper
+        ]
+        sign = lambda delta: delta and (1,-1)[delta < 0] # 0 if delta==0 otherwise +-1        
         for idx, delta in enumerate(dthet):
-            sign = lambda delta: delta and (1,-1)[delta < 0] # 0 if delta==0 otherwise +-1
             if abs(delta) > math.radians(50):
-                dthet[idx] = sign*math.radians(10)
+                dthet[idx] = sign(delta)*math.radians(10)
             elif abs(delta) > math.radians(10):
-                dthet[idx] = sign*math.radians(4)
+                dthet[idx] = sign(delta)*math.radians(4)
             elif abs(delta) > math.radians(5):
-                dthet[idx] = sign*math.radians(2)
+                dthet[idx] = sign(delta)*math.radians(2)
             else:
-                dthet[idx] = sign*math.radians(1) # if delta==0, sign==0 and dthet[idx]==0
+                dthet[idx] = sign(delta)*math.radians(1) # if delta==0, sign==0 and dthet[idx]==0
+        new_thet1 = self.angle_bottom + dthet[0]
+        new_thet2 = self.angle_middle + dthet[1]
+        new_thet3 = self.angle_top + dthet[2]
+        new_gripper = self.angle_gripper + dthet[3]
         with self.condition:
-            self.angle_bottom = self.angle_bottom + dthet[0]
-            self.angle_middle = self.angle_middle + dthet[1]
-            self.angle_top = self.angle_top + dthet[2]
-            self.angle_gripper = self.angle_gripper + dthet[3]
+            if abs(new_thet1) < self.servo_limit:
+                self.angle_bottom = new_thet1
+            else:
+                self.angle_bottom = sign(new_thet1)*self.servo_limit
+            if abs(new_thet2) < self.servo_limit:
+                self.angle_middle = new_thet2
+            else:
+                self.angle_middle = sign(new_thet2)*self.servo_limit
+            if abs(new_thet3) <= self.servo_limit:
+                self.angle_top = new_thet3
+            else:
+                self.angle_top = sign(new_thet3)*self.servo_limit
+            if abs(new_gripper) < self.servo_limit:
+                self.angle_gripper = new_gripper
+            else:
+                self.angle_gripper = sign(new_gripper)*self.servo_limit
             self.condition.notify()
+        self.gripper_gamma = self.angle_bottom + self.angle_middle + self.angle_top
+        self.gripper_x = self.arm_l1*math.cos(self.angle_bottom) + \
+                         self.arm_l2*math.cos(self.angle_bottom + self.angle_middle) + \
+                         self.arm_l3*math.cos(self.angle_bottom + self.angle_middle + self.angle_top)
+        self.gripper_y = self.arm_l1*math.sin(self.angle_bottom) + \
+                         self.arm_l2*math.sin(self.angle_bottom + self.angle_middle) + \
+                         self.arm_l3*math.sin(self.angle_bottom + self.angle_middle + self.angle_top)
 
 
     def pid_arm(self, relz, rely):
         ''' 
-        Given the sample coordinates in the gripper frame, bring it to the center of the frame
-        (reduce rely) as well as get closer to it (reduce relz).
+        Perform a single iteration of PID control on the arm.
+        Input is the coordinates of the sample in the gripper frame of reference.
+        The output is a step change in servo angles to move the arm closer (reduce relz,rely)
         '''
         # stop driving
         # with self.condition:
