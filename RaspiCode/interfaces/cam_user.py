@@ -40,8 +40,8 @@ class CameraUser:
             t1 = time.time()
             self.framerate_list.append(1.0/(t1-t0))
             if len(self.framerate_list) == 100:
-                dg.print("Stream framerate: {} FPS".format(
-                    sum(self.framerate_list)/100))
+                # dg.print("Stream framerate: {} FPS".format(
+                #     sum(self.framerate_list)/100))
                 self.framerate_list = []
                 
     def _stream_nondefault(self, source):
@@ -55,8 +55,8 @@ class CameraUser:
             t1 = time.time()
             self.framerate_list.append(1.0/(t1-t0))
             if len(self.framerate_list) == 100:
-                dg.print("(Non-default) stream framerate: {} FPS".format(
-                    sum(self.framerate_list)/100))
+                # dg.print("(Non-default) stream framerate: {} FPS".format(
+                #     sum(self.framerate_list)/100))
                 self.framerate_list = []
 
     def begin_stream(self, source=None):
