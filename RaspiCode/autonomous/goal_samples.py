@@ -108,6 +108,7 @@ class Samples(Goal, Actuator):
         return (thet1, thet2, thet3)
 
     def _smooth_update(self, theta1, theta2, theta3, gripper):
+        ''' Moves the arm in small increments until the final goal is reached. '''
         dthet1 = (theta1 - self.angle_bottom) / self.smooth_param
         dthet2 = (theta2 - self.angle_middle) / self.smooth_param
         dthet3 = (theta3 - self.angle_top) / self.smooth_param
@@ -120,6 +121,32 @@ class Samples(Goal, Actuator):
                 self.angle_top = self.angle_top + dthet3
                 self.angle_gripper = self.angle_gripper + dgrip
                 self.condition.notify()
+        
+
+    def _slight_change(self,theta1, theta2, theta3, gripper):
+        ''' Moves the arm a certain amount towards the final position '''
+        dthet = []
+        dthet.append(theta1 - self.angle_bottom)
+        dthet.append(theta2 - self.angle_middle)
+        dthet.append(theta3 - self.angle_top)
+        dthet.append(gripper - self.angle_gripper)
+        for idx, delta in enumerate(dthet):
+            sign = lambda delta: delta and (1,-1)[delta < 0] # 0 if delta==0 otherwise +-1
+            if abs(delta) > math.radians(50):
+                dthet[idx] = sign*math.radians(10)
+            elif abs(delta) > math.radians(10):
+                dthet[idx] = sign*math.radians(4)
+            elif abs(delta) > math.radians(5):
+                dthet[idx] = sign*math.radians(2)
+            else:
+                dthet[idx] = sign*math.radians(1) # if delta==0, sign==0 and dthet[idx]==0
+        with self.condition:
+            self.angle_bottom = self.angle_bottom + dthet[0]
+            self.angle_middle = self.angle_middle + dthet[1]
+            self.angle_top = self.angle_top + dthet[2]
+            self.angle_gripper = self.angle_gripper + dthet[3]
+            self.condition.notify()
+
 
     def pid_arm(self, relz, rely):
         ''' 
@@ -142,7 +169,8 @@ class Samples(Goal, Actuator):
 
         # get angle changes needed using inverse kinematics and set them
         thet1,thet2,thet3 = self._inverse_kinematics(xs,ys,new_gamma)
-        self._smooth_update(thet1,thet2,thet3,0)
+        # self._smooth_update(thet1,thet2,thet3,0)
+        self._slight_change(thet1,thet2,thet3,0)
         
     
     def pick_samples(self):
