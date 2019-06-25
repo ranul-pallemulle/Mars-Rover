@@ -6,8 +6,10 @@
 package UI;
 
 
+import Backend.DiagnosticReceiver;
 import Backend.Sender;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,6 +26,8 @@ import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -32,6 +36,7 @@ import javafx.scene.Parent;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.scene.Scene; 
+import javafx.scene.control.TextArea;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -56,6 +61,7 @@ public class FXMLController implements Initializable {
     @FXML private Rectangle ButtonMain;
     @FXML private Rectangle ButtonVidStart;
     @FXML private Circle ButtonAuto;
+    @FXML private TextArea diagnosticText;
     
     private ARMController armController; // keep a reference to the arm controller
             
@@ -80,6 +86,8 @@ public class FXMLController implements Initializable {
     Sender arm_sender;
     Sender test_sender;
     
+    DiagnosticReceiver diagnostics = new DiagnosticReceiver(IPADDRESS,5570);
+    
     
     public void setStage(Stage stage)
     {
@@ -87,9 +95,7 @@ public class FXMLController implements Initializable {
         
     }
     
-    /**
-     * Initializes the controller class.
-     */
+    
     @FXML
     public void updatelocation(MouseEvent e) {
         if(enablejoystick){
@@ -203,11 +209,17 @@ public class FXMLController implements Initializable {
     public void connectjoystick(MouseEvent e){
         togglejoystick_private();
     }
+    
+    public void clean_up() {
+        if (diagnostics.is_running())
+            diagnostics.close_socket();
+    }
 
     public void connectrover(MouseEvent e){
         if(enablerover == false){
             try{
             command_sender.initialise();
+            diagnostics.initialise();
             } catch(UnknownHostException ex) {
                 System.out.println("unknown host");
                 return;
@@ -216,6 +228,9 @@ public class FXMLController implements Initializable {
                 System.out.println("io exception");
                 return;
             }
+            
+            Thread t = new Thread(diagnostics);
+            t.start();
             
             enablerover = true;
             ButtonMain.setFill(Color.web("#00FF00"));
@@ -281,21 +296,31 @@ public class FXMLController implements Initializable {
 //            vidStage.setScene(vidscene);
 //            vidStage.setResizable(false);
 //            vidStage.show();
+            
             if(!test){
                 command_sender.startPiApp("STREAM");
-                TimeUnit.SECONDS.sleep(5);
-                Runtime rt = Runtime.getRuntime();
-                Process proc = rt.exec("gst-launch-1.0 tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! autovideosink sync=false");
-                InputStream stdin = proc.getInputStream();
-                InputStreamReader isr = new InputStreamReader(stdin);
-                BufferedReader br = new BufferedReader(isr);
-                String line = null;
-                System.out.println("<OUTPUT>");
-                while ( (line = br.readLine()) != null)
+                TimeUnit.SECONDS.sleep(4);
+                System.out.println("EXECING");
+                Process p = Runtime.getRuntime().exec(new String[]{"bash","/Users/ranulpallemulle/launch_gst.sh"});
+                //Process p = Runtime.getRuntime().exec("/usr/local/bin/gst-launch-1.0 tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! autovideosink sync=false");
+                //Process p = Runtime.getRuntime().exec(new String[]{"gst-launch-1.0","tcpclientsrc","host=192.168.4.1","port=5564","!","gdpdepay","!","rtph264depay","!","avdec_h264","!","autovideosink","sync=false"});
+                //ProcessBuilder builder = new ProcessBuilder("/usr/local/bin/gst-launch-1.0", "tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! autovideosink sync=false");
+                //ProcessBuilder builder = new ProcessBuilder("gst-launch-1.0","tcpclientsrc","host=192.168.4.1","port=5564","!","gdpdepay","!","rtph264depay","!","avdec_h264","!","autovideosink","sync=false");
+                //builder.redirectError(         // We set up redirections
+    //ProcessBuilder.Redirect.to(new File("~/GSTERRORLOG.log")));
+                //Process p = builder.start();
+                //ProcessBuilder builder = new ProcessBuilder();
+                //builder.command("/usr/local/bin/gst-launch-1.0 tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! autovideosink sync=false");
+                
+                p.waitFor(); 
+                BufferedReader reader=new BufferedReader(new InputStreamReader(
+                p.getInputStream())); 
+                String line; 
+                while((line = reader.readLine()) != null) { 
                     System.out.println(line);
-                System.out.println("</OUTPUT>");
-                int exitVal = proc.waitFor();            
-                System.out.println("Process exitValue: " + exitVal);
+                } 
+                System.out.println("EXECED");
+                
             }
         }
         catch (Exception a) {
@@ -345,5 +370,13 @@ public class FXMLController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
-    }    
+        diagnosticText.textProperty().addListener(new ChangeListener<Object>() {
+            @Override
+            public void changed(ObservableValue<? extends Object> observable, Object oldValue, Object newValue) {
+                //diagnosticText.setScrollTop(Double.MAX_VALUE);
+            }
+    });
+        //diagnosticText.appendText("Hello");
+        diagnostics.pass_text_box(diagnosticText);
+    }
 }

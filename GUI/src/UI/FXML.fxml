@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="500.0" prefWidth="500.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.FXMLController">
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="500.0" styleClass="mainFxmlClass" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.FXMLController">
     <children>
 <!--        <VBox id="VBox" alignment="CENTER" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
             <HBox id="HBox" alignment="CENTER" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">-->
@@ -31,6 +31,8 @@
                 <Text id="DispJoyLabel" x="10" y="40" text="Y:"/>
                 <Text fx:id="DispJoyX" x="30" y="20" text="0.0"/>
                 <Text fx:id="DispJoyY" x="30" y="40" text="0.0"/>
+                
+                <TextArea fx:id="diagnosticText" prefWidth="500" prefHeight="90" AnchorPane.bottomAnchor="0.0" editable="false"/>
                 <!--<Button fx:id="connectButton" text="Connect" prefHeight="35" prefWidth="150" onAction="#handleConnectButtonPress"/>-->
 <!--            </HBox> 
         </VBox>-->
