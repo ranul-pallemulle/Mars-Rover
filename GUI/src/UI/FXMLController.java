@@ -22,6 +22,8 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -64,8 +66,9 @@ public class FXMLController implements Initializable {
     boolean firstjoyclick = true;
     double initialoffsetx = 0;
     double initialoffsety = 0;    
-    boolean test = true;
-    String IPADDRESS = "192.168.4.1";
+    boolean test = false;
+    //String IPADDRESS = "192.168.4.1";
+    String IPADDRESS = "10.42.0.137";
     
     Sender command_sender = new Sender(IPADDRESS,5560);
     Sender joystick_sender;
@@ -155,6 +158,11 @@ public class FXMLController implements Initializable {
             if(!test){
                 command_sender.startPiApp("JOYSTICK", 5562);
                 joystick_sender = new Sender(IPADDRESS, 5562);
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ARMController.class.getName()).log(Level.SEVERE, null, ex);
+                }		
                 try{
                 joystick_sender.initialise();
                 } catch(UnknownHostException ex) {

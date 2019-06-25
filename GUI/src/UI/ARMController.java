@@ -18,6 +18,9 @@ import javafx.scene.input.MouseEvent;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -69,8 +72,9 @@ public class ARMController implements Initializable {
     double segLength = 50;
     double sliderx = 200;
     double grippc = (sliderx-200)/100;
-    boolean test = true;
-    String IPADDRESS = "192.168.4.1";
+    boolean test = false;
+    //String IPADDRESS = "192.168.4.1";
+    String IPADDRESS = "10.42.0.137";
     double globprevs1 = 0;
     double globprevs2 = 0;
     double globprevs3 = 0;
@@ -305,7 +309,11 @@ public class ARMController implements Initializable {
             if(!test){
                 command_sender.startPiApp("ROBOTICARM", 5567);
                 arm_sender = new Sender(IPADDRESS, 5567);
-                //System.out.println("returned 0");
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ARMController.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 try{
                 arm_sender.initialise();
                 } catch(UnknownHostException ex) {
