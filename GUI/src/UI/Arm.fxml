@@ -53,6 +53,7 @@
         <Circle id="rover" radius="5" centerX="250" centerY="250"/>
         
         <Rectangle fx:id="ButtonArmStart" fill="RED" stroke="GREY" x="200" y="430" height="40" width="100" arcWidth="5" arcHeight="5" onMouseClicked="#armStart"/>
+        <Text id="ArmStartLabel" x="213" y="490" text="Enable Arm"/>
         
     </children>
 </AnchorPane>

@@ -69,7 +69,7 @@ public class ARMController implements Initializable {
     double segLength = 50;
     double sliderx = 200;
     double grippc = (sliderx-200)/100;
-    boolean test = false;
+    boolean test = true;
     String IPADDRESS = "192.168.4.1";
     double globprevs1 = 0;
     double globprevs2 = 0;

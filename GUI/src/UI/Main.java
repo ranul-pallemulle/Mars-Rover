@@ -13,6 +13,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import Backend.*;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
 
 /**
  *
@@ -34,6 +36,11 @@ public class Main extends Application {
         primaryStage.setTitle("Rover");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
+        
+        Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+        primaryStage.setX(primaryScreenBounds.getMinX() + primaryScreenBounds.getWidth()/2 - 500);
+        primaryStage.setY(primaryScreenBounds.getMinY() + primaryScreenBounds.getHeight()/2 - 250);
+        
         primaryStage.show();
     }
 

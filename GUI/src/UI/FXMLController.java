@@ -7,7 +7,10 @@ package UI;
 
 
 import Backend.Sender;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import static java.lang.Math.acos;
 import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
@@ -16,10 +19,13 @@ import static java.lang.Math.sqrt;
 import javafx.scene.input.MouseEvent;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
@@ -27,6 +33,7 @@ import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 
@@ -57,7 +64,7 @@ public class FXMLController implements Initializable {
     boolean firstjoyclick = true;
     double initialoffsetx = 0;
     double initialoffsety = 0;    
-    boolean test = false;
+    boolean test = true;
     String IPADDRESS = "192.168.4.1";
     
     Sender command_sender = new Sender(IPADDRESS,5560);
@@ -222,6 +229,9 @@ public class FXMLController implements Initializable {
             armStage.setTitle("ARM");
             armStage.setScene(armscene);
             armStage.setResizable(false);
+            Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+            armStage.setX(primaryScreenBounds.getMinX() + primaryScreenBounds.getWidth()/2);
+            armStage.setY(primaryScreenBounds.getMinY() + primaryScreenBounds.getHeight()/2 - 250);
             armStage.show();
         }
         catch (IOException a) {
@@ -245,6 +255,19 @@ public class FXMLController implements Initializable {
 //            vidStage.show();
             if(!test){
                 command_sender.startPiApp("STREAM");
+                TimeUnit.SECONDS.sleep(5);
+                Runtime rt = Runtime.getRuntime();
+                Process proc = rt.exec("gst-launch-1.0 tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! autovideosink sync=false");
+                InputStream stdin = proc.getInputStream();
+                InputStreamReader isr = new InputStreamReader(stdin);
+                BufferedReader br = new BufferedReader(isr);
+                String line = null;
+                System.out.println("<OUTPUT>");
+                while ( (line = br.readLine()) != null)
+                    System.out.println(line);
+                System.out.println("</OUTPUT>");
+                int exitVal = proc.waitFor();            
+                System.out.println("Process exitValue: " + exitVal);
             }
         }
         catch (Exception a) {
