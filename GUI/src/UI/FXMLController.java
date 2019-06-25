@@ -55,6 +55,9 @@ public class FXMLController implements Initializable {
     @FXML private Rectangle ButtonJoystickStart;
     @FXML private Rectangle ButtonMain;
     @FXML private Rectangle ButtonVidStart;
+    @FXML private Circle ButtonAuto;
+    
+    private ARMController armController; // keep a reference to the arm controller
             
     public double deltx = 0;
     public double delty = 0; //location relative to center
@@ -63,17 +66,20 @@ public class FXMLController implements Initializable {
     boolean enablevid = false;
     boolean enablerover = false;
     boolean enablejoystick = false;
+    boolean enableauto = false;
     boolean firstjoyclick = true;
     double initialoffsetx = 0;
     double initialoffsety = 0;    
-    boolean test = false;
+    
     //String IPADDRESS = "192.168.4.1";
     String IPADDRESS = "10.42.0.137";
+    boolean test = false;
     
     Sender command_sender = new Sender(IPADDRESS,5560);
     Sender joystick_sender;
     Sender arm_sender;
     Sender test_sender;
+    
     
     public void setStage(Stage stage)
     {
@@ -148,42 +154,54 @@ public class FXMLController implements Initializable {
         }
     }
     
-
-    
-    public void connectjoystick(MouseEvent e){
+    public void togglejoystick_private() {
         if(enablejoystick == false){
             enablejoystick = true;
             ButtonJoystickStart.setFill(Color.web("#00FF00"));
             System.out.println("CONNECTING TO JOYSTICK");
             if(!test){
-                command_sender.startPiApp("JOYSTICK", 5562);
-                joystick_sender = new Sender(IPADDRESS, 5562);
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ARMController.class.getName()).log(Level.SEVERE, null, ex);
-                }		
-                try{
-                joystick_sender.initialise();
-                } catch(UnknownHostException ex) {
-                    System.out.println("unknown host");
-                    return;
+                if (!enableauto) {
+                    command_sender.startPiApp("JOYSTICK", 5562);
+                    joystick_sender = new Sender(IPADDRESS, 5562);
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(ARMController.class.getName()).log(Level.SEVERE, null, ex);
+                    }		
+                    try {
+                        joystick_sender.initialise();
+                    } catch(UnknownHostException ex) {
+                        System.out.println("unknown host");
+                        return;
+                    }
+                    catch(IOException ex) {
+                        System.out.println("io exception");
+                        return;
+                    }
+                    //System.out.println("returned 1");
                 }
-                catch(IOException ex) {
-                    System.out.println("io exception");
-                    return;
+                else {
+                    command_sender.sendString("AUTO -> Goal Samples -> Override Joystick");
                 }
-                //System.out.println("returned 1");
             }
         }else{
             if(!test){
-                joystick_sender.sendData(0, 0);
-                command_sender.stopPiApp("JOYSTICK");
+                if (!enableauto) {
+                    joystick_sender.sendData(0, 0);
+                    command_sender.stopPiApp("JOYSTICK");
+                }
+                else {
+                    command_sender.sendString("AUTO -> Goal Samples -> Release Override Joystick");
+                }
             }
             enablejoystick = false;
             ButtonJoystickStart.setFill(Color.web("#FF0000"));
             System.out.println("DISCONNECTING FROM JOYSTICK");
         }
+    }
+    
+    public void connectjoystick(MouseEvent e){
+        togglejoystick_private();
     }
 
     public void connectrover(MouseEvent e){
@@ -227,7 +245,9 @@ public class FXMLController implements Initializable {
             final FXMLLoader armloader = new FXMLLoader(getClass().getResource("Arm.fxml"));
             final Parent armroot = (Parent) armloader.load();
             final ARMController Controller = armloader.<ARMController>getController();
+            armController = Controller; // store 
             Controller.pass_main_sender(command_sender);
+            Controller.pass_fxmlcontroller(this);
             Stage armStage = new Stage();
 //            Controller.setStage(armStage);
             armroot.getStylesheets().add("UI/style.css");
@@ -281,6 +301,47 @@ public class FXMLController implements Initializable {
         catch (Exception a) {
         }
     }
+    
+    public void toggleAuto(MouseEvent e){
+        
+        if (!enableauto) {
+            ButtonAuto.setFill(Color.web("#00FF00"));
+            if (enablejoystick) { // if joystick mode is on, switch it off
+                togglejoystick_private();
+            }
+            if (armController != null && armController.isEnabled()) { // if arm mode is on, switch it off
+                armController.togglearm_private();
+            }
+            if (!test) {
+                command_sender.startPiApp("AUTO");
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                command_sender.sendString("AUTO -> Goal Samples start");
+            }
+            enableauto = true;
+        }
+        else {
+            ButtonAuto.setFill(Color.web("#FF0000"));
+            if (enablejoystick) { // if manual override is on, switch it off
+                togglejoystick_private();
+            }
+            if (armController != null && armController.isEnabled()) { // if manual override is on, switch it off
+                armController.togglearm_private();
+            }
+            if (!test) {
+                command_sender.stopPiApp("AUTO");
+            }
+            enableauto = false;
+        }
+    }
+    
+    public boolean autoEnabled() {
+        return enableauto;
+    }
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO

@@ -167,6 +167,24 @@ public class Sender {
         }
     }
     
+    public void sendString(String command) {
+        try{
+            byte[] sendingByte = command.getBytes();
+            if(SuccessInit){
+                output.write(sendingByte);
+                System.out.println("Sent");
+                String response;
+                if((response = input.readLine())!=null) {
+                    System.out.println(response);
+                    System.out.println(this.IP);
+                }
+            }
+        }
+        catch(IOException ex){
+            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     
     public boolean isInitialised(){
         return SuccessInit;

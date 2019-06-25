@@ -59,6 +59,8 @@ public class ARMController implements Initializable {
     @FXML private Circle buttonarm3;
     @FXML private Circle sliderball;
     
+    FXMLController fxmlcontroller;
+    
     String joint0ang, joint1ang, joint2ang;
     double[] armx = {250,300,350,400};
     double[] army = {250,250,250,250};
@@ -72,9 +74,11 @@ public class ARMController implements Initializable {
     double segLength = 50;
     double sliderx = 200;
     double grippc = (sliderx-200)/100;
-    boolean test = false;
+    
     //String IPADDRESS = "192.168.4.1";
     String IPADDRESS = "10.42.0.137";
+    boolean test = false;
+    
     double globprevs1 = 0;
     double globprevs2 = 0;
     double globprevs3 = 0;
@@ -83,6 +87,11 @@ public class ARMController implements Initializable {
     Sender joystick_sender;
     Sender arm_sender;
     Sender test_sender;
+    
+    public boolean isEnabled()
+    {
+        return enablearm;
+    }
     
     public void setStage(Stage stage)
     {
@@ -93,6 +102,10 @@ public class ARMController implements Initializable {
     public void pass_main_sender(Sender some_sender)
     {
         command_sender = some_sender;
+    }
+    
+    public void pass_fxmlcontroller(FXMLController controller){
+        fxmlcontroller = controller;
     }
     
     void smoothmove(double prevservo1, double prevservo2, double prevservo3, double newservo1, double newservo2, double newservo3){
@@ -300,41 +313,55 @@ public class ARMController implements Initializable {
         }
     }
     
-    public void armStart(MouseEvent e) {
+    public void togglearm_private() {
         if(enablearm == false){
             enablearm = true;
             ButtonArmStart.setFill(Color.web("#00FF00"));
             blocker.setFill(Color.web("#00000000"));
             System.out.println("CONNECTING TO ARM");
             if(!test){
-                command_sender.startPiApp("ROBOTICARM", 5567);
-                arm_sender = new Sender(IPADDRESS, 5567);
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ARMController.class.getName()).log(Level.SEVERE, null, ex);
+                if (!fxmlcontroller.autoEnabled()) {
+                    command_sender.startPiApp("ROBOTICARM", 5567);
+                    arm_sender = new Sender(IPADDRESS, 5567);
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(ARMController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    try{
+                        arm_sender.initialise();
+                    } catch(UnknownHostException ex) {
+                        System.out.println("unknown host");
+                        return;
+                    }
+                    catch(IOException ex) {
+                        System.out.println("io exception");
+                        return;
+                    }
+                    System.out.println("returned 1");
                 }
-                try{
-                arm_sender.initialise();
-                } catch(UnknownHostException ex) {
-                    System.out.println("unknown host");
-                    return;
+                else {
+                    command_sender.sendString("AUTO -> Goal Samples -> Override RoboticArm");
                 }
-                catch(IOException ex) {
-                    System.out.println("io exception");
-                    return;
-                }
-                System.out.println("returned 1");
             }
         }else{
             if(!test){
-                command_sender.stopPiApp("ROBOTICARM");
+                if (!fxmlcontroller.autoEnabled()) {
+                    command_sender.stopPiApp("ROBOTICARM");
+                }
+                else {
+                    command_sender.sendString("AUTO -> Goal Samples -> Release Override RoboticArm");
+                }
             }
             enablearm = false;
             ButtonArmStart.setFill(Color.web("#FF0000"));
             blocker.setFill(Color.web("#FF000055"));
             System.out.println("DISCONNECTING FROM ARM");
-        }   
+        }
+    }
+    
+    public void armStart(MouseEvent e) {
+        togglearm_private();
     }
     
     public void freearm(MouseEvent e) {

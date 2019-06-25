@@ -24,6 +24,9 @@
                 <Text id="DispMain" x="225" y="53" text="Connect"/>
                 <Circle fx:id="ButtonVid" radius="20" centerX="100.0" centerY="450.0" onMouseClicked="#openVid"/>
                 <Text id="ButtonVidLabel" x="65" y="490" text="Video Feed"/>
+                <Circle fx:id="ButtonAuto" fill="RED" stroke="GREY" radius="25" centerX="60.0" centerY="370.0" onMouseClicked="#toggleAuto"/>
+                <Text id="ButtonVidLabel" x="25" y="410" text="Auto Mode"/>
+                
                 <Text id="DispJoyLabel" x="10" y="20" text="X:"/>
                 <Text id="DispJoyLabel" x="10" y="40" text="Y:"/>
                 <Text fx:id="DispJoyX" x="30" y="20" text="0.0"/>
