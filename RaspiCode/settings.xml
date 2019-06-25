@@ -9,8 +9,8 @@
   <!-- <IP_ADDRESS> localhost </IP_ADDRESS> -->
   <!-- <IP_ADDRESS> 192.168.2.3 </IP_ADDRESS> -->
   <!-- <IP_ADDRESS> 10.42.0.69 </IP_ADDRESS> -->
-  <IP_ADDRESS> 10.42.0.137 </IP_ADDRESS>
-  <!-- <IP_ADDRESS>  192.168.4.1 </IP_ADDRESS> -->
+  <!-- <IP_ADDRESS> 10.42.0.137 </IP_ADDRESS> -->
+  <IP_ADDRESS>  192.168.4.1 </IP_ADDRESS>
 
 
   <CAMERA>

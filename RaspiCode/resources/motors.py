@@ -117,7 +117,7 @@ class WheelMotors(Resource):
             io.output(self.rightmotor_in1_pin, False)
             pwm = 0
         self.PCA9685_pwm.set_pwm(self.PWM_right, 0, pwm)
-        print("Right wheel motors got pwm value: {}".format(pwm))
+        #print("Right wheel motors got pwm value: {}".format(pwm))
 
     def _setMotorLeft(self, power):
         """
@@ -145,7 +145,7 @@ class WheelMotors(Resource):
             io.output(self.leftmotor_in1_pin, False)
             pwm = 0
         self.PCA9685_pwm.set_pwm(self.PWM_left, 0, pwm)
-        print("Left wheel motors got pwm value: {}".format(pwm))
+        #print("Left wheel motors got pwm value: {}".format(pwm))
 
 
 class ArmMotors(Resource):
@@ -207,8 +207,7 @@ class ArmMotors(Resource):
         self.angle_middle = values[2] + offset
         self.angle_bottom = values[3] + offset
 
-        dg.print("arm motors got values: {}, {}, {}, {}".format(values[0], values[1], values[2],
-                                                                values[3]))
+        #dg.print("arm motors got values: {}, {}, {}, {}".format(values[0], values[1], values[2],values[3]))
 
         self._set_angle()
 

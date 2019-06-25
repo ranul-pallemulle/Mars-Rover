@@ -48,7 +48,7 @@ class UltrasoundSensor(Resource):
         time.sleep(1)
         GPIO.output(self.trigger_pin, GPIO.LOW)
         GPIO.output(self.power_pin, GPIO.LOW)
-        GPIO.cleanup()
+        # GPIO.cleanup()
 
     def read(self):
         self.lock.acquire_read()

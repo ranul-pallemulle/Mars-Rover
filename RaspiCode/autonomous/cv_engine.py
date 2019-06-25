@@ -49,14 +49,14 @@ class OpenCVHaar(CVEngine, Streamable):
         Streamable.__init__(self)
 
     def initialise(self):
-        self.cascade = cv2.CascadeClassifier('autonomous/haarcascade_samples_hydepark_30_30.xml')
+        self.cascade = cv2.CascadeClassifier('autonomous/haarcascade_samples_hydepark_30_30.xml')#autonomous/haarcascade_samples_hydepark_30_30.xml
         
     def find_obj(self):
         frame = self.camera.get_frame()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         objects = []
         try:
-            objects = self.cascade.detectMultiScale(gray,1.1,200)
+            objects = self.cascade.detectMultiScale(gray,1.1,50) #1.1,250 # 1.1,500
         except Exception as e:
             dg.print(str(e))
         for (x,y,w,h) in objects:

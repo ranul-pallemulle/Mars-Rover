@@ -3,7 +3,9 @@ import coreutils.resource_manager as mgr
 from autonomous.auto_mode import Goal, GoalError
 from autonomous.cv_engine import OpenCVHaar
 from interfaces.actuator import Actuator, ActuatorError
+from coreutils.diagnostics import Diagnostics as dg
 from threading import Thread
+from collections import deque
 import math
 import time
 import cv2
@@ -18,6 +20,8 @@ class Samples(Goal, Actuator):
         self.cv_engine = OpenCVHaar()
         self.ultrasound = None
         self.rate_list = []
+        self.dq_len = 4
+        self.past_values = deque(maxlen=self.dq_len)
         self.smooth_param = 10 # divide angle changes into this many steps
         # wheels variables and parameters
         self.k1 = 1.0
@@ -33,9 +37,9 @@ class Samples(Goal, Actuator):
         # self.angle_middle = -86
         # self.angle_top = -21
         # self.angle_gripper = 0
-        self.angle_bottom = 116 # actual servo angles, in degrees
-        self.angle_middle = -80
-        self.angle_top = -87
+        self.angle_bottom = 83 # actual servo angles, in degrees
+        self.angle_middle = -56
+        self.angle_top = -111
         self.angle_gripper = 0        
         self.gripper_x = self.arm_l1*math.cos(math.radians(self.angle_bottom)) +\
                          self.arm_l2*math.cos(math.radians(self.angle_bottom) +\
@@ -59,7 +63,20 @@ class Samples(Goal, Actuator):
         # self.gripper_x = 0
         # self.gripper_y = self.arm_l1 + self.arm_l2 + self.arm_l3
         # self.gripper_gamma = math.pi/2
-        
+
+    def check_if_less_than(self, rely, relz):
+        '''check if we are consistently near some coordinates'''
+        if len(self.past_values) != self.dq_len:
+            return -1
+        check = 1
+        for yz_set in self.past_values: # check all the past rely
+            if abs(yz_set[0] > rely):
+                check = 0
+                break
+            if yz_set[1] > relz:
+                check = 0
+                break
+        return check
                                         
     def run(self):
         self.acquire_motors("Wheels")
@@ -76,6 +93,7 @@ class Samples(Goal, Actuator):
         thread_samples.start()
 
     def cleanup(self):
+        self.set_initial_arm_position()
         self.cv_engine.deactivate()
         if self.have_acquired("Wheels"):
             self.release_motors("Wheels")
@@ -101,14 +119,16 @@ class Samples(Goal, Actuator):
             self.condition.notify() # actuate
 
     def set_initial_arm_position(self):
-        print("INITIAL XY: {},{}".format(self.gripper_x,self.gripper_y))        
-        thet1,thet2,thet3 = self._inverse_kinematics(self.gripper_x,self.gripper_y,self.gripper_gamma)
+        #print("INITIAL XY: {},{}".format(self.gripper_x,self.gripper_y))
+        res = self._inverse_kinematics(self.gripper_x,self.gripper_y,self.gripper_gamma)
         with self.condition:
             self.angle_bottom = 0
             self.angle_middle = 0
             self.angle_top = 0
-            self.condition.notify()
-        self._smooth_update(thet1,thet2,thet3,0)
+            self.condition.notify()        
+        if res is not None:
+            thet1,thet2,thet3 = res
+            self._smooth_update(thet1,thet2,thet3,0)
 
     def _inverse_kinematics(self, x, y, gamma):
         '''
@@ -128,15 +148,19 @@ class Samples(Goal, Actuator):
         x2R = x - arm_l3 * math.cos(gamma) # x for the tip of the second segment
         y2R = y - arm_l3 * math.sin(gamma) # y for the tip of the second segment
         ct2 = ((x2R**2 + y2R**2) - (arm_l1**2 + arm_l2**2))/(2*arm_l1*arm_l2) # cos(theta2)
-        print("GAMMA: {}".format(math.degrees(gamma)))
-        print("COSTHETA2: {}".format(ct2))
-        if gamma > 0: # gripper looking up
+        #print("GAMMA: {}".format(math.degrees(gamma)))
+        #print("COSTHETA2: {}".format(ct2))
+        try:
+            if gamma > 0: # gripper looking up
             # print(ct2)
-            thet2 = math.acos(ct2) # elbow down configuration for 2R manipulator problem
-        else:
+                thet2 = math.acos(ct2) # elbow down configuration for 2R manipulator problem
+            else:
             # print(ct2)
-            thet2 = -math.acos(ct2) # elbow up configuration
-        st2 = math.sin(thet2)
+                thet2 = -math.acos(ct2) # elbow up configuration
+            st2 = math.sin(thet2)
+        except Exception as e:
+            dg.print("Sample unreachable")
+            return None
 
         A = arm_l1 + arm_l2*ct2
         B = arm_l2*st2
@@ -203,13 +227,15 @@ class Samples(Goal, Actuator):
         sign = lambda delta: delta and (1,-1)[delta < 0] # 0 if delta==0 otherwise +-1        
         for idx, delta in enumerate(dthet):
             if abs(delta) > 50:
-                dthet[idx] = sign(delta)*10
+                dthet[idx] = sign(delta)*2 # 10
             elif abs(delta) > 10:
-                dthet[idx] = sign(delta)*4
-            elif abs(delta) > 5:
-                dthet[idx] = sign(delta)*2
+                dthet[idx] = sign(delta)*2 # 4
+            elif abs(delta) > 5: 
+                dthet[idx] = sign(delta)*2 # 2
+            elif abs(delta) > 2: 
+                dthet[idx] = sign(delta)*0.5 # 1
             else:
-                dthet[idx] = sign(delta)*1 # if delta==0, sign==0 and dthet[idx]==0
+                dthet[idx] = sign(delta)*0.1 # if delta==0, sign==0 and dthet[idx]==0
         new_thet1 = self.angle_bottom + dthet[0]
         new_thet2 = self.angle_middle + dthet[1]
         new_thet3 = self.angle_top + dthet[2]
@@ -258,34 +284,48 @@ class Samples(Goal, Actuator):
         #     self.condition.notify()
 
         # get change of gamma needed to align with sample
-        del_gamma = math.atan2(rely,relz+self.arm_l3)
-        new_gamma = self.gripper_gamma + del_gamma
+        del_gamma = math.atan2(rely,relz)
+        # new_gamma = self.gripper_gamma + del_gamma
+        new_gamma = math.radians(-100)
 
         # get sample coordinates in rover frame (origin at base servo)
-        xs = self.gripper_x + relz*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
-        ys = self.gripper_y + relz*math.sin(self.gripper_gamma) + rely*math.sin(self.gripper_gamma)
+        # xs = self.gripper_x + (relz)*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
+        # ys = self.gripper_y + (relz)*math.sin(self.gripper_gamma) + rely*math.sin(self.gripper_gamma)
+        xs = self.gripper_x + (relz)*math.cos(self.gripper_gamma+del_gamma) - rely*math.sin(self.gripper_gamma+del_gamma)
+        ys = self.gripper_y + (relz)*math.sin(self.gripper_gamma+del_gamma) + rely*math.sin(self.gripper_gamma+del_gamma)
 
         print("REQUESTED XY: {}, {}".format(xs,ys))
+        print("CURRENT XY: {}, {}".format(self.gripper_x,self.gripper_y))
         # get angle changes needed using inverse kinematics and set them
-        thet1,thet2,thet3 = self._inverse_kinematics(xs,ys,new_gamma)
+        res = self._inverse_kinematics(xs,ys,new_gamma)
+        if res is not None:
+            thet1,thet2,thet3 = res
+            self._slight_change(thet1,thet2,thet3,0)            
         # self._smooth_update(thet1,thet2,thet3,0)
-        self._slight_change(thet1,thet2,thet3,0)
+
 
     def _test_pid_arm(self, rely):
         relz = 2
         del_gamma = math.atan2(rely,relz)
         new_gamma = self.gripper_gamma + del_gamma
+        # new_gamma = math.radians(-100)
 
         # get sample coordinates in rover frame (origin at base servo)
         xs = self.gripper_x + relz*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
         ys = self.gripper_y + relz*math.sin(self.gripper_gamma) + rely*math.sin(self.gripper_gamma)
 
         # get angle changes needed using inverse kinematics and set them
-        print("REQUESTED XY: {}, {}".format(xs,ys))        
-        thet1,thet2,thet3 = self._inverse_kinematics(xs,ys,new_gamma)
+        #print("REQUESTED XY: {}, {}".format(xs,ys))
+        res = self._inverse_kinematics(xs,ys,new_gamma)
+        if res is not None:
+            thet1,thet2,thet3 = res
+            self._slight_change(thet1,thet2,thet3,0)            
         # self._smooth_update(thet1,thet2,thet3,0)
-        self._slight_change(thet1,thet2,thet3,0)        
         
+    def _close_jaw(self):
+        with self.condition:
+            self.angle_gripper = 80
+            self.condition.notify()
     
     def pick_samples(self):
         sample_bbox = [] # coordinates of bounding box around detected sample 
@@ -299,7 +339,7 @@ class Samples(Goal, Actuator):
             t1 = time.time()
             self.rate_list.append(1.0/(t1-t0))
             if len(self.rate_list) == 100:
-                print("Image processing rate: {} FPS".format(sum(self.rate_list)/100))
+                #dg.print("Image processing rate: {} FPS".format(sum(self.rate_list)/100))
                 self.rate_list = []
             if len(sample_bbox) == 0: # no sample found
                 continue
@@ -307,13 +347,20 @@ class Samples(Goal, Actuator):
                 # sample found - use only one if multiple detected (sample_bbox[0])
                 x,y = (sample_bbox[0][0]+sample_bbox[0][2]/2,
                           sample_bbox[0][1]+sample_bbox[0][3]/2)
-                relz = self.ultrasound.read() # get height from the ground
-                relx = (x-centre_x)*100.0/(500*centre_x) # percentage distance from centre of frame
-                rely = -(y-centre_y)*100.0/(500*centre_y)
-                print("{}, {}, {}".format(relx, rely, relz))
+                relz = self.ultrasound.read() # get height from the ground # 10
+                relx = (x-centre_x)*100.0/(100*centre_x) # percentage distance from centre of frame
+                rely = -(y-centre_y)*100.0/(10*centre_y) # 150
+                #dg.print("{}, {}, {}".format(relx, rely, relz))
+                dg.print("rely:{},relz:{}".format(rely,relz))
+                dg.print("ANGLE: {}".format(math.degrees(math.atan2(rely,relz))))
+                self.past_values.append([rely,relz])
+                if self.check_if_less_than(5,5) == 1 and math.degrees(self.gripper_gamma) < -95:
+                    dg.print("Achieved target position")
+                    self._close_jaw()
+                    break
                 # if abs(relx) > 5 or abs(rely) > 5: # get the sample near the centre of the frame
                 #     self.pid_wheels(relx,rely)
                 # else: # sample is near the centre of the frame - move arm to pick it up
                 #     self.pid_wheels(0,0)
-                #     self.pid_arm(relz,rely)
-                self._test_pid_arm(rely)
+                self.pid_arm(relz,rely)
+                # self._test_pid_arm(rely)
