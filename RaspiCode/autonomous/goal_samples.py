@@ -20,7 +20,7 @@ class Samples(Goal, Actuator):
         self.cv_engine = OpenCVHaar()
         self.ultrasound = None
         self.rate_list = []
-        self.dq_len = 4
+        self.dq_len = 6 # 4
         self.past_values = deque(maxlen=self.dq_len)
         self.smooth_param = 10 # divide angle changes into this many steps
         # wheels variables and parameters
@@ -31,7 +31,7 @@ class Samples(Goal, Actuator):
         self.arm_scale = 1
         self.arm_l1 = 6.5*self.arm_scale # length of first arm segment, cm
         self.arm_l2 = 6.5*self.arm_scale# length of second arm segment, cm
-        self.arm_l3 = 10*self.arm_scale# length of gripper segment, cm
+        self.arm_l3 = 11.5*self.arm_scale# length of gripper segment, cm 10
         self.servo_limit = 120
         # self.angle_bottom = 97 # actual servo angles, in degrees
         # self.angle_middle = -86
@@ -40,7 +40,8 @@ class Samples(Goal, Actuator):
         self.angle_bottom = 83 # actual servo angles, in degrees
         self.angle_middle = -56
         self.angle_top = -111
-        self.angle_gripper = 0        
+        self.angle_gripper = 0
+        self.prev_relz = 0
         self.gripper_x = self.arm_l1*math.cos(math.radians(self.angle_bottom)) +\
                          self.arm_l2*math.cos(math.radians(self.angle_bottom) +\
                                               math.radians(self.angle_middle)) +\
@@ -63,7 +64,7 @@ class Samples(Goal, Actuator):
         # self.gripper_x = 0
         # self.gripper_y = self.arm_l1 + self.arm_l2 + self.arm_l3
         # self.gripper_gamma = math.pi/2
-        self.ys = -16
+        self.ys = self.gripper_y
 
     def check_if_less_than(self, rely, relz):
         '''check if we are consistently near some coordinates'''
@@ -228,7 +229,7 @@ class Samples(Goal, Actuator):
         sign = lambda delta: delta and (1,-1)[delta < 0] # 0 if delta==0 otherwise +-1        
         for idx, delta in enumerate(dthet):
             if abs(delta) > 50:
-                dthet[idx] = sign(delta)*10 # 10
+                dthet[idx] = sign(delta)*5 # 10
             elif abs(delta) > 10:
                 dthet[idx] = sign(delta)*4 # 4
             elif abs(delta) > 5: 
@@ -288,8 +289,8 @@ class Samples(Goal, Actuator):
 
         # get change of gamma needed to align with sample
         del_gamma = math.atan2(rely,relz+self.arm_l3)
-        # new_gamma = self.gripper_gamma + del_gamma
-        new_gamma = math.radians(-105)
+        new_gamma = self.gripper_gamma + del_gamma
+        # new_gamma = math.radians(-90)
 
         # get sample coordinates in rover frame (origin at base servo)
         # xs = self.gripper_x + (relz)*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
@@ -297,7 +298,10 @@ class Samples(Goal, Actuator):
         xs = self.gripper_x + relz*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
         # ys = self.gripper_y + relz*math.sin(self.gripper_gamma) + rely*math.cos(self.gripper_gamma)
 
-        self.ys += 1
+        if self.ys > -16:
+            self.ys -= 0.1
+        # else:
+        #     self.ys = -10
         ys = self.ys
 
         print("REQUESTED XY: {}, {}".format(xs,ys))
@@ -328,10 +332,64 @@ class Samples(Goal, Actuator):
             thet1,thet2,thet3 = res
             self._slight_change(thet1,thet2,thet3,0)            
         # self._smooth_update(thet1,thet2,thet3,0)
+
+    def go_for_it(self):
+        toset_x = self.gripper_x
+        toset_y = self.gripper_y - self.prev_relz + 6# 4.2
+        toset_y2 = self.gripper_y - self.prev_relz + 5
+        toset_y3 = self.gripper_y - self.prev_relz + 4
+        toset_y4 = self.gripper_y - self.prev_relz + 3
+        toset_gamm = math.radians(-90)
+        
+        res = self._inverse_kinematics(toset_x, toset_y, toset_gamm)#self.gripper_gamma)
+        if res is not None:
+            thet1,thet2,thet3 = res
+        else:
+            return -1
+        for i in range(50):
+            self._slight_change(thet1,thet2,thet3,0)
+
+        time.sleep(0.05)
+
+        res = self._inverse_kinematics(toset_x, toset_y2, toset_gamm)#self.gripper_gamma)
+        if res is not None:
+            thet1,thet2,thet3 = res
+        else:
+            return -1        
+        for i in range(50):
+            self._slight_change(thet1,thet2,thet3,0)
+
+        time.sleep(0.05)            
+
+        res = self._inverse_kinematics(toset_x, toset_y3, toset_gamm)#self.gripper_gamma)
+        if res is not None:
+            thet1,thet2,thet3 = res
+        else:
+            return -1        
+        for i in range(50):
+            self._slight_change(thet1,thet2,thet3,0)
+
+        time.sleep(0.05)            
+
+        res = self._inverse_kinematics(self.gripper_x, toset_y4, toset_gamm)#self.gripper_gamma)
+        if res is not None:
+            thet1,thet2,thet3 = res
+        else:
+            return -1
+        for i in range(50):
+            self._slight_change(thet1,thet2,thet3,0)
+
+        time.sleep(0.05)            
+        return 0
+        
+        # with self.condition:
+        #     self.angle_bottom ,self.angle_middle,self.angle_top = self._inverse_kinematics(self.gripper_x, self.gripper_y -self.prev_relz + 2, self.gripper_gamma)
+        #     self.condition.notify()
+        
         
     def _close_jaw(self):
         with self.condition:
-            self.angle_gripper = 80
+            self.angle_gripper = 85
             self.condition.notify()
     
     def pick_samples(self):
@@ -349,22 +407,34 @@ class Samples(Goal, Actuator):
                 #dg.print("Image processing rate: {} FPS".format(sum(self.rate_list)/100))
                 self.rate_list = []
             if len(sample_bbox) == 0: # no sample found
+                if self.check_if_less_than(5,10) == 1:
+                    res = self.go_for_it()
+                    print("RESULT OF GO FOR IT: {}".format(res))
+                    if res == 0:
+                        print("CLOSING JAW")
+                        self._close_jaw()
+                        break
+                    else:
+                        print("GO FOR IT DIDNT WORK")
                 continue
             else:
                 # sample found - use only one if multiple detected (sample_bbox[0])
                 x,y = (sample_bbox[0][0]+sample_bbox[0][2]/2,
                           sample_bbox[0][1]+sample_bbox[0][3]/2)
-                relz = self.ultrasound.read() - 3 # get height from the ground # 10
+                relz = self.ultrasound.read() - 2 # get height from the ground # 10
                 relx = (x-centre_x)*100.0/(100*centre_x) # percentage distance from centre of frame
                 rely = -(y-centre_y)*100.0/(30*centre_y) # 150
+                self.prev_relz = relz
                 #dg.print("{}, {}, {}".format(relx, rely, relz))
                 dg.print("rely:{},relz:{}".format(rely,relz))
                 dg.print("ANGLE: {}".format(math.degrees(math.atan2(rely,relz))))
                 self.past_values.append([rely,relz])
-                if self.check_if_less_than(5,3) == 1:
+
+                if self.check_if_less_than(5,4) == 1 and self.gripper_gamma < math.radians(-80): #and self.ys < -14.2:
                     dg.print("Achieved target position")
                     self._close_jaw()
                     break
+
                 # if abs(relx) > 5 or abs(rely) > 5: # get the sample near the centre of the frame
                 #     self.pid_wheels(relx,rely)
                 # else: # sample is near the centre of the frame - move arm to pick it up
