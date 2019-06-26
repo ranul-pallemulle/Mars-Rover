@@ -291,8 +291,8 @@ class Samples(Goal, Actuator):
         # get sample coordinates in rover frame (origin at base servo)
         # xs = self.gripper_x + (relz)*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
         # ys = self.gripper_y + (relz)*math.sin(self.gripper_gamma) + rely*math.sin(self.gripper_gamma)
-        xs = self.gripper_x + (relz)*math.cos(self.gripper_gamma+del_gamma) - rely*math.sin(self.gripper_gamma+del_gamma)
-        ys = self.gripper_y + (relz)*math.sin(self.gripper_gamma+del_gamma) + rely*math.sin(self.gripper_gamma+del_gamma)
+        xs = self.gripper_x + (relz)*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
+        ys = self.gripper_y + (relz)*math.sin(self.gripper_gamma) + rely*math.cos(self.gripper_gamma)
 
         print("REQUESTED XY: {}, {}".format(xs,ys))
         print("CURRENT XY: {}, {}".format(self.gripper_x,self.gripper_y))
