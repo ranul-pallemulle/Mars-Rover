@@ -63,6 +63,7 @@ class Samples(Goal, Actuator):
         # self.gripper_x = 0
         # self.gripper_y = self.arm_l1 + self.arm_l2 + self.arm_l3
         # self.gripper_gamma = math.pi/2
+        self.ys = -16
 
     def check_if_less_than(self, rely, relz):
         '''check if we are consistently near some coordinates'''
@@ -147,7 +148,7 @@ class Samples(Goal, Actuator):
 
         x2R = x - arm_l3 * math.cos(gamma) # x for the tip of the second segment
         y2R = y - arm_l3 * math.sin(gamma) # y for the tip of the second segment
-        ct2 = ((x2R**2 + y2R**2) - (arm_l1**2 + arm_l2**2))/(2*arm_l1*arm_l2) # cos(theta2)
+        ct2 = (((x2R**2) + (y2R**2)) - ((arm_l1**2) + (arm_l2**2)))/(2*arm_l1*arm_l2) # cos(theta2)
         #print("GAMMA: {}".format(math.degrees(gamma)))
         #print("COSTHETA2: {}".format(ct2))
         try:
@@ -227,15 +228,17 @@ class Samples(Goal, Actuator):
         sign = lambda delta: delta and (1,-1)[delta < 0] # 0 if delta==0 otherwise +-1        
         for idx, delta in enumerate(dthet):
             if abs(delta) > 50:
-                dthet[idx] = sign(delta)*2 # 10
+                dthet[idx] = sign(delta)*10 # 10
             elif abs(delta) > 10:
-                dthet[idx] = sign(delta)*2 # 4
+                dthet[idx] = sign(delta)*4 # 4
             elif abs(delta) > 5: 
                 dthet[idx] = sign(delta)*2 # 2
             elif abs(delta) > 2: 
-                dthet[idx] = sign(delta)*0.5 # 1
+                dthet[idx] = sign(delta)*1 # 1
+            elif abs(delta) > 0.5:
+                dthet[idx] = sign(delta)*1
             else:
-                dthet[idx] = sign(delta)*0.1 # if delta==0, sign==0 and dthet[idx]==0
+                dthet[idx] = sign(delta)*0.02 # if delta==0, sign==0 and dthet[idx]==0
         new_thet1 = self.angle_bottom + dthet[0]
         new_thet2 = self.angle_middle + dthet[1]
         new_thet3 = self.angle_top + dthet[2]
@@ -284,15 +287,18 @@ class Samples(Goal, Actuator):
         #     self.condition.notify()
 
         # get change of gamma needed to align with sample
-        del_gamma = math.atan2(rely,relz)
+        del_gamma = math.atan2(rely,relz+self.arm_l3)
         # new_gamma = self.gripper_gamma + del_gamma
-        new_gamma = math.radians(-100)
+        new_gamma = math.radians(-105)
 
         # get sample coordinates in rover frame (origin at base servo)
         # xs = self.gripper_x + (relz)*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
         # ys = self.gripper_y + (relz)*math.sin(self.gripper_gamma) + rely*math.sin(self.gripper_gamma)
-        xs = self.gripper_x + (relz)*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
-        ys = self.gripper_y + (relz)*math.sin(self.gripper_gamma) + rely*math.cos(self.gripper_gamma)
+        xs = self.gripper_x + relz*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
+        # ys = self.gripper_y + relz*math.sin(self.gripper_gamma) + rely*math.cos(self.gripper_gamma)
+
+        self.ys += 1
+        ys = self.ys
 
         print("REQUESTED XY: {}, {}".format(xs,ys))
         print("CURRENT XY: {}, {}".format(self.gripper_x,self.gripper_y))
@@ -313,6 +319,7 @@ class Samples(Goal, Actuator):
         # get sample coordinates in rover frame (origin at base servo)
         xs = self.gripper_x + relz*math.cos(self.gripper_gamma) - rely*math.sin(self.gripper_gamma)
         ys = self.gripper_y + relz*math.sin(self.gripper_gamma) + rely*math.sin(self.gripper_gamma)
+        
 
         # get angle changes needed using inverse kinematics and set them
         #print("REQUESTED XY: {}, {}".format(xs,ys))
@@ -347,14 +354,14 @@ class Samples(Goal, Actuator):
                 # sample found - use only one if multiple detected (sample_bbox[0])
                 x,y = (sample_bbox[0][0]+sample_bbox[0][2]/2,
                           sample_bbox[0][1]+sample_bbox[0][3]/2)
-                relz = self.ultrasound.read() # get height from the ground # 10
+                relz = self.ultrasound.read() - 3 # get height from the ground # 10
                 relx = (x-centre_x)*100.0/(100*centre_x) # percentage distance from centre of frame
-                rely = -(y-centre_y)*100.0/(10*centre_y) # 150
+                rely = -(y-centre_y)*100.0/(30*centre_y) # 150
                 #dg.print("{}, {}, {}".format(relx, rely, relz))
                 dg.print("rely:{},relz:{}".format(rely,relz))
                 dg.print("ANGLE: {}".format(math.degrees(math.atan2(rely,relz))))
                 self.past_values.append([rely,relz])
-                if self.check_if_less_than(5,5) == 1 and math.degrees(self.gripper_gamma) < -95:
+                if self.check_if_less_than(5,3) == 1:
                     dg.print("Achieved target position")
                     self._close_jaw()
                     break

@@ -202,73 +202,73 @@ class TestSampleSimulation(unittest.TestCase):
     def setUp(self):
         pass
 
-    # def test_check_coords(self):
-    #     #print("Initial x,y,gamma: {},{},{}".format(gripper_x,gripper_y,math.degrees(gripper_gamma)))
-    #     target_x = 11#gripper_x + 0.5
-    #     target_y = -10#gripper_y + 0.5
-    #     jx_coords,jy_coords = _get_joint_coords()
-    #     plt.plot(jx_coords,jy_coords,'bo-')
-    #     plt.plot(target_x,target_y,'yo')
-    #     for i in range(50):
-    #         rx = math.cos(gripper_gamma)*(target_x - gripper_x) +\
-    #              math.sin(gripper_gamma)*(target_y - gripper_y)
-    #         ry = math.cos(gripper_gamma)*(target_y - gripper_y) -\
-    #              math.sin(gripper_gamma)*(target_x - gripper_x)
-    #         pid_arm(rx,ry)
-    #         print("RELATIVE x,y: {},{}".format(rx,ry))
-    #     # #print("Final x,y,gamma: {},{},{}".format(gripper_x,gripper_y,math.degrees(gripper_gamma)))
-    #     # pid_arm_full(rx,ry)
-    #     jx_coords_fin,jy_coords_fin = _get_joint_coords()
-    #     plt.plot(jx_coords_fin,jy_coords_fin,'ro-')
-    #     plt.axes().set_aspect('equal')
-    #     check_lengths_validity(jx_coords,jy_coords,jx_coords_fin,jy_coords_fin)
-    #     plt.show()
-
-    def test_scout_mode(self):
-        '''Fix x2R and y2R and only have gamma change'''
-        global angle_bottom, angle_middle, angle_top, angle_gripper
-        global gripper_x, gripper_y, gripper_gamma
-        orig_x = 20
-        orig_y = 0
-        gripper_x = orig_x # 17
-        gripper_y = orig_y # -5
-        sample_x = 40
-        sample_y = -10
-        gripper_gamma = math.atan2(sample_y-gripper_y,sample_x-gripper_x)
-        angle_bottom,angle_middle,angle_top = _inverse_kinematics(gripper_x,gripper_y,gripper_gamma)
-        jx,jy = _get_joint_coords()
-        plt.plot(jx,jy,'bo-')
-        plt.plot(sample_x,sample_y,'yo')
-        x2R = orig_x - arm_l3*math.cos(gripper_gamma)
-        y2R = orig_y - arm_l3*math.sin(gripper_gamma)
-        for j in range(20):
-            sample_x -= 1.55
-            for i in range(500):
-                rx = math.cos(gripper_gamma)*(sample_x - gripper_x) +\
-                    math.sin(gripper_gamma)*(sample_y - gripper_y)
-                ry = math.cos(gripper_gamma)*(sample_y - gripper_y) -\
-                    math.sin(gripper_gamma)*(sample_x - gripper_x)
-                del_gamma = math.atan2(ry,rx+arm_l3)
-                new_gamma = gripper_gamma + del_gamma
-
-                #changed_x = math.cos(gripper_gamma)*(orig_x - gripper_x) +\
-                #            math.sin(gripper_gamma)*(orig_y - gripper_y)
-                #changed_y = math.cos(gripper_gamma)*(orig_y - gripper_y) -\
-                #            math.sin(gripper_gamma)*(orig_x - gripper_x)
-                new_x = x2R + arm_l3*math.cos(new_gamma)
-                new_y = y2R + arm_l3*math.sin(new_gamma)
-                del_x = math.cos(gripper_gamma)*(new_x - gripper_x) +\
-                            math.sin(gripper_gamma)*(new_y - gripper_y)
-                del_y = math.cos(gripper_gamma)*(new_y - gripper_y) -\
-                            math.sin(gripper_gamma)*(new_x - gripper_x)
-                pid_arm_spec_gamma(del_x,del_y,new_gamma)
-                print("NEW GAMMA: {}".format(math.degrees(new_gamma)))
-            plt.plot(sample_x,sample_y,'yo')
-        jxf,jyf = _get_joint_coords()
-        plt.plot(jxf,jyf,'ro-')
+    def test_check_coords(self):
+        #print("Initial x,y,gamma: {},{},{}".format(gripper_x,gripper_y,math.degrees(gripper_gamma)))
+        target_x = 11#gripper_x + 0.5
+        target_y = -10#gripper_y + 0.5
+        jx_coords,jy_coords = _get_joint_coords()
+        plt.plot(jx_coords,jy_coords,'bo-')
+        plt.plot(target_x,target_y,'yo')
+        for i in range(50):
+            rx = math.cos(gripper_gamma)*(target_x - gripper_x) +\
+                 math.sin(gripper_gamma)*(target_y - gripper_y)
+            ry = math.cos(gripper_gamma)*(target_y - gripper_y) -\
+                 math.sin(gripper_gamma)*(target_x - gripper_x)
+            pid_arm(rx,ry)
+            print("RELATIVE x,y: {},{}".format(rx,ry))
+        # #print("Final x,y,gamma: {},{},{}".format(gripper_x,gripper_y,math.degrees(gripper_gamma)))
+        # pid_arm_full(rx,ry)
+        jx_coords_fin,jy_coords_fin = _get_joint_coords()
+        plt.plot(jx_coords_fin,jy_coords_fin,'ro-')
         plt.axes().set_aspect('equal')
-        check_lengths_validity(jx,jy,jxf,jyf)
+        check_lengths_validity(jx_coords,jy_coords,jx_coords_fin,jy_coords_fin)
         plt.show()
+
+    # def test_scout_mode(self):
+    #     '''Fix x2R and y2R and only have gamma change'''
+    #     global angle_bottom, angle_middle, angle_top, angle_gripper
+    #     global gripper_x, gripper_y, gripper_gamma
+    #     orig_x = 20
+    #     orig_y = 0
+    #     gripper_x = orig_x # 17
+    #     gripper_y = orig_y # -5
+    #     sample_x = 40
+    #     sample_y = -10
+    #     gripper_gamma = math.atan2(sample_y-gripper_y,sample_x-gripper_x)
+    #     angle_bottom,angle_middle,angle_top = _inverse_kinematics(gripper_x,gripper_y,gripper_gamma)
+    #     jx,jy = _get_joint_coords()
+    #     plt.plot(jx,jy,'bo-')
+    #     plt.plot(sample_x,sample_y,'yo')
+    #     x2R = orig_x - arm_l3*math.cos(gripper_gamma)
+    #     y2R = orig_y - arm_l3*math.sin(gripper_gamma)
+    #     for j in range(20):
+    #         sample_x -= 1.55
+    #         for i in range(500):
+    #             rx = math.cos(gripper_gamma)*(sample_x - gripper_x) +\
+    #                 math.sin(gripper_gamma)*(sample_y - gripper_y)
+    #             ry = math.cos(gripper_gamma)*(sample_y - gripper_y) -\
+    #                 math.sin(gripper_gamma)*(sample_x - gripper_x)
+    #             del_gamma = math.atan2(ry,rx+arm_l3)
+    #             new_gamma = gripper_gamma + del_gamma
+
+    #             #changed_x = math.cos(gripper_gamma)*(orig_x - gripper_x) +\
+    #             #            math.sin(gripper_gamma)*(orig_y - gripper_y)
+    #             #changed_y = math.cos(gripper_gamma)*(orig_y - gripper_y) -\
+    #             #            math.sin(gripper_gamma)*(orig_x - gripper_x)
+    #             new_x = x2R + arm_l3*math.cos(new_gamma)
+    #             new_y = y2R + arm_l3*math.sin(new_gamma)
+    #             del_x = math.cos(gripper_gamma)*(new_x - gripper_x) +\
+    #                         math.sin(gripper_gamma)*(new_y - gripper_y)
+    #             del_y = math.cos(gripper_gamma)*(new_y - gripper_y) -\
+    #                         math.sin(gripper_gamma)*(new_x - gripper_x)
+    #             pid_arm_spec_gamma(del_x,del_y,new_gamma)
+    #             print("NEW GAMMA: {}".format(math.degrees(new_gamma)))
+    #         plt.plot(sample_x,sample_y,'yo')
+    #     jxf,jyf = _get_joint_coords()
+    #     plt.plot(jxf,jyf,'ro-')
+    #     plt.axes().set_aspect('equal')
+    #     check_lengths_validity(jx,jy,jxf,jyf)
+    #     plt.show()
 
         
 
