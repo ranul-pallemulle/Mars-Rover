@@ -75,8 +75,8 @@ public class ARMController implements Initializable {
     double sliderx = 200;
     double grippc = (sliderx-200)/100;
     
-    //String IPADDRESS = "192.168.4.1";
-    String IPADDRESS = "10.42.0.137";
+    String IPADDRESS = "192.168.4.1";
+    //String IPADDRESS = "10.42.0.137";
     boolean test = false;
     
     double globprevs1 = 0;

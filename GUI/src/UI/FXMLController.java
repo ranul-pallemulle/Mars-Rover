@@ -77,8 +77,8 @@ public class FXMLController implements Initializable {
     double initialoffsetx = 0;
     double initialoffsety = 0;    
     
-    //String IPADDRESS = "192.168.4.1";
-    String IPADDRESS = "10.42.0.137";
+    String IPADDRESS = "192.168.4.1";
+    //String IPADDRESS = "10.42.0.137";
     boolean test = false;
     
     Sender command_sender = new Sender(IPADDRESS,5560);
@@ -231,6 +231,11 @@ public class FXMLController implements Initializable {
             
             Thread t = new Thread(diagnostics);
             t.start();
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE, null, ex);
+            }
             
             enablerover = true;
             ButtonMain.setFill(Color.web("#00FF00"));
@@ -299,9 +304,9 @@ public class FXMLController implements Initializable {
             
             if(!test){
                 command_sender.startPiApp("STREAM");
-                TimeUnit.SECONDS.sleep(4);
-                System.out.println("EXECING");
-                Process p = Runtime.getRuntime().exec(new String[]{"bash","/Users/ranulpallemulle/launch_gst.sh"});
+                //TimeUnit.SECONDS.sleep(4);
+                //System.out.println("EXECING");
+                //Process p = Runtime.getRuntime().exec(new String[]{"bash","/Users/ranulpallemulle/launch_gst.sh"});
                 //Process p = Runtime.getRuntime().exec("/usr/local/bin/gst-launch-1.0 tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! autovideosink sync=false");
                 //Process p = Runtime.getRuntime().exec(new String[]{"gst-launch-1.0","tcpclientsrc","host=192.168.4.1","port=5564","!","gdpdepay","!","rtph264depay","!","avdec_h264","!","autovideosink","sync=false"});
                 //ProcessBuilder builder = new ProcessBuilder("/usr/local/bin/gst-launch-1.0", "tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! autovideosink sync=false");
@@ -312,14 +317,14 @@ public class FXMLController implements Initializable {
                 //ProcessBuilder builder = new ProcessBuilder();
                 //builder.command("/usr/local/bin/gst-launch-1.0 tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! autovideosink sync=false");
                 
-                p.waitFor(); 
-                BufferedReader reader=new BufferedReader(new InputStreamReader(
-                p.getInputStream())); 
-                String line; 
-                while((line = reader.readLine()) != null) { 
-                    System.out.println(line);
-                } 
-                System.out.println("EXECED");
+                //p.waitFor(); 
+                //BufferedReader reader=new BufferedReader(new InputStreamReader(
+                //p.getInputStream())); 
+                //String line; 
+                //while((line = reader.readLine()) != null) { 
+                //    System.out.println(line);
+                //} 
+                //System.out.println("EXECED");
                 
             }
         }
