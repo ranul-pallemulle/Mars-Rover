@@ -315,12 +315,12 @@ public class FXMLController implements Initializable {
                 command_sender.startPiApp("STREAM");
                 TimeUnit.SECONDS.sleep(2);
                 SimpleVideoComponent vc = new SimpleVideoComponent();
+                // Bin bin = Gst.parseBinFromDescription(
+                //         "tcpclientsrc host="+IPADDRESS+" port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=480", 
+                //         true);
                 Bin bin = Gst.parseBinFromDescription(
-                        "tcpclientsrc host="+IPADDRESS+" port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=480", 
+                        "autovideosrc ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=480", 
                         true);
-            // Bin bin = Gst.parseBinFromDescription(
-            //         "autovideosrc ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=480", 
-            //         true);
                 Pipeline pipe = new Pipeline();
                 pipe.addMany(bin,vc.getElement());
                 Pipeline.linkMany(bin,vc.getElement());
