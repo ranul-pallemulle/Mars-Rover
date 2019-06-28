@@ -8,6 +8,7 @@ package UI;
 
 import Backend.DiagnosticReceiver;
 import Backend.Sender;
+import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +43,14 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javax.swing.JFrame;
+import org.freedesktop.gstreamer.Bin;
+import org.freedesktop.gstreamer.Gst;
+import org.freedesktop.gstreamer.Pipeline;
 
-
+//import org.freedesktop.gstreamer.Bin;
+//import org.freedesktop.gstreamer.Gst;
+//import org.freedesktop.gstreamer.Pipeline;
 
 /**
  * FXML Controller class
@@ -301,10 +308,31 @@ public class FXMLController implements Initializable {
 //            vidStage.setScene(vidscene);
 //            vidStage.setResizable(false);
 //            vidStage.show();
+
+            
             
             if(!test){
                 command_sender.startPiApp("STREAM");
-                //TimeUnit.SECONDS.sleep(4);
+                TimeUnit.SECONDS.sleep(2);
+                SimpleVideoComponent vc = new SimpleVideoComponent();
+                Bin bin = Gst.parseBinFromDescription(
+                        "tcpclientsrc host="+IPADDRESS+" port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=480", 
+                        true);
+            // Bin bin = Gst.parseBinFromDescription(
+            //         "autovideosrc ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=480", 
+            //         true);
+                Pipeline pipe = new Pipeline();
+                pipe.addMany(bin,vc.getElement());
+                Pipeline.linkMany(bin,vc.getElement());
+                JFrame f = new JFrame("Camera Feed");
+                f.add(vc);
+                vc.setPreferredSize(new Dimension(640,480));
+                f.pack();
+                f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                
+                pipe.play();
+                f.setVisible(true);
+
                 //System.out.println("EXECING");
                 //Process p = Runtime.getRuntime().exec(new String[]{"bash","/Users/ranulpallemulle/launch_gst.sh"});
                 //Process p = Runtime.getRuntime().exec("/usr/local/bin/gst-launch-1.0 tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! autovideosink sync=false");
