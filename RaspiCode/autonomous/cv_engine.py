@@ -6,6 +6,10 @@ from threading import Lock
 import cv2
 import time
 
+class CVEngineError(Exception):
+    '''Exception class raised by CVEngine'''
+    pass
+
 class CVEngine(ABC, CameraUser):
     '''Computer vision engine: has object recognition functionality.'''
     def __init__(self):
@@ -29,6 +33,13 @@ class CVEngine(ABC, CameraUser):
     def is_active(self):
         with self.active_lock:
             return self.active
+
+    @classmethod
+    def get_engine(cls, name):
+        for x in cls.__subclasses__():
+            if x.__name__ == name:
+                return x()
+        raise CVEngineError("No CVEngine named '{}' found".format(name))
 
     @abstractmethod
     def initialise(self):

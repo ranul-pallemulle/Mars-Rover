@@ -192,6 +192,9 @@ class AutonomousConfiguration(Configuration):
             return None
         val = elem_list[0][0].text.strip()
         return val
+
+    def cv_engine(self):
+        return self._generic_string_setting('cvengine')
     
     def capture_framerate(self):
         return self._generic_integer_setting('capture_framerate')

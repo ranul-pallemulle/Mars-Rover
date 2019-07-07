@@ -89,8 +89,9 @@ class Goal(ABC,metaclass=MetaGoal):
     def get_list(cls):
         return cls.goals_list
 
-    def is_running(self):
-        return self.running
+    @classmethod
+    def is_running(cls, obj):
+        return obj.running
 
 
 class Autonomous(OpMode):
@@ -130,7 +131,7 @@ them and add to goals_list.'''
     def stop(self, args):
         for goal_name in Goal.get_list():
             goal = Goal.get_list()[goal_name]
-            if goal.is_running():
+            if Goal.is_running(goal):
                 goal.cleanup()
 
     def submode_command(self, args):
