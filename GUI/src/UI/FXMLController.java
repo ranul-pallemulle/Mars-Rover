@@ -301,8 +301,9 @@ public class FXMLController implements Initializable {
                 command_sender.startPiApp("STREAM");
                 TimeUnit.SECONDS.sleep(1);
                 SimpleVideoComponent vc = new SimpleVideoComponent();
+                vc.getElement().set("sync", false);
                 Bin bin = Gst.parseBinFromDescription(
-                        "tcpclientsrc host="+IPADDRESS+" port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=480", 
+                        "tcpclientsrc host="+IPADDRESS+" port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=400", 
                         true);
                 // Bin bin = Gst.parseBinFromDescription(
                 //         "autovideosrc ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=480", 
@@ -320,7 +321,7 @@ public class FXMLController implements Initializable {
                             f.dispose();
                         }});
                 f.add(vc);
-                vc.setPreferredSize(new Dimension(640,480));
+                vc.setPreferredSize(new Dimension(640,400));
                 f.pack();
                 
                 
