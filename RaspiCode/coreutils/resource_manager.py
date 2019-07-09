@@ -66,7 +66,11 @@ class ResourceManager:
                 if self.resources_status[typename] == 1:
                     if resource.shared_init:
                         dg.print("Shared resource {} initialising...".format(typename))
-                        resource.shared_init()
+                        try:
+                            resource.shared_init()
+                        except Exception as e:
+                            self.resources_status[typename] = 0
+                            raise ResourceError("Error initialising shared resource: "+str(e))
                         dg.print("Shared resource {} initialised".format(typename))
                 dg.print("Resource Manager: {} was acquired".format(typename))
                 return resource
@@ -95,8 +99,11 @@ class ResourceManager:
                     raise ResourceError('Shared resource count for {} is less than 0.'.format(typename))
                 if self.resources_status[typename] == 0:
                     if resource.shared_deinit:
-                        dg.print("Shared resource {} deinitialising...".format(typename))                        
-                        resource.shared_deinit()
+                        dg.print("Shared resource {} deinitialising...".format(typename))
+                        try:                        
+                            resource.shared_deinit()
+                        except Exception as e:
+                            raise ResourceError('Error deinitialising shared resource: '+str(e))
                         dg.print("Shared resource {} deinitialised".format(typename))
         else:
             raise ResourceError('Resource "{}" not found'.format(typename))
