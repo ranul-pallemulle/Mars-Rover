@@ -3,7 +3,7 @@
 __pycache__/
 *NOTES*
 /GUI/nbproject/private/
-/GUI/dist/
+#/GUI/dist/
 /GUI/build/
 *DS_Store*
 .vscode
@@ -12,5 +12,5 @@ __pycache__/
 .AppleDouble/
 .Parent
 /Java_Backend/nbproject/private/
-/Java_Backend/dist/
+#/Java_Backend/dist/
 /Java_Backend/build/
