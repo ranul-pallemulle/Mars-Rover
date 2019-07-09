@@ -16,7 +16,7 @@ import Backend.*;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
-import org.freedesktop.gstreamer.Gst;
+//import org.freedesktop.gstreamer.Gst;
 
 /**
  *
@@ -59,7 +59,7 @@ public class Main extends Application {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        Gst.init("GUI", args);
+        //Gst.init("GUI", args);
         launch(args);
     }
     

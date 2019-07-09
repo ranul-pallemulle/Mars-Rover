@@ -38,10 +38,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javax.swing.JFrame;
-import org.freedesktop.gstreamer.Bin;
-import org.freedesktop.gstreamer.Gst;
-import org.freedesktop.gstreamer.Pipeline;
+//import javax.swing.JFrame;
+//import org.freedesktop.gstreamer.Bin;
+//import org.freedesktop.gstreamer.Gst;
+//import org.freedesktop.gstreamer.Pipeline;
 
 //import org.freedesktop.gstreamer.Bin;
 //import org.freedesktop.gstreamer.Gst;
@@ -296,41 +296,41 @@ public class FXMLController implements Initializable {
     
     // TODO    
     public void openVid(MouseEvent e){
-        try {
-            if(!test){
-                command_sender.startPiApp("STREAM");
-                TimeUnit.SECONDS.sleep(1);
-                SimpleVideoComponent vc = new SimpleVideoComponent();
-                vc.getElement().set("sync", false);
-                Bin bin = Gst.parseBinFromDescription(
-                        "tcpclientsrc host="+IPADDRESS+" port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=400", 
-                        true);
-                // Bin bin = Gst.parseBinFromDescription(
-                //         "autovideosrc ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=480", 
-                //         true);
-                Pipeline pipe = new Pipeline();
-                pipe.addMany(bin,vc.getElement());
-                Pipeline.linkMany(bin,vc.getElement());
-                JFrame f = new JFrame("Camera Feed");
-                //f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                f.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-                f.addWindowListener(new WindowAdapter(){
-                        @Override
-                        public void windowClosing(WindowEvent e){
-                            command_sender.stopPiApp("STREAM");
-                            f.dispose();
-                        }});
-                f.add(vc);
-                vc.setPreferredSize(new Dimension(640,400));
-                f.pack();
-                
-                
-                pipe.play();
-                f.setVisible(true);
-            }
-        }
-        catch (Exception a) {
-        }
+//        try {
+//            if(!test){
+//                command_sender.startPiApp("STREAM");
+//                TimeUnit.SECONDS.sleep(1);
+//                SimpleVideoComponent vc = new SimpleVideoComponent();
+//                vc.getElement().set("sync", false);
+//                Bin bin = Gst.parseBinFromDescription(
+//                        "tcpclientsrc host="+IPADDRESS+" port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=400", 
+//                        true);
+//                // Bin bin = Gst.parseBinFromDescription(
+//                //         "autovideosrc ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=480", 
+//                //         true);
+//                Pipeline pipe = new Pipeline();
+//                pipe.addMany(bin,vc.getElement());
+//                Pipeline.linkMany(bin,vc.getElement());
+//                JFrame f = new JFrame("Camera Feed");
+//                //f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//                f.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+//                f.addWindowListener(new WindowAdapter(){
+//                        @Override
+//                        public void windowClosing(WindowEvent e){
+//                            command_sender.stopPiApp("STREAM");
+//                            f.dispose();
+//                        }});
+//                f.add(vc);
+//                vc.setPreferredSize(new Dimension(640,400));
+//                f.pack();
+//                
+//                
+//                pipe.play();
+//                f.setVisible(true);
+//            }
+//        }
+//        catch (Exception a) {
+//        }
     }
     
     public void toggleAuto(MouseEvent e){
