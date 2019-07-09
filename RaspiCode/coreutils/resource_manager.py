@@ -75,9 +75,6 @@ class ResourceManager:
         else:
             raise ResourceError('Resource "{}" requested but not found'.format(typename))
 
-    def get_camera_use_count(self):
-        return self.resources[Camera.FEED]
-
     def release(self, typename):
         '''Release ownership of a resource.'''
         if typename in self.resources_status.keys():
@@ -103,5 +100,6 @@ class ResourceManager:
                         dg.print("Shared resource {} deinitialised".format(typename))
         else:
             raise ResourceError('Resource "{}" not found'.format(typename))
-        
+                        
+
 global_resources = ResourceManager()
