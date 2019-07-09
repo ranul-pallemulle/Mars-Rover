@@ -3,7 +3,8 @@ from coreutils.rwlock import RWLock
 from resources.resource import Resource, ResourceRawError, Policy
 import cv2
 import numpy as np
-from threading import Thread
+from threading import Thread, Lock
+from multiprocessing import Process, Queue
 
 class CameraError(Exception):
     pass
@@ -51,11 +52,45 @@ class Camera(Resource):
                 self.frame = img
                 self.camlock.release()
 
+    def _cv2_videocapture_wrapper(self,timeout=5):
+        timeout_over = False
+        timeout_lock = Lock()
+        initialised = False
+        init_lock = Lock()
+        def _wait_for_cap():
+            import time
+            nonlocal timeout_over
+            time.sleep(timeout)
+            with timeout_lock:
+                timeout_over = True
+        def _init_cap():
+            nonlocal initialised
+            self.cap = cv2.VideoCapture(self.gst_comm)
+            with init_lock:
+                initialised = True
+        timeout_thread = Thread(target=_wait_for_cap, args=())
+        cap_thread = Thread(target=_init_cap, args=())
+        cap_thread.daemon = True
+        timeout_thread.start()
+        cap_thread.start()
+        while True:
+            with timeout_lock:
+                if timeout_over:
+                    return False
+            with init_lock:
+                if initialised:
+                    return True
+
     def start_capture(self):
         '''Begin camera operation, if it is not already active.'''
         if not self.active:
             self._eval_gst_comm()
-            self.cap = cv2.VideoCapture(self.gst_comm) # get camera access
+            # self.cap = cv2.VideoCapture(self.gst_comm) # get camera access
+            cam_initialised = self._cv2_videocapture_wrapper()
+            if not cam_initialised:
+                raise CameraError('Error in argument to cv2.VideoCapture: check camera settings.')
+            if not self.cap.isOpened():
+                raise CameraError('Error in argument to cv2.VideoCapture: check camera settings.')
             for i in range(5):
                 ret, img = self.cap.read()
                 self.frame = img # initialise self.frame with a valid frame

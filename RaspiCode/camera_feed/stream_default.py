@@ -11,7 +11,10 @@ class DefaultStream(CameraUser, OpMode):
         self.register_name("Stream")
 
     def start(self, args):
-        self.acquire_camera()
+        try:
+            self.acquire_camera()
+        except CameraUserError as e:
+            raise OpModeError(str(e))
         if not self.have_camera():
             self.stop(None)
             raise OpModeError(str(e))

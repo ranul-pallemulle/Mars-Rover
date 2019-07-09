@@ -10,14 +10,15 @@
 # everytime the files change copy to the systemd folder as described above
 # then reboot or restart the service
 while true; do
-    if ping -c 1 172.24.1.1 > /dev/null; then
+    if ping -c 1 192.168.4.1 > /dev/null; then
 	break
     fi
 done
 echo "Network up"
 
 while true; do
-    if python3 /home/pi/RaspiCode/start_rover.py 5560; then
-	break
-    fi
+    # if python3 /home/pi/RaspiCode/start_rover.py 5560; then
+    # break
+    # fi
+    cd /home/pi/Mars-Rover/RaspiCode && python3 start_rover.py 5560
 done
