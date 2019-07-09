@@ -1,7 +1,7 @@
 import coreutils.configure as cfg
 import coreutils.resource_manager as mgr
 from autonomous.auto_mode import Goal, GoalError
-from autonomous.cv_engine import OpenCVHaar
+from autonomous.cv_engine import OpenCVHaar, CVEngineError
 from interfaces.actuator import Actuator, ActuatorError
 from coreutils.diagnostics import Diagnostics as dg
 from threading import Thread
@@ -85,12 +85,16 @@ class Samples(Goal, Actuator):
         self.acquire_motors("Arm")
         if not self.have_acquired("Wheels") or not self.have_acquired("Arm"):
             raise GoalError("Could not get access to motors.")
-        self.ultrasound = mgr.global_resources.get_shared("Ultrasound")
-        if self.ultrasound is None:
-            raise GoalError("Could not get access to ultrasound sensor.")
+        try:
+            self.ultrasound = mgr.global_resources.get_shared("Ultrasound")
+        except mgr.ResourceError as e:
+            raise GoalError("Could not get access to ultrasound sensor: "+str(e))
         self.begin_actuate()        
         self.set_initial_arm_position()
-        self.cv_engine.activate()
+        try:
+            self.cv_engine.activate()
+        except CVEngineError as e:
+            raise GoalError("Could not activate CVEngine: "+str(e))
         thread_samples = Thread(target=self.pick_samples, args=[])
         thread_samples.start()
 

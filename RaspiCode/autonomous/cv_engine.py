@@ -18,8 +18,14 @@ class CVEngine(ABC, CameraUser):
         self.active_lock = Lock()
 
     def activate(self):
-        self.acquire_camera()        
-        self.initialise()
+        try:
+            self.acquire_camera()
+        except CameraUserError as e:
+            raise CVEngineError("CVEngine could not acquire camera: "+str(e))
+        try:
+            self.initialise()
+        except Exception as e:
+            raise CVEngineError("Initialisation failed for CVEngine '{}': ".format(self.__class__.__name__) + str(e))
         with self.active_lock:
             self.active = True
 
@@ -29,6 +35,10 @@ class CVEngine(ABC, CameraUser):
         time.sleep(1)
         if self.have_camera():
             self.release_camera()
+        try:
+            self.deinitialise()
+        except Exception as e:
+            raise CVEngineError("Deinitialisation failed for CVEngine '{}': ".format(self.__class__.__name__) + str(e))
 
     def is_active(self):
         with self.active_lock:
@@ -44,6 +54,11 @@ class CVEngine(ABC, CameraUser):
     @abstractmethod
     def initialise(self):
         '''Any initialisation (e.g loading a haarcascades file).'''
+        pass
+
+    @abstractmethod
+    def deinitialise(self):
+        '''Any releasing of resources (e.g closing a file).'''
         pass
     
     @abstractmethod
@@ -62,6 +77,9 @@ class OpenCVHaar(CVEngine, Streamable):
     def initialise(self):
         self.cascade = cv2.CascadeClassifier('autonomous/haarcascade_samples_hydepark_30_30.xml')#autonomous/haarcascade_samples_hydepark_30_30.xml
         
+    def deinitialise(self):
+        pass
+
     def find_obj(self):
         frame = self.camera.get_frame()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

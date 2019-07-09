@@ -135,8 +135,13 @@ class PIDDriveController(Actuator):
         self.kp = kp            # proportional gain
         self.ki = ki            # integral gain
         self.kd = kd            # differential gain
+        self.kw = 1.0           # rover width
         self.omega = 0          # angular speed
         self.spd = 0            # translation speed
+
+    def get_values(self, motor_set):
+        with self.condition:
+            return (self.omega * self.kw, self.spd)
 
     def activate(self):
         self.acquire_motors("Wheels")
@@ -152,5 +157,12 @@ class PIDDriveController(Actuator):
 
     def _pid(self,relx,rely):
         '''relx and rely in birds-eyeview coordinates.'''
-        pass
+        dthet = math.atan2(relx,rely)
+        dist = math.sqrt(relx**2 + rely**2)
+        omega_new = self.kp*dthet
+        spd_new = self.kp*dist
+        with self.condition:
+            self.omega = omega_new
+            self.spd = spd_new
+            self.condition.notify()
 

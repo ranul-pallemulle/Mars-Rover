@@ -44,7 +44,8 @@ class "+name)
                     try:
                         res = cleanmeth(self, *args, **kwargs)
                     except GoalError as e:
-                        dg.print(str(e))
+                        dg.print("Warning: cleaning up failed for goal {}. Things may stop working. : ".format(self.name)+str(e))
+                        self.running = False
                         return
                     self.running = False
                     dg.print("Goal {} stopped.".format(self.name))
