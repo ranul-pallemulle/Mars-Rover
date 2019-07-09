@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 
 /**
@@ -27,12 +28,14 @@ public class DiagnosticReceiver implements Runnable {
     boolean running;
     TextArea txt;
     
-    public DiagnosticReceiver(String _IP, int _port) {
-        this.IP = _IP;
-        this.port = _port;
+    public DiagnosticReceiver() {
+        this.IP = null;
+        this.port = 0;
     }
     
-    public void initialise() throws UnknownHostException, IOException{//throws delcares exceptions, tried the clause and then catches
+    public void initialise(String _IP, int _port) throws UnknownHostException, IOException{//throws delcares exceptions, tried the clause and then catches
+        this.IP = _IP;
+        this.port = _port;
         ClientSock = new Socket(IP,port);
         input = new BufferedReader(new InputStreamReader(ClientSock.getInputStream()));
     }
@@ -68,9 +71,9 @@ public class DiagnosticReceiver implements Runnable {
             }
             if (data != null && txt != null) {
                 //System.out.println(data);
-                txt.setText(spaces+"*** Output from rover ***\n\n"+
-                            spaces+data);
+                    //txt.setText(spaces+"*** Output from rover ***\n\n"+spaces+data);
                 //txt.setText(data+"\n");
+                Platform.runLater(()->txt.appendText(spaces+data+"\n"));
             }
         }
     }

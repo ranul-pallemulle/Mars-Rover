@@ -84,8 +84,7 @@ public class ARMController implements Initializable {
     double globprevs3 = 0;
     
     Sender command_sender;
-    Sender joystick_sender;
-    Sender arm_sender;
+    Sender arm_sender = new Sender();
     Sender test_sender;
     
     public boolean isEnabled()
@@ -97,6 +96,11 @@ public class ARMController implements Initializable {
     {
         this.stage = stage;
         
+    }
+    
+    public void update_ipaddress(String ip)
+    {
+        IPADDRESS = ip;
     }
     
     public void pass_main_sender(Sender some_sender)
@@ -322,14 +326,13 @@ public class ARMController implements Initializable {
             if(!test){
                 if (!fxmlcontroller.autoEnabled()) {
                     command_sender.startPiApp("ROBOTICARM", 5567);
-                    arm_sender = new Sender(IPADDRESS, 5567);
                     try {
                         TimeUnit.SECONDS.sleep(1);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(ARMController.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     try{
-                        arm_sender.initialise();
+                        arm_sender.initialise(IPADDRESS, 5567);
                     } catch(UnknownHostException ex) {
                         System.out.println("unknown host");
                         return;

@@ -32,6 +32,7 @@
                 <Text fx:id="DispJoyX" x="30" y="20" text="0.0"/>
                 <Text fx:id="DispJoyY" x="30" y="40" text="0.0"/>
                 
+                <ComboBox fx:id="CBox" promptText="Connection Method" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
                 <TextArea fx:id="diagnosticText" prefWidth="500" prefHeight="90" AnchorPane.bottomAnchor="0.0" editable="false"/>
                 <!--<Button fx:id="connectButton" text="Connect" prefHeight="35" prefWidth="150" onAction="#handleConnectButtonPress"/>-->
 <!--            </HBox> 

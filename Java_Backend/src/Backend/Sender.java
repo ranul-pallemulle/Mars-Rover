@@ -26,13 +26,16 @@ public class Sender {
     int port;
     boolean SuccessInit;
     
-    public Sender(String _IP, int _port){
-        this.IP = _IP;
-        this.port = _port;
+    public Sender(){
+        this.IP = null;
+        this.port = 0;
         this.SuccessInit=false;
     }
     
-    public void initialise() throws UnknownHostException, IOException{//throws delcares exceptions, tried the clause and then catches
+    public void initialise(String _IP, int _port) throws UnknownHostException, IOException{//throws delcares exceptions, tried the clause and then catches
+        this.IP = _IP;
+        this.port = _port;
+        System.out.println("Connecting to "+IP);
         ClientSock = new Socket(IP,port);
         input = new BufferedReader(new InputStreamReader(ClientSock.getInputStream()));
         output = new DataOutputStream(ClientSock.getOutputStream());
