@@ -1,0 +1,98 @@
+
+%Report Title
+\newcommand{\reporttitle}{ICSS Mars Rover Software}
+
+% paper geometry 
+\geometry{a4paper, margin=2cm} % A4 paper size and margin 2cm from all sides
+
+\setlength{\parindent}{15pt}
+\setlength{\belowdisplayskip}{0pt}
+\setlength{\abovedisplayskip}{0pt}
+\setlength{\parskip}{6pt}
+
+% Spacing within the Tables
+\renewcommand{\arraystretch}{1.2}
+
+% title spacing {left indent}{before}{after}
+\titlespacing{\section}{0pt}{9pt}{6pt} 
+\titlespacing{\subsection}{0pt}{7pt}{5pt}
+\titlespacing{\subsubsection}{0pt}{5pt}{3pt}
+
+% Defines a new command for the horizontal lines, change thickness here
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} 
+
+% caption formatting for tables and figures (small sets the font 1pt smaller than normal text)
+\captionsetup[table]{font=small,skip=6pt}
+\captionsetup[figure]{font=small,skip=12pt}
+
+% set font here
+%\usepackage[scaled]{berasans} % Bera Sans
+% \usepackage{helvet} % Arial
+% \renewcommand*\familydefault{\sfdefault}
+% \usepackage[T1]{fontenc}
+\usepackage[libertine,cmintegrals,cmbraces,vvarbb]{newtxmath}
+\usepackage[scaled=0.95]{inconsolata}
+% \usepackage[palatino,euler,beramono]{classicthesis}
+
+% set formatting for hyper links            
+% \hypersetup{ 
+% colorlinks=true, % false: boxed links; true: colored links
+% linkcolor=black, % color of internal links
+% citecolor=[rgb]{0.2,0.4,0.73}, % color of links to bibliography
+% }
+
+\setcounter{tocdepth}{2}
+
+%Fancy Headers
+
+\pagestyle{headings}
+\pagestyle{fancy}
+
+% \fancyhead[LO,RE]{Mars Rover}
+\fancyfoot[LO,RE]{}
+
+\renewcommand{\headrulewidth}{2pt}
+\renewcommand{\footrulewidth}{1pt}
+\setlength\headheight{14.5pt}
+
+% Showing code
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{codeblue}{rgb}{0.29,0.16,0.82}
+\definecolor{codered}{rgb}{2.39,0.09.0.09}
+ 
+\lstdefinestyle{mystyle}{
+    language=C++,
+    backgroundcolor=\color{backcolour}, 
+    commentstyle=\color{codegreen}\ttfamily,
+    morecomment=[l][{\color{codered}}]{\#},
+    % keywordstyle=\color{magenta},
+    keywordstyle=\color{codeblue}\ttfamily,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple}\ttfamily,
+    basicstyle=\footnotesize\ttfamily,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4
+}
+ 
+\lstset{style=mystyle}
+
+
+\graphicspath{ {Figures/}}
+
+\acsetup{first-style=short}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

@@ -14,3 +14,13 @@ __pycache__/
 /Java_Backend/nbproject/private/
 /Java_Backend/build/
 /Java_Backend/dist/
+
+# Documentation
+Documentation/*.lof
+Documentation/*.log
+Documentation/*.lot
+Documentation/*.aux
+Documentation/*.toc
+Documentation/*.synctex.gz
+Documentation/*.fdb_latexmk
+Documentation/*.fls

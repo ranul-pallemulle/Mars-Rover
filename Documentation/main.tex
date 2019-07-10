@@ -1,0 +1,39 @@
+\documentclass[11pt,twoside]{article}
+
+\input{Packages}
+\input{Preamble}
+
+\begin{document}
+\input{Title}
+\begin{spacing}{0.0}
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\listoffigures
+\newpage
+\listoftables
+\end{spacing}
+\newpage
+
+\begin{spacing}{1.0}
+\pagenumbering{arabic}
+
+\subfile{introduction}
+
+
+\end{spacing}
+
+%\begin{spacing}{1.0}
+%  \newpage
+%\bibliography{References}
+%\bibliographystyle{unsrt}
+%\end{spacing}
+%\begin{appendices}
+%\input{Appendix}
+%\end{appendices}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
