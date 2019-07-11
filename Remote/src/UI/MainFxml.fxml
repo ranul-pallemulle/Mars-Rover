@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.stage.Screen?>
+<?import javafx.embed.swing.SwingNode?>
+
+<GridPane fx:id="gridPane" alignment="center" styleClass="root"
+          prefWidth="${screen.visualBounds.width}" 
+          prefHeight="${screen.visualBounds.height}" 
+          xmlns:fx="http://javafx.com/fxml/1" 
+          fx:controller="UI.MainFxmlController">
+    
+    <stylesheets>
+        <URL value="@mainfxml.css"/>
+    </stylesheets>
+    
+    <fx:define>
+        <Screen fx:factory="getPrimary" fx:id="screen"/>
+    </fx:define>
+    
+    <columnConstraints>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="25"/>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="35"/>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="40"/>
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints minHeight="300.0" prefHeight="600.0" vgrow="SOMETIMES"/>
+    </rowConstraints>
+    <children>
+        <VBox alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <padding><Insets left="5" right="10"/></padding>
+            <HBox alignment="center">
+                <Text id="DispJoyLabel1" text="X:"/>
+                <Text fx:id="dispJoyX" text="0.0"/>
+            </HBox>
+            <HBox alignment="center">
+                <Text id="DispJoyLabel2" text="Y:"/>
+                <Text fx:id="dispJoyY" text="0.0"/>
+            </HBox>
+            <Group>
+                <Circle fx:id="joyBackCircle" radius="150"/>
+                <Circle fx:id="joyFrontCircle" radius="50"
+                    onMousePressed="#clickCoordsJoystick"
+                    onMouseDragged="#updateJoystick"
+                    onMouseReleased="#snapBackJoystick"/>
+            </Group>
+            <VBox alignment="center">
+                <VBox.margin><Insets top="70" bottom="20"/></VBox.margin>
+                <Button fx:id="joyConnectButton" text="Enable Joystick"/>
+            </VBox>
+        </VBox>
+
+        <GridPane alignment="center"
+                  GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <padding><Insets left="10" right="10"/></padding>
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" percentWidth="100"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="SOMETIMES" percentHeight="25"/>
+                <RowConstraints vgrow="SOMETIMES" percentHeight="50"/>
+                <RowConstraints vgrow="SOMETIMES" percentHeight="25"/>
+            </rowConstraints>
+            
+            <HBox spacing="5" alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <ComboBox fx:id="ipSelector" promptText="Connection Method"/>
+                <Button fx:id="connectButton" text="Connect"/>
+            </HBox>
+            <SwingNode fx:id="videoScreen" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <VBox alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                <Button fx:id="vidConnectButton" text="Enable Video Feed"/>
+            </VBox>
+            
+        </GridPane>
+        
+        <VBox alignment="center" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            <padding><Insets left="10" right="10"/></padding>
+            <VBox alignment="center">
+                <VBox.margin><Insets top="40" bottom="20"/></VBox.margin>
+            </VBox>
+            <Group>
+                <Circle id="Armrange" centerX="250" centerY="250" radius="150"/>
+                <Rectangle id="ground" x="0" y="380" width="500" height="120"/>
+                <Line id="groundline" endX="500" endY="380" startX="0" startY="380"/>
+                <Line id="sliderline" strokeWidth="5" endX="300" endY="50" startX="200" startY="50"/>
+                <Circle fx:id="sliderBall" radius="5" centerX="200.0" centerY="50.0" onMouseDragged="#updateGripperSlider"/>
+                <Circle fx:id="sliderSnap" radius="5" centerX="180.0" centerY="50.0" onMouseClicked="#snapGripperSlider"/>
+                
+                <Line fx:id="lineSeg1" strokeWidth="8" endX="300" endY="250" startX="250" startY="250"/>
+                <Line fx:id="lineSeg2" strokeWidth="8" endX="350" endY="250" startX="300" startY="250"/>
+                <Line fx:id="lineSeg3" strokeWidth="8" endX="400" endY="250" startX="350" startY="250"/>
+               
+                <Circle fx:id="armJoint1" radius="5" centerX="300.0" centerY="250.0" onMouseDragged="#updateArmSeg1"/>
+                <Circle fx:id="armJoint2" radius="5" centerX="350.0" centerY="250.0" onMouseDragged="#updateArmSeg2"/>
+                <Circle fx:id="armJoint3" radius="8" centerX="400.0" centerY="250.0" onMouseDragged="#updateArmSeg3"/>
+                
+                <Rectangle id="rover" x="0" y="234.4" width="238.3" height="31.2"/>
+                <Rectangle id="rover" x="238.3" y="245" width="11.7" height="10"/>
+                <Circle id="rover" radius="5" centerX="250" centerY="250"/>
+            </Group>
+            <VBox alignment="center">
+                <VBox.margin><Insets top="40" bottom="20"/></VBox.margin>
+                <Button fx:id="armConnectButton" text="Enable Arm"/>
+            </VBox>
+        </VBox>
+        
+        
+        <!--<Circle fx:id="ButtonArm" radius="20" centerX="400.0" centerY="450.0" onMouseClicked="#openArm"/>-->
+        <!--<Text id="ButtonArmLabel" x="355" y="490" text="Arm Controller"/>-->
+        <!--<Rectangle fx:id="ButtonJoystickStart" fill="RED" stroke="GREY" x="200" y="430" height="40" width="100" arcWidth="5" arcHeight="5" onMouseClicked="#connectjoystick" />-->
+        <!--<Text id="JoystickStartLabel" x="202" y="490" text="Enable Joystick"/>-->
+        <!--<Rectangle fx:id="ButtonMain" fill="RED" stroke="GREY" x="200" y="30" height="40" width="100" arcWidth="5" arcHeight="5" onMouseClicked="#connectrover" />-->
+        <!--<Text id="DispMain" x="225" y="53" text="Connect"/>-->
+        <!--<Circle fx:id="ButtonVid" radius="20" centerX="100.0" centerY="450.0" onMouseClicked="#openVid"/>-->
+        <!--<Text id="ButtonVidLabel" x="65" y="490" text="Video Feed"/>-->
+        <!--<Circle fx:id="ButtonAuto" fill="RED" stroke="GREY" radius="25" centerX="60.0" centerY="370.0" onMouseClicked="#toggleAuto"/>-->
+        <!--<Text id="ButtonVidLabel" x="25" y="410" text="Auto Mode"/>-->
+                 
+        <!--<ComboBox fx:id="CBox" promptText="Connection Method"/> Connection selector-->
+        <!--<TextArea fx:id="diagnosticText" prefWidth="1000.0" prefHeight="90" editable="false"/> Rover messages-->
+    </children>
+</GridPane>

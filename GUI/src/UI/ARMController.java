@@ -77,7 +77,7 @@ public class ARMController implements Initializable {
     
     String IPADDRESS = "192.168.4.1";
     //String IPADDRESS = "10.42.0.137";
-    boolean test = false;
+    boolean test = true;
     
     double globprevs1 = 0;
     double globprevs2 = 0;
@@ -719,15 +719,15 @@ public void setarmpick(MouseEvent e) {
                     double dx3 = e.getX() - armx[2];
                     double dy3 = e.getY() - army[2];
                     double predangle3 = atan2(dy3, dx3);  
-                    double predx3 = e.getX() - (cos(predangle3) * segLength);
-                    double predy3 = e.getY() - (sin(predangle3) * segLength);
+                    double predx3 = e.getX() - (cos(predangle3) * segLength); // new armx[2]
+                    double predy3 = e.getY() - (sin(predangle3) * segLength); // new army[2]
                     if((predx3 - 250)*(predx3 - 250) + (predy3 - 250)*(predy3 - 250) > (4 * segLength * segLength)){
-                        double dfixedx3 = predx3 - 250;
+                        double dfixedx3 = predx3 - 250; // x distance of new armx[2] from base
                         double dfixedy3 = predy3 - 250;
                         double anglefix = atan2(dfixedy3, dfixedx3);
-                        mousexp2 = 250 + (cos(anglefix) * 100);
+                        mousexp2 = 250 + (cos(anglefix) * 100); // new armx[2] with first two segs straight
                         mouseyp2 = 250 + (sin(anglefix) * 100);
-                        double mousefixedx = e.getX() - mousexp2;
+                        double mousefixedx = e.getX() - mousexp2; // relative x of new armx[3] to new armx[2]
                         double mousefixedy = e.getY() - mouseyp2;
                         double anglemouse = atan2(mousefixedy, mousefixedx);
                         armx[3] = mousexp2 + (cos(anglemouse) * segLength);
