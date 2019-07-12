@@ -19,7 +19,7 @@ import java.util.List;
  *
  * @author ranul
  */
-public class ArmDataFileController {
+public class ArmDataController {
     
     private File file;
     private FileReader fReader;
@@ -28,7 +28,7 @@ public class ArmDataFileController {
     private BufferedWriter bWriter;
     private List<String> lines;
     
-    public ArmDataFileController () {
+    public ArmDataController () {
         lines = new ArrayList<>();
     }
     

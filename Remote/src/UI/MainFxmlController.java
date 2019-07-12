@@ -5,7 +5,8 @@
  */
 package UI;
 
-import Backend.ArmDataFileController;
+import Backend.ArmDataController;
+import Backend.KeyboardDriveController;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
@@ -97,7 +98,8 @@ public class MainFxmlController implements Initializable {
     private String ipAddress;
     private String gstPipeline;
     private Stage primaryStage;
-    private ArmDataFileController armDataFileController;
+    private ArmDataController armDataController;
+    private KeyboardDriveController kbdController;
     
     /**
      * Initializes the controller class.
@@ -135,19 +137,19 @@ public class MainFxmlController implements Initializable {
         positionEditor.getEditor().setText(":0.0,0.0,0.0,0.0");
         
         // initialise other objects
-        armDataFileController = new ArmDataFileController();
+        armDataController = new ArmDataController();
         String default_file = "example_data.dat";
         try {
-            armDataFileController.importFile(new File(default_file));
+            armDataController.importFile(new File(default_file));
         } catch (IOException ex) {
             Logger.getLogger(MainFxmlController.class.getName()).log(Level.SEVERE, null, ex);
         }
         dataFileTextField.setText(default_file);
-        List<String> list = armDataFileController.getAllItems();
+        List<String> list = armDataController.getAllItems();
         for (String item : list) {
             positionSelector.getItems().add(item);
             positionEditor.getItems().add(item);
-        }
+        }   
     }
     
     public void connectRoverButtonPressed () {
@@ -448,16 +450,16 @@ public class MainFxmlController implements Initializable {
     }
     
     public void positionSaveButtonPressed () {
-        if (armDataFileController.haveFile()) {
+        if (armDataController.haveFile()) {
             String data = positionEditor.getValue();
             try {
-                armDataFileController.editDataItem(data);
+                armDataController.editDataItem(data);
             } catch (IOException ex) {
                 Logger.getLogger(MainFxmlController.class.getName()).log(Level.SEVERE, null, ex);
             }
             positionSelector.getItems().clear();
             positionEditor.getItems().clear();
-            List<String> list = armDataFileController.getAllItems();
+            List<String> list = armDataController.getAllItems();
             for (String item : list) {
                 positionSelector.getItems().add(item);
                 positionEditor.getItems().add(item);
@@ -466,16 +468,16 @@ public class MainFxmlController implements Initializable {
     }
     
     public void positionRemoveButtonPressed () {
-        if (armDataFileController.haveFile()) {
+        if (armDataController.haveFile()) {
             String data = positionEditor.getValue();
             try {
-                armDataFileController.removeDataItem(data);
+                armDataController.removeDataItem(data);
             } catch (IOException ex) {
                 Logger.getLogger(MainFxmlController.class.getName()).log(Level.SEVERE, null, ex);
             }
             positionSelector.getItems().clear();
             positionEditor.getItems().clear();
-            List<String> list = armDataFileController.getAllItems();
+            List<String> list = armDataController.getAllItems();
             for (String item : list) {
                 positionSelector.getItems().add(item);
                 positionEditor.getItems().add(item);
@@ -486,7 +488,7 @@ public class MainFxmlController implements Initializable {
     public void positionSetButtonPressed () {
         String value;
         if ((value = positionSelector.getValue()) != null) {
-            double[] angles = armDataFileController.parseData(value);
+            double[] angles = armDataController.parseData(value);
             setAngles(angles[0],angles[1],angles[2]);
             forwardKinematics();
             setArmGui();
@@ -517,13 +519,13 @@ public class MainFxmlController implements Initializable {
             String filename = file.getName();
             dataFileTextField.setText(filename);
             try {
-                armDataFileController.importFile(file);
+                armDataController.importFile(file);
             } catch (IOException ex) {
                 Logger.getLogger(MainFxmlController.class.getName()).log(Level.SEVERE, null, ex);
             }
             positionSelector.getItems().clear();
             positionEditor.getItems().clear();
-            List<String> list = armDataFileController.getAllItems();
+            List<String> list = armDataController.getAllItems();
             for (String item : list) {
                 positionSelector.getItems().add(item);
                 positionEditor.getItems().add(item);
