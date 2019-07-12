@@ -57,6 +57,8 @@ public class MainFxmlController implements Initializable {
     private double[] armX = {250,300,350,400};
     private double[] armY = {250,250,250,250};
     private double[] armT = {0,0,0};
+    private boolean seg3down = false; // keep last segment down
+    private final double seg3down_ang = 90 * PI/180;
     private final double segL = 50;
     private final double max_ea = 20 * PI/180; // max elbow angle at which flipping is allowed
     
@@ -172,31 +174,11 @@ public class MainFxmlController implements Initializable {
         double dy1 = e.getY() - armY[0];
         double dthet1 = atan2(dy1,dx1) - armT[0];
         armT[0] = armT[0] + dthet1;
-        // Find coordinates of joints
-        armX[1] = armX[0] + cos(armT[0]) * segL;
-        armY[1] = armY[0] + sin(armT[0]) * segL;
-        armX[2] = armX[1] + cos(armT[0] + armT[1]) * segL;
-        armY[2] = armY[1] + sin(armT[0] + armT[1]) * segL;
-        armX[3] = armX[2] + cos(armT[0] + armT[1] + armT[2]) * segL;
-        armY[3] = armY[2] + sin(armT[0] + armT[1] + armT[2]) * segL;
-        
-        armJoint1.setCenterX(armX[1]);
-        armJoint1.setCenterY(armY[1]);
-        armJoint2.setCenterX(armX[2]);
-        armJoint2.setCenterY(armY[2]);
-        armJoint3.setCenterX(armX[3]);
-        armJoint3.setCenterY(armY[3]);
-        lineSeg1.setEndX(armX[1]);
-        lineSeg1.setEndY(armY[1]);
-        lineSeg2.setStartX(armX[1]);
-        lineSeg2.setStartY(armY[1]);
-        lineSeg2.setEndX(armX[2]);
-        lineSeg2.setEndY(armY[2]);
-        lineSeg3.setStartX(armX[2]);
-        lineSeg3.setStartY(armY[2]);
-        lineSeg3.setEndX(armX[3]);
-        lineSeg3.setEndY(armY[3]);
-        
+        if (seg3down) {
+            armT[2] = seg3down_ang - armT[1] - armT[0];
+        }
+        forward_kinematics();
+        set_arm_gui();
     }
     
     /**
@@ -204,151 +186,65 @@ public class MainFxmlController implements Initializable {
      * @param e 
      */    
     public void updateArmSeg2 (MouseEvent e) {
-        double reqx2 = e.getX();
-        double reqy2 = e.getY();
-        // requested position might be outside two segment circle
-        if ((reqx2 - armX[0])*(reqx2 - armX[0]) + 
-            (reqy2 - armY[0])*(reqy2 - armY[0])
-                < 4*segL*segL) { // can go to exact position
-            armX[2] = reqx2;
-            armY[2] = reqy2;
-            double lX = armX[2] - armX[0];
-            double lY = armY[2] - armY[0];
-            double ct2 = ((lX*lX + lY*lY)-2*segL*segL)/(2*segL*segL);
-            if (armT[2] > 0) { // need elbow down
-                armT[1] = acos(ct2);
-            }
-            else { // need elbow up
-                armT[1] = -acos(ct2);
-            }
-            double st2 = sin(armT[1]);
-            double A = segL + segL*ct2;
-            double B = segL*st2;
-            double AB2 = A*A + B*B;
-            double ct1 = (lX*A + lY*B)/AB2;
-            double st1 = (lY*A - lX*B)/AB2;
-            if (ct1 > 0) {
-                armT[0] = asin(st1);
-            }
-            else {
-                armT[0] = PI - asin(st1);
-            }
-        } 
-        else { // can't reach, follow angle only, with both segments straight
-            double dx2 = e.getX() - armX[0];
-            double dy2 = e.getY() - armY[0];
-            double dthet1 = atan2(dy2,dx2) - armT[0];
-            armT[0] = armT[0] + dthet1;
-            armT[1] = 0; 
+        if (!seg3down) {
+            inverse_kinematics_2R(armX[3],armY[3],e.getX(),e.getY());
+        }
+        else {
+            double reqx3 = e.getX() + segL*cos(seg3down_ang);
+            double reqy3 = e.getY() + segL*sin(seg3down_ang);
+            inverse_kinematics_2R(reqx3,reqy3,e.getX(),e.getY());
+            armT[2] = seg3down_ang - armT[1] - armT[0];
         }
         
-        armX[1] = armX[0] + cos(armT[0]) * segL;
-        armY[1] = armY[0] + sin(armT[0]) * segL;
-        armX[2] = armX[1] + cos(armT[0] + armT[1]) * segL;
-        armY[2] = armY[1] + sin(armT[0] + armT[1]) * segL;
-        armX[3] = armX[2] + cos(armT[0] + armT[1] + armT[2]) * segL;
-        armY[3] = armY[2] + sin(armT[0] + armT[1] + armT[2]) * segL;
-        
-        armJoint1.setCenterX(armX[1]);
-        armJoint1.setCenterY(armY[1]);
-        armJoint2.setCenterX(armX[2]);
-        armJoint2.setCenterY(armY[2]);
-        armJoint3.setCenterX(armX[3]);
-        armJoint3.setCenterY(armY[3]);
-        lineSeg1.setEndX(armX[1]);
-        lineSeg1.setEndY(armY[1]);
-        lineSeg2.setStartX(armX[1]);
-        lineSeg2.setStartY(armY[1]);
-        lineSeg2.setEndX(armX[2]);
-        lineSeg2.setEndY(armY[2]);
-        lineSeg3.setStartX(armX[2]);
-        lineSeg3.setStartY(armY[2]);
-        lineSeg3.setEndX(armX[3]);
-        lineSeg3.setEndY(armY[3]);
-        
+        forward_kinematics();
+        set_arm_gui();
     }
     
     /**
-     * Event handler for when the gripper joint is dragged
+     * Event handler for when the final joint is dragged
      * @param e 
      */    
     public void updateArmSeg3 (MouseEvent e) {
-        // First calculate angle of last segment required for alignment
+        // Find angle of last segment relative to ground
         double reqx3 = e.getX();
         double reqy3 = e.getY();
-        double dx3 = reqx3 - armX[2];
-        double dy3 = reqy3 - armY[2];
-        double gam = atan2(dy3,dx3);
+        double gam;
+        if (!seg3down) {
+            double dx3 = reqx3 - armX[2];
+            double dy3 = reqy3 - armY[2];
+            gam = atan2(dy3,dx3);
+        }
+        else {
+            gam = seg3down_ang;
+        }
+        
         // Calculate the required position of the lower two segments
         double reqx2 = reqx3 - segL*cos(gam);
         double reqy2 = reqy3 - segL*sin(gam);
         
-        // requested position might be outside two segment circle
-        if ((reqx2 - armX[0])*(reqx2 - armX[0]) + 
-            (reqy2 - armY[0])*(reqy2 - armY[0])
-                < 4*segL*segL) { // can go to exact position
-            armX[2] = reqx2;
-            armY[2] = reqy2;
-            double lX = armX[2] - armX[0];
-            double lY = armY[2] - armY[0];
-            double ct2 = ((lX*lX + lY*lY)-2*segL*segL)/(2*segL*segL);
-            double wang3 = atan2((reqy3 - armY[0]),(reqx3 - armX[0]));
-            double wang2 = atan2((reqy2 - armY[0]),(reqx2 - armX[0]));
-            if (armT[1] > 0) { // previously was elbow down
-                if (wang3-wang2 > 0) { // want elbow still down
-                    armT[1] = acos(ct2);
-                }
-                else { // want elbow up if possible
-                    if (armT[1] < max_ea) { // elbow angle small enough to flip
-                        armT[1] = -acos(ct2);
-                    }
-                    else { // elbow angle change would be too large, keep elbow down
-                        armT[1] = acos(ct2);
-                    }
-                }
-            }
-            else { // previously was elbow up
-                if (wang3-wang2 < 0) { // want elbow still up
-                    armT[1] = -acos(ct2);
-                }
-                else { // want elbow down if possible
-                    if (armT[1] > -max_ea) { // elbow angle small enough to flip
-                        armT[1] = acos(ct2);
-                    }
-                    else { // elbow angle change would be too large, keep elbow up
-                        armT[1] = -acos(ct2);
-                    }
-                }
-            }
-            double st2 = sin(armT[1]);
-            double A = segL + segL*ct2;
-            double B = segL*st2;
-            double AB2 = A*A + B*B;
-            double ct1 = (lX*A + lY*B)/AB2;
-            double st1 = (lY*A - lX*B)/AB2;
-            if (ct1 > 0) {
-                armT[0] = asin(st1);
-            }
-            else {
-                armT[0] = PI - asin(st1);
-            }
-        } 
-        else { // can't reach, follow angle only, with both segments straight
-            double dx2 = reqx2 - armX[0];
-            double dy2 = reqy2 - armY[0];
-            double dthet1 = atan2(dy2,dx2) - armT[0];
-            armT[0] = armT[0] + dthet1;
-            armT[1] = 0; 
-        }
+        inverse_kinematics_2R(reqx3,reqy3,reqx2,reqy2);
         armT[2] = gam - armT[1] - armT[0];
         
+        forward_kinematics();
+        set_arm_gui();
+    }
+    
+    /**
+     * Set armX and armY based on angles in armT
+     */
+    private void forward_kinematics() {
         armX[1] = armX[0] + cos(armT[0]) * segL;
         armY[1] = armY[0] + sin(armT[0]) * segL;
         armX[2] = armX[1] + cos(armT[0] + armT[1]) * segL;
         armY[2] = armY[1] + sin(armT[0] + armT[1]) * segL;
         armX[3] = armX[2] + cos(armT[0] + armT[1] + armT[2]) * segL;
         armY[3] = armY[2] + sin(armT[0] + armT[1] + armT[2]) * segL;
-        
+    }
+    
+    /**
+     * Set arm position in the GUI based on x,y coordinates in armX and armY
+     */
+    private void set_arm_gui() {
         armJoint1.setCenterX(armX[1]);
         armJoint1.setCenterY(armY[1]);
         armJoint2.setCenterX(armX[2]);
@@ -369,69 +265,67 @@ public class MainFxmlController implements Initializable {
     
     /**
      * Perform inverse kinematics on 2-rotation planar manipulator based on 
-     * 3R manipulator setting.
+     * 3R manipulator setting. Sets the base and elbow angles.
      * @param reqx3 - required x position of end of final segment (3R)
      * @param reqy3 - required y position of end of final segment (3R)
      * @param reqx2 - required x position of end of second segment
      * @param reqy2 - required y position of end of second segment
-     * @return - Array containing base angle and elbow angle in radians
      */
-    private double[] inverse_kinematics_2R(double reqx3, double reqy3, double reqx2, double reqy2) {
+    private void inverse_kinematics_2R(double reqx3, double reqy3, 
+                                       double reqx2, double reqy2) {
         double lX2 = reqx2 - armX[0];
         double lY2 = reqy2 - armY[0];
         double lX3 = reqx3 - armX[0];
         double lY3 = reqy3 - armY[0];
-        double[] res_angs = new double[2];
         
         if (lX2*lX2 + lY2*lY2 < 4*segL*segL) { // can go to exact position
             double ct2 = ((lX2*lX2 + lY2*lY2)-2*segL*segL)/(2*segL*segL);
-            double wang3 = atan2(lY3,lX3);
-            double wang2 = atan2(lY2,lX2);
+            double ang3 = atan2(lY3,lX3);
+            double ang2 = atan2(lY2,lX2);
             if (armT[1] > 0) { // previously was elbow down
-                if (wang3-wang2 > 0) { // want elbow still down
-                    res_angs[1] = acos(ct2);
+                if (ang3-ang2 > 0) { // want elbow still down
+                    armT[1] = acos(ct2); // no need to flip
                 }
                 else { // want elbow up if possible
                     if (armT[1] < max_ea) { // elbow angle small enough to flip
-                        res_angs[1] = -acos(ct2);
+                        armT[1] = -acos(ct2); // flip
                     }
                     else { // elbow angle change would be too large, keep elbow down
-                        res_angs[1] = acos(ct2);
+                        armT[1] = acos(ct2); // don't flip
                     }
                 }
             }
             else { // previously was elbow up
-                if (wang3-wang2 < 0) { // want elbow still up
-                    res_angs[1] = -acos(ct2);
+                if (ang3-ang2 < 0) { // want elbow still up
+                    armT[1] = -acos(ct2); // no need to flip
                 }
                 else { // want elbow down if possible
                     if (armT[1] > -max_ea) { // elbow angle small enough to flip
-                        res_angs[1] = acos(ct2);
+                        armT[1] = acos(ct2); // flip
                     }
                     else { // elbow angle change would be too large, keep elbow up
-                        res_angs[1] = -acos(ct2);
+                        armT[1] = -acos(ct2); // don't flip
                     }
                 }
             }
-            double st2 = sin(res_angs[1]);
+            double st2 = sin(armT[1]);
             double A = segL + segL*ct2;
             double B = segL*st2;
             double AB2 = A*A + B*B;
             double ct1 = (lX2*A + lY2*B)/AB2;
             double st1 = (lY2*A - lX2*B)/AB2;
             if (ct1 > 0) {
-                res_angs[0] = asin(st1);
+                armT[0] = asin(st1);
             }
             else {
-                res_angs[0] = PI - asin(st1);
+                armT[0] = PI - asin(st1);
             }
         } 
         else { // can't reach, follow angle only, with both segments straight
             double dthet1 = atan2(lY2,lX2) - armT[0];
-            res_angs[0] = armT[0] + dthet1;
-            res_angs[1] = 0; 
+            armT[0] = armT[0] + dthet1;
+            armT[1] = 0; 
         }
-        return res_angs;
     }
     
     private void createVideoScreen(final SwingNode swingNode) {
