@@ -33,6 +33,7 @@ public class Remote extends Application{
         primaryStage.setTitle("ICSS Rover");
         primaryStage.setScene(scene);
         primaryStage.setResizable(true);
+        controller.setCurrentStage(primaryStage);
         
         // primaryStage.setOnCloseRequest(e->handleExit(controller));
         
