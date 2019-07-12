@@ -53,11 +53,11 @@
                     onMouseReleased="#snapBackJoystick"/>
             </Group>
             <VBox alignment="center">
-                <VBox.margin><Insets top="70" bottom="20"/></VBox.margin>
+                <VBox.margin><Insets top="30" bottom="20"/></VBox.margin>
                 <ToggleButton fx:id="joyConnectButton" text="Enable Joystick" selected="false" onAction="#joyConnectButtonPressed"/>
             </VBox>
             <VBox alignment="center">
-                <VBox.margin><Insets top="70" bottom="20" left="20" right="20"/></VBox.margin>
+                <VBox.margin><Insets top="30" bottom="20" left="20" right="20"/></VBox.margin>
                 <Text>Output from rover</Text>
                 <TextArea fx:id="diagnosticsTextArea" prefWidth="400" prefHeight="200" editable="false"/>
             </VBox>
@@ -93,14 +93,14 @@
             
         </GridPane>
         
-        <VBox spacing="30" alignment="center" GridPane.columnIndex="2" GridPane.rowIndex="0">
+        <VBox spacing="10" alignment="center" GridPane.columnIndex="2" GridPane.rowIndex="0">
             <padding><Insets left="10" right="10"/></padding>
             <HBox spacing="5" alignment="center">
                 <TextField fx:id="dataFileTextField"/>
                 <Button fx:id="dataFileOpenButton" text="Open Data File" onAction="#dataFileOpenButtonPressed"/>
             </HBox>
             <VBox alignment="center">
-                <VBox.margin><Insets top="40" bottom="20"/></VBox.margin>
+                <VBox.margin><Insets top="0" bottom="5"/></VBox.margin>
             </VBox>
             <HBox spacing="5" alignment="center">
                 <ToggleButton fx:id="limitsButton" text="Enable Angle Limits" selected="false" onAction="#limitsButtonPressed"/>
@@ -142,7 +142,7 @@
                 <Circle id="rover" radius="5" centerX="250" centerY="250"/>
             </Group>
             <VBox alignment="center">
-                <VBox.margin><Insets top="40" bottom="20"/></VBox.margin>
+                <VBox.margin><Insets top="5"/></VBox.margin>
                 <ToggleButton fx:id="armConnectButton" text="Enable Arm" selected="false" onAction="#armConnectButtonPressed"/>
             </VBox>
         </VBox>
