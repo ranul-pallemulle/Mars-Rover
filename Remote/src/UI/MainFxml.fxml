@@ -48,7 +48,7 @@
             <Group>
                 <Circle fx:id="joyBackCircle" radius="150"/>
                 <Circle fx:id="joyFrontCircle" radius="50"
-                    onMousePressed="#clickCoordsJoystick"
+                    onMousePressed="#pressCoordsJoystick"
                     onMouseDragged="#updateJoystick"
                     onMouseReleased="#snapBackJoystick"/>
             </Group>
