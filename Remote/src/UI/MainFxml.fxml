@@ -54,7 +54,7 @@
             </Group>
             <VBox alignment="center">
                 <VBox.margin><Insets top="70" bottom="20"/></VBox.margin>
-                <Button fx:id="joyConnectButton" text="Enable Joystick"/>
+                <ToggleButton fx:id="joyConnectButton" text="Enable Joystick" selected="false"/>
             </VBox>
         </VBox>
 
@@ -72,20 +72,24 @@
             
             <HBox spacing="5" alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="0">
                 <ComboBox fx:id="ipSelector" promptText="Connection Method"/>
-                <Button fx:id="connectButton" text="Connect"/>
+                <ToggleButton fx:id="connectButton" text="Connect to Rover" selected="false"/>
             </HBox>
             <SwingNode fx:id="videoScreen" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
             <VBox alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="2">
-                <Button fx:id="vidConnectButton" text="Enable Video Feed"/>
+                <ToggleButton fx:id="vidConnectButton" text="Enable Video Feed" selected="false"/>
             </VBox>
             
         </GridPane>
         
-        <VBox alignment="center" GridPane.columnIndex="2" GridPane.rowIndex="0">
+        <VBox spacing="10" alignment="center" GridPane.columnIndex="2" GridPane.rowIndex="0">
             <padding><Insets left="10" right="10"/></padding>
             <VBox alignment="center">
                 <VBox.margin><Insets top="40" bottom="20"/></VBox.margin>
             </VBox>
+            <HBox spacing="5" alignment="center">
+                <ToggleButton fx:id="limitsButton" text="Enable Angle Limits" selected="false" onAction="#limitsButtonPressed"/>
+                <ToggleButton fx:id="sumLimitsButton" text="Enable Angle Sum Limit" selected="false" onAction="#sumLimitsButtonPressed"/>
+            </HBox>
             <Group>
                 <Circle id="Armrange" centerX="250" centerY="250" radius="150"/>
                 <Rectangle id="ground" x="0" y="380" width="500" height="120"/>
@@ -108,7 +112,7 @@
             </Group>
             <VBox alignment="center">
                 <VBox.margin><Insets top="40" bottom="20"/></VBox.margin>
-                <Button fx:id="armConnectButton" text="Enable Arm"/>
+                <ToggleButton fx:id="armConnectButton" text="Enable Arm" selected="false"/>
             </VBox>
         </VBox>
         

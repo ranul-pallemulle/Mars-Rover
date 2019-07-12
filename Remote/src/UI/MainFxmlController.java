@@ -23,6 +23,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Circle;
@@ -51,12 +52,23 @@ public class MainFxmlController implements Initializable {
     @FXML private Line lineSeg3;
     @FXML private ComboBox ipSelector;
     @FXML private SwingNode videoScreen;
+    @FXML private ToggleButton joyConnectButton;
+    @FXML private ToggleButton armConnectButton;
+    @FXML private ToggleButton vidConnectButton;
+    @FXML private ToggleButton limitsButton;
+    @FXML private ToggleButton sumLimitsButton;
     
     private double joyMouseX;
     private double joyMouseY;
     private double[] armX = {250,300,350,400};
     private double[] armY = {250,250,250,250};
     private double[] armT = {0,0,0};
+    private double lim_base = 98 * PI/180; // limit of base angle
+    private double lim_elbow = 120 * PI/180; // limit of elbow angle
+    private double lim_top = 120 * PI/180; // limit of top angle
+    private double lim_sum_angles = 200 * PI/180; // limit of sum of top and elbow angles
+    private boolean limits_active = false; // arm angle limits
+    private boolean sum_limit_active = false; // arm sum of angles limit
     private boolean seg3down = false; // keep last segment down
     private final double seg3down_ang = 90 * PI/180;
     private final double segL = 50;
@@ -72,6 +84,17 @@ public class MainFxmlController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        // initialise joystick connect button
+        joyConnectButton.setDisable(true);
+        
+        // initialise arm control buttons
+        armConnectButton.setDisable(true);
+        limitsButton.setSelected(true);
+        limitsButtonPressed();
+        sumLimitsButton.setSelected(true);
+        sumLimitsButtonPressed();
+        
+        // initialise ipSelector
         ipSelector.getItems().setAll("WiFi","Ethernet","Local");
         ipSelector.getSelectionModel().selectedItemProperty().addListener(
                 new ChangeListener<String>() {
@@ -89,6 +112,9 @@ public class MainFxmlController implements Initializable {
                     }
                 }});
         
+        // initialise video connect button
+        vidConnectButton.setDisable(true);
+        // initialise video screen
         createVideoScreen(videoScreen);
     }
     
@@ -172,13 +198,16 @@ public class MainFxmlController implements Initializable {
         // Find new base servo angle
         double dx1 = e.getX() - armX[0];
         double dy1 = e.getY() - armY[0];
-        double dthet1 = atan2(dy1,dx1) - armT[0];
-        armT[0] = armT[0] + dthet1;
+        double base_ang = armT[0];
+        double top_ang = armT[2];
+        double dthet1 = atan2(dy1,dx1) - base_ang;
+        base_ang = base_ang + dthet1;
         if (seg3down) {
-            armT[2] = seg3down_ang - armT[1] - armT[0];
+            top_ang = seg3down_ang - armT[1] - base_ang;
         }
-        forward_kinematics();
-        set_arm_gui();
+        setAngles(base_ang, armT[1], top_ang);
+        forwardKinematics();
+        setArmGui();
     }
     
     /**
@@ -187,17 +216,23 @@ public class MainFxmlController implements Initializable {
      */    
     public void updateArmSeg2 (MouseEvent e) {
         if (!seg3down) {
-            inverse_kinematics_2R(armX[3],armY[3],e.getX(),e.getY());
+            double [] angs = inverseKinematics2R(armX[3],armY[3],e.getX(),e.getY());
+            double base_ang = angs[0];
+            double elbow_ang = angs[1];
+            setAngles(base_ang, elbow_ang, armT[2]);
         }
         else {
             double reqx3 = e.getX() + segL*cos(seg3down_ang);
             double reqy3 = e.getY() + segL*sin(seg3down_ang);
-            inverse_kinematics_2R(reqx3,reqy3,e.getX(),e.getY());
-            armT[2] = seg3down_ang - armT[1] - armT[0];
+            double[] angs = inverseKinematics2R(reqx3,reqy3,e.getX(),e.getY());
+            double base_ang = angs[0];
+            double elbow_ang = angs[1];
+            double top_ang = seg3down_ang - elbow_ang - base_ang;
+            setAngles(base_ang, elbow_ang, top_ang);
         }
         
-        forward_kinematics();
-        set_arm_gui();
+        forwardKinematics();
+        setArmGui();
     }
     
     /**
@@ -222,17 +257,45 @@ public class MainFxmlController implements Initializable {
         double reqx2 = reqx3 - segL*cos(gam);
         double reqy2 = reqy3 - segL*sin(gam);
         
-        inverse_kinematics_2R(reqx3,reqy3,reqx2,reqy2);
-        armT[2] = gam - armT[1] - armT[0];
+        double[] angs = inverseKinematics2R(reqx3,reqy3,reqx2,reqy2);
+        double base_ang = angs[0];
+        double elbow_ang = angs[1];
+        double top_ang = gam - elbow_ang - base_ang;
         
-        forward_kinematics();
-        set_arm_gui();
+        setAngles(base_ang, elbow_ang, top_ang);
+        forwardKinematics();
+        setArmGui();
+    }
+    
+    /**
+     * Event handler for when limitsButton is pressed.
+     */
+    public void limitsButtonPressed() {
+        if (limitsButton.isSelected()) {
+            limits_active = true;
+            sumLimitsButton.setDisable(false);
+        }
+        else {
+            limits_active = false;
+            sum_limit_active = false;
+            sumLimitsButton.setSelected(false);
+            sumLimitsButton.setDisable(true);
+        }
+    }
+    
+    public void sumLimitsButtonPressed() {
+        if (sumLimitsButton.isSelected()) {
+            sum_limit_active = true;
+        }
+        else {
+            sum_limit_active = false;
+        }
     }
     
     /**
      * Set armX and armY based on angles in armT
      */
-    private void forward_kinematics() {
+    private void forwardKinematics() {
         armX[1] = armX[0] + cos(armT[0]) * segL;
         armY[1] = armY[0] + sin(armT[0]) * segL;
         armX[2] = armX[1] + cos(armT[0] + armT[1]) * segL;
@@ -244,7 +307,7 @@ public class MainFxmlController implements Initializable {
     /**
      * Set arm position in the GUI based on x,y coordinates in armX and armY
      */
-    private void set_arm_gui() {
+    private void setArmGui() {
         armJoint1.setCenterX(armX[1]);
         armJoint1.setCenterY(armY[1]);
         armJoint2.setCenterX(armX[2]);
@@ -270,62 +333,89 @@ public class MainFxmlController implements Initializable {
      * @param reqy3 - required y position of end of final segment (3R)
      * @param reqx2 - required x position of end of second segment
      * @param reqy2 - required y position of end of second segment
+     * @return - new base and elbow angles to be set
      */
-    private void inverse_kinematics_2R(double reqx3, double reqy3, 
+    private double[] inverseKinematics2R(double reqx3, double reqy3, 
                                        double reqx2, double reqy2) {
         double lX2 = reqx2 - armX[0];
         double lY2 = reqy2 - armY[0];
         double lX3 = reqx3 - armX[0];
         double lY3 = reqy3 - armY[0];
+        double[] res = new double[2];
         
         if (lX2*lX2 + lY2*lY2 < 4*segL*segL) { // can go to exact position
             double ct2 = ((lX2*lX2 + lY2*lY2)-2*segL*segL)/(2*segL*segL);
             double ang3 = atan2(lY3,lX3);
             double ang2 = atan2(lY2,lX2);
-            if (armT[1] > 0) { // previously was elbow down
+            if (armT[1] > 0) { // currently elbow down
                 if (ang3-ang2 > 0) { // want elbow still down
-                    armT[1] = acos(ct2); // no need to flip
+                    res[1] = acos(ct2); // no need to flip
                 }
                 else { // want elbow up if possible
                     if (armT[1] < max_ea) { // elbow angle small enough to flip
-                        armT[1] = -acos(ct2); // flip
+                        res[1] = -acos(ct2); // flip
                     }
                     else { // elbow angle change would be too large, keep elbow down
-                        armT[1] = acos(ct2); // don't flip
+                        res[1] = acos(ct2); // don't flip
                     }
                 }
             }
-            else { // previously was elbow up
+            else { // currently elbow up
                 if (ang3-ang2 < 0) { // want elbow still up
-                    armT[1] = -acos(ct2); // no need to flip
+                    res[1] = -acos(ct2); // no need to flip
                 }
                 else { // want elbow down if possible
                     if (armT[1] > -max_ea) { // elbow angle small enough to flip
-                        armT[1] = acos(ct2); // flip
+                        res[1] = acos(ct2); // flip
                     }
                     else { // elbow angle change would be too large, keep elbow up
-                        armT[1] = -acos(ct2); // don't flip
+                        res[1] = -acos(ct2); // don't flip
                     }
                 }
             }
-            double st2 = sin(armT[1]);
+            double st2 = sin(res[1]);
             double A = segL + segL*ct2;
             double B = segL*st2;
             double AB2 = A*A + B*B;
             double ct1 = (lX2*A + lY2*B)/AB2;
             double st1 = (lY2*A - lX2*B)/AB2;
             if (ct1 > 0) {
-                armT[0] = asin(st1);
+                res[0] = asin(st1);
             }
             else {
-                armT[0] = PI - asin(st1);
+                res[0] = PI - asin(st1);
             }
         } 
         else { // can't reach, follow angle only, with both segments straight
             double dthet1 = atan2(lY2,lX2) - armT[0];
-            armT[0] = armT[0] + dthet1;
-            armT[1] = 0; 
+            res[0] = armT[0] + dthet1;
+            res[1] = 0; 
         }
+        return res;
+    }
+    
+    private void setAngles(double base_ang, double elbow_ang, double top_ang) {
+        
+        if (limits_active) {
+        
+            if (abs(base_ang) > lim_base) {
+                return;
+            }
+            if (abs(elbow_ang) > lim_elbow) {
+                return;
+            }
+            if (abs(top_ang) > lim_top) {
+                return;
+            }
+            if (sum_limit_active && (abs(elbow_ang + top_ang) > lim_sum_angles)) {
+                return;
+            }
+        
+        }
+        
+        armT[0] = base_ang;
+        armT[1] = elbow_ang;
+        armT[2] = top_ang;
     }
     
     private void createVideoScreen(final SwingNode swingNode) {
