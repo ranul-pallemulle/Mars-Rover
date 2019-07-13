@@ -7,6 +7,7 @@ package UI;
 
 import Backend.ArmDataController;
 import Backend.KeyboardDriveController;
+import Exceptions.FormatException;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
@@ -18,8 +19,10 @@ import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -30,6 +33,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
@@ -37,6 +42,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
@@ -77,6 +83,8 @@ public class MainFxmlController implements Initializable {
     @FXML private TextField dataFileTextField;
     @FXML private ComboBox<String> positionEditor;
     @FXML private ComboBox<String> positionSelector;
+    @FXML private ToggleButton seg3DownButton;
+    @FXML private Spinner<Integer> seg3DownOffsetPicker;
     
     private double joy_mouse_x;
     private double joy_mouse_y;
@@ -100,6 +108,7 @@ public class MainFxmlController implements Initializable {
     private Stage primaryStage;
     private ArmDataController armDataController;
     private KeyboardDriveController kbdController;
+    private ArrayList<Runnable> runAfterInitList;
     
     /**
      * Initializes the controller class.
@@ -117,6 +126,8 @@ public class MainFxmlController implements Initializable {
         limitsButtonPressed();
         sumLimitsButton.setSelected(true);
         sumLimitsButtonPressed();
+        seg3DownOffsetPicker.setValueFactory(
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(-10,10,0));
         
         // initialise ipSelector
         ipSelector.getItems().setAll("WiFi","Ethernet","Local");
@@ -137,19 +148,34 @@ public class MainFxmlController implements Initializable {
         positionEditor.getEditor().setText(":0.0,0.0,0.0,0.0");
         
         // initialise other objects
+        runAfterInitList = new ArrayList<>();
         armDataController = new ArmDataController();
-        String default_file = "example_data.dat";
+        String default_file = "example_data_bad2.dat";
         try {
-            armDataController.importFile(new File(default_file));
-        } catch (IOException ex) {
-            Logger.getLogger(MainFxmlController.class.getName()).log(Level.SEVERE, null, ex);
+            armDataController.importFile(new File(default_file));  
+            dataFileTextField.setText(default_file);
+            List<String> list = armDataController.getAllItems();
+            for (String item : list) {
+                positionSelector.getItems().add(item);
+                positionEditor.getItems().add(item);
+            } 
+        } catch (IOException | FormatException ex) {
+            runAfterInitList.add(new Runnable() {
+                @Override
+                public void run() {
+                    Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                    alert.setHeaderText("Invalid Data File.");
+                    alert.showAndWait();
+                }
+            });
+            
+        } 
+    }
+    
+    public void runAfterInit() {
+        for (Runnable method : runAfterInitList) {
+            method.run();
         }
-        dataFileTextField.setText(default_file);
-        List<String> list = armDataController.getAllItems();
-        for (String item : list) {
-            positionSelector.getItems().add(item);
-            positionEditor.getItems().add(item);
-        }   
     }
     
     public void connectRoverButtonPressed () {
@@ -489,7 +515,14 @@ public class MainFxmlController implements Initializable {
         String value;
         if ((value = positionSelector.getValue()) != null) {
             double[] angles = armDataController.parseData(value);
-            setAngles(angles[0],angles[1],angles[2]);
+            boolean possible = setAngles(angles[0],angles[1],angles[2]);
+            if (!possible) {
+                Alert alert = new Alert(AlertType.WARNING, 
+                        "This arm setting is not possible with the current angle "
+                      + "limits. Disable limits to enable this setting (not recommended).");
+                alert.setHeaderText("Cannot Set Arm.");
+                alert.show();
+            }
             forwardKinematics();
             setArmGui();
         }
@@ -511,24 +544,68 @@ public class MainFxmlController implements Initializable {
         
     }
     
+    public void seg3DownButtonPressed () {
+        if (seg3DownButton.isSelected()) {
+            seg3down = true;
+            double reqx3 = armX[2] + cos(seg3down_ang)*segL;
+            double reqy3 = armY[2] + sin(seg3down_ang)*segL;
+            double[] angs = inverseKinematics2R(reqx3,reqy3,armX[2],armY[2]);
+            double base_ang = angs[0];
+            double elbow_ang = angs[1];
+            double top_ang = seg3down_ang - elbow_ang - base_ang;
+            if (top_ang < -PI) {
+                top_ang = 2*PI + top_ang;
+            }
+            else if (top_ang > PI) {
+                top_ang = top_ang - 2*PI;
+            }
+        
+            boolean possible = setAngles(base_ang, elbow_ang, top_ang);
+            if (!possible) {
+                Alert alert = new Alert(AlertType.WARNING, 
+                        "Enabling seg3Down in the current arm position would "
+                      + "violate the angle limits. Disable angle limits to ignore this warning.");
+                alert.setHeaderText("Cannot Set Arm.");
+                alert.show();
+                seg3down = false;
+                seg3DownButton.setSelected(false);
+            }
+            forwardKinematics();
+            setArmGui();
+        }
+        else {
+            seg3down = false;
+        }
+    }
+    
+    public void seg3DownOffsetPickerClicked () {
+        
+    }
+    
     public void dataFileOpenButtonPressed () {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Open Data File");
+        chooser.setInitialDirectory(new File(System.getProperty("user.dir")));
+        chooser.getExtensionFilters().add(new ExtensionFilter("Data files","*.dat"));
         File file = chooser.showOpenDialog(primaryStage);
         if (file != null) {
             String filename = file.getName();
-            dataFileTextField.setText(filename);
             try {
                 armDataController.importFile(file);
+                List<String> list = armDataController.getAllItems();                
+                positionSelector.getItems().clear();
+                positionEditor.getItems().clear();
+                for (String item : list) {
+                    positionSelector.getItems().add(item);
+                    positionEditor.getItems().add(item);
+                }
+                dataFileTextField.setText(filename);
             } catch (IOException ex) {
                 Logger.getLogger(MainFxmlController.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            positionSelector.getItems().clear();
-            positionEditor.getItems().clear();
-            List<String> list = armDataController.getAllItems();
-            for (String item : list) {
-                positionSelector.getItems().add(item);
-                positionEditor.getItems().add(item);
+            } catch (FormatException ex) {
+                Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.setHeaderText("Invalid Data File.");
+                alert.showAndWait();
             }
         }
     }
@@ -649,21 +726,21 @@ public class MainFxmlController implements Initializable {
         return res;
     }
     
-    private void setAngles(double base_ang, double elbow_ang, double top_ang) {
+    private boolean setAngles(double base_ang, double elbow_ang, double top_ang) {
         
         if (limits_active) {
         
             if (abs(base_ang) > lim_base) {
-                return;
+                return false;
             }
             if (abs(elbow_ang) > lim_elbow) {
-                return;
+                return false;
             }
             if (abs(top_ang) > lim_top) {
-                return;
+                return false;
             }
             if (sum_limit_active && (abs(elbow_ang + top_ang) > lim_sum_angles)) {
-                return;
+                return false;
             }
         
         }
@@ -671,6 +748,7 @@ public class MainFxmlController implements Initializable {
         armT[0] = base_ang;
         armT[1] = elbow_ang;
         armT[2] = top_ang;
+        return true;
     }
     
     private void createVideoScreen(final SwingNode swingNode) {

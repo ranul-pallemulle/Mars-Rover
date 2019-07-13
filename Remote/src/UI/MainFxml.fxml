@@ -1,149 +1,157 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.net.*?>
-<?import java.util.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.stage.Screen?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Text?>
 <?import javafx.embed.swing.SwingNode?>
 
-<GridPane fx:id="gridPane" alignment="center" styleClass="root"
+<!--<GridPane fx:id="gridPane" alignment="center" styleClass="root"
           prefWidth="${screen.visualBounds.width}" 
           prefHeight="${screen.visualBounds.height}" 
           xmlns:fx="http://javafx.com/fxml/1" 
-          fx:controller="UI.MainFxmlController">
+          fx:controller="UI.MainFxmlController">-->
+
+<GridPane fx:id="gridPane" alignment="center" maxWidth="1300.0" prefHeight="720.0" styleClass="root" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.1" fx:controller="UI.MainFxmlController">        
     
     <stylesheets>
-        <URL value="@mainfxml.css"/>
+        <URL value="@mainfxml.css" />
     </stylesheets>
     
-    <fx:define>
+<!--    <fx:define>
         <Screen fx:factory="getPrimary" fx:id="screen"/>
-    </fx:define>
+    </fx:define>-->
     
     <columnConstraints>
-        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="25"/>
-        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="35"/>
-        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="40"/>
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="25" />
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="35" />
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="40" />
     </columnConstraints>
     <rowConstraints>
-        <RowConstraints minHeight="300.0" prefHeight="600.0" vgrow="SOMETIMES"/>
+        <RowConstraints minHeight="300.0" prefHeight="600.0" vgrow="SOMETIMES" />
     </rowConstraints>
     <children>
         <VBox alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="0">
-            <padding><Insets left="5" right="10"/></padding>
+            <padding><Insets left="5" right="10" /></padding>
             <HBox alignment="center">
-                <Text id="DispJoyLabel1" text="X:"/>
-                <Text fx:id="dispJoyX" text="0.0"/>
+                <Text id="DispJoyLabel1" text="X:" />
+                <Text fx:id="dispJoyX" text="0.0" />
             </HBox>
             <HBox alignment="center">
-                <Text id="DispJoyLabel2" text="Y:"/>
-                <Text fx:id="dispJoyY" text="0.0"/>
+                <Text id="DispJoyLabel2" text="Y:" />
+                <Text fx:id="dispJoyY" text="0.0" />
             </HBox>
             <Group>
-                <Circle fx:id="joyBackCircle" radius="150"/>
-                <Circle fx:id="joyFrontCircle" radius="50"
-                    onMousePressed="#pressCoordsJoystick"
-                    onMouseDragged="#updateJoystick"
-                    onMouseReleased="#snapBackJoystick"/>
+                <Circle fx:id="joyBackCircle" radius="150" />
+                <Circle fx:id="joyFrontCircle" onMouseDragged="#updateJoystick" onMousePressed="#pressCoordsJoystick" onMouseReleased="#snapBackJoystick" radius="50" />
             </Group>
             <VBox alignment="center">
-                <VBox.margin><Insets top="30" bottom="20"/></VBox.margin>
-                <ToggleButton fx:id="joyConnectButton" text="Enable Joystick" selected="false" onAction="#joyConnectButtonPressed"/>
+                <VBox.margin><Insets bottom="20" top="30" /></VBox.margin>
+                <ToggleButton fx:id="joyConnectButton" onAction="#joyConnectButtonPressed" selected="false" text="Enable Joystick" />
             </VBox>
             <VBox alignment="center">
-                <VBox.margin><Insets top="30" bottom="20" left="20" right="20"/></VBox.margin>
+                <VBox.margin><Insets bottom="20" left="20" right="20" top="30" /></VBox.margin>
                 <Text>Output from rover</Text>
-                <TextArea fx:id="diagnosticsTextArea" prefWidth="400" prefHeight="200" editable="false"/>
+                <TextArea fx:id="diagnosticsTextArea" editable="false" prefHeight="200" prefWidth="400" />
             </VBox>
         </VBox>
 
-        <GridPane alignment="center"
-                  GridPane.columnIndex="1" GridPane.rowIndex="0">
-            <padding><Insets left="10" right="10"/></padding>
+        <GridPane alignment="center" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <padding><Insets left="10" right="10" /></padding>
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" percentWidth="100"/>
+                <ColumnConstraints hgrow="SOMETIMES" percentWidth="100" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints vgrow="SOMETIMES" percentHeight="25"/>
-                <RowConstraints vgrow="SOMETIMES" percentHeight="50"/>
-                <RowConstraints vgrow="SOMETIMES" percentHeight="25"/>
+                <RowConstraints percentHeight="25" vgrow="SOMETIMES" />
+                <RowConstraints percentHeight="50" vgrow="SOMETIMES" />
+                <RowConstraints percentHeight="25" vgrow="SOMETIMES" />
             </rowConstraints>
-            <VBox spacing="50" alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                <HBox spacing="5" alignment="center">
-                    <ComboBox fx:id="ipSelector" promptText="Connection Method"/>
-                    <ToggleButton fx:id="connectRoverButton" text="Connect to Rover" selected="false" onAction="#connectRoverButtonPressed"/>
+            <VBox alignment="center" spacing="50" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <HBox alignment="center" spacing="5">
+                    <ComboBox fx:id="ipSelector" promptText="Connection Method" />
+                    <ToggleButton fx:id="connectRoverButton" onAction="#connectRoverButtonPressed" selected="false" text="Connect to Rover" />
                 </HBox>
-                <HBox spacing="5" alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                    <ComboBox fx:id="autoGoalSelector" promptText="Autonomous Mode Goal"/>
-                    <Button fx:id="autoGoalEnableButton" text="Enable" onAction="#autoGoalEnableButtonPressed"/>
-                    <Button fx:id="autoGoalDisableButton" text="Disable" onAction="#autoGoalDisableButtonPressed"/>
-                    <Button fx:id="autoGoalDisableAllButton" text="Disable All" onAction="#autoGoalDisableAllButtonPressed"/>
+                <HBox alignment="center" spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <ComboBox fx:id="autoGoalSelector" promptText="Autonomous Mode Goal" />
+                    <Button fx:id="autoGoalEnableButton" onAction="#autoGoalEnableButtonPressed" text="Enable" />
+                    <Button fx:id="autoGoalDisableButton" onAction="#autoGoalDisableButtonPressed" text="Disable" />
+                    <Button fx:id="autoGoalDisableAllButton" onAction="#autoGoalDisableAllButtonPressed" text="Disable All" />
                 </HBox>
             </VBox>
             <SwingNode fx:id="videoScreen" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
             <VBox alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="2">
-                <ToggleButton fx:id="vidConnectButton" text="Enable Video Feed" selected="false" onAction="#vidConnectButtonPressed"/>
+                <ToggleButton fx:id="vidConnectButton" onAction="#vidConnectButtonPressed" selected="false" text="Enable Video Feed" />
             </VBox>
             
         </GridPane>
         
-        <VBox spacing="10" alignment="center" GridPane.columnIndex="2" GridPane.rowIndex="0">
-            <padding><Insets left="10" right="10"/></padding>
-            <HBox spacing="5" alignment="center">
-                <TextField fx:id="dataFileTextField"/>
-                <Button fx:id="dataFileOpenButton" text="Open Data File" onAction="#dataFileOpenButtonPressed"/>
+        <VBox alignment="center" spacing="10" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            <padding><Insets left="10" right="10" /></padding>
+            <HBox alignment="center" spacing="5">
+                <TextField fx:id="dataFileTextField" />
+                <Button fx:id="dataFileOpenButton" onAction="#dataFileOpenButtonPressed" text="Open Data File" />
             </HBox>
             <VBox alignment="center">
-                <VBox.margin><Insets top="0" bottom="5"/></VBox.margin>
+                <VBox.margin><Insets bottom="5" top="0" /></VBox.margin>
             </VBox>
-            <HBox spacing="5" alignment="center">
-                <ToggleButton fx:id="limitsButton" text="Enable Angle Limits" selected="false" onAction="#limitsButtonPressed"/>
-                <ToggleButton fx:id="sumLimitsButton" text="Enable Angle Sum Limit" selected="false" onAction="#sumLimitsButtonPressed"/>
+            <HBox alignment="center" spacing="5">
+                <ToggleButton fx:id="limitsButton" onAction="#limitsButtonPressed" selected="false" text="Enable Angle Limits" />
+                <ToggleButton fx:id="sumLimitsButton" onAction="#sumLimitsButtonPressed" selected="false" text="Enable Angle Sum Limit" />
             </HBox>
-            <HBox spacing="5" alignment="center">
-                <ComboBox fx:id="positionEditor" editable="true"/>
-                <Button fx:id="positionSaveButton" text="Save Position" onAction="#positionSaveButtonPressed"/>
-                <Button fx:id="positionRemoveButton" text="Remove Position" onAction="#positionRemoveButtonPressed"/>
+            <HBox alignment="center" spacing="5">
+                <ComboBox fx:id="positionEditor" editable="true" />
+                <Button fx:id="positionSaveButton" onAction="#positionSaveButtonPressed" text="Save Position" />
+                <Button fx:id="positionRemoveButton" onAction="#positionRemoveButtonPressed" text="Remove Position" />
             </HBox>
-            <HBox spacing="5" alignment="center">
-                <ComboBox fx:id="positionSelector" promptText="Select Position"/>
-                <Button fx:id="positionSetButton" text="Set" onAction="#positionSetButtonPressed"/>
+            <HBox alignment="center" spacing="5">
+                <ComboBox fx:id="positionSelector" promptText="Select Position" />
+                <Button fx:id="positionSetButton" onAction="#positionSetButtonPressed" text="Set" />
             </HBox>
-            <HBox spacing="5" alignment="center">
-                <Button fx:id="drop1PositionButton" text="Drop 1" onAction="#drop1PositionButtonPressed"/>
-                <Button fx:id="drop2PositionButton" text="Drop 2" onAction="#drop2PositionButtonPressed"/>
-                <Button fx:id="watchPositionButton" text="Watch" onAction="#watchPositionButtonPressed"/>
-                <Button fx:id="pickPositionButton" text="Pick" onAction="#pickPositionButtonPressed"/>
+            <HBox alignment="center" spacing="5">
+                <Button fx:id="drop1PositionButton" onAction="#drop1PositionButtonPressed" text="Drop 1" />
+                <Button fx:id="drop2PositionButton" onAction="#drop2PositionButtonPressed" text="Drop 2" />
+                <Button fx:id="watchPositionButton" onAction="#watchPositionButtonPressed" text="Watch" />
+                <Button fx:id="pickPositionButton" onAction="#pickPositionButtonPressed" text="Pick" />
+                <ToggleButton fx:id="seg3DownButton" onAction="#seg3DownButtonPressed" text="Seg3Down" />
+                <Spinner fx:id="seg3DownOffsetPicker" onMouseClicked="#seg3DownOffsetPickerClicked" prefHeight="30" prefWidth="55" />
             </HBox>
             <Group>
-                <Circle id="Armrange" centerX="250" centerY="250" radius="150"/>
-                <Rectangle id="ground" x="0" y="380" width="500" height="120"/>
-                <Line id="groundline" endX="500" endY="380" startX="0" startY="380"/>
-                <Line fx:id="sliderLine" strokeWidth="5" endX="300" endY="50" startX="200" startY="50"/>
-                <Circle fx:id="sliderBall" radius="10" centerX="200.0" centerY="50.0" onMouseDragged="#updateGripperSlider"/>
-                <Button fx:id="gripperButton" text="Close Gripper" layoutX="75" layoutY="36" onAction="#gripperButtonPressed"/>
+                <Circle id="Armrange" centerX="250" centerY="250" radius="150" />
+                <Rectangle id="ground" height="120" width="500" x="0" y="380" />
+                <Line id="groundline" endX="500" endY="380" startX="0" startY="380" />
+                <Line fx:id="sliderLine" endX="300" endY="50" startX="200" startY="50" strokeWidth="5" />
+                <Circle fx:id="sliderBall" centerX="200.0" centerY="50.0" onMouseDragged="#updateGripperSlider" radius="10" />
+                <Button fx:id="gripperButton" layoutX="75" layoutY="36" onAction="#gripperButtonPressed" text="Close Gripper" />
                 
-                <Line fx:id="lineSeg1" strokeWidth="8" endX="300" endY="250" startX="250" startY="250"/>
-                <Line fx:id="lineSeg2" strokeWidth="8" endX="350" endY="250" startX="300" startY="250"/>
-                <Line fx:id="lineSeg3" strokeWidth="8" endX="400" endY="250" startX="350" startY="250"/>
+                <Line fx:id="lineSeg1" endX="300" endY="250" startX="250" startY="250" strokeWidth="8" />
+                <Line fx:id="lineSeg2" endX="350" endY="250" startX="300" startY="250" strokeWidth="8" />
+                <Line fx:id="lineSeg3" endX="400" endY="250" startX="350" startY="250" strokeWidth="8" />
                
-                <Circle fx:id="armJoint1" radius="5" centerX="300.0" centerY="250.0" onMouseDragged="#updateArmSeg1"/>
-                <Circle fx:id="armJoint2" radius="5" centerX="350.0" centerY="250.0" onMouseDragged="#updateArmSeg2"/>
-                <Circle fx:id="armJoint3" radius="8" centerX="400.0" centerY="250.0" onMouseDragged="#updateArmSeg3"/>
+                <Circle fx:id="armJoint1" centerX="300.0" centerY="250.0" onMouseDragged="#updateArmSeg1" radius="5" />
+                <Circle fx:id="armJoint2" centerX="350.0" centerY="250.0" onMouseDragged="#updateArmSeg2" radius="5" />
+                <Circle fx:id="armJoint3" centerX="400.0" centerY="250.0" onMouseDragged="#updateArmSeg3" radius="8" />
                 
-                <Rectangle id="rover" x="0" y="234.4" width="238.3" height="31.2"/>
-                <Rectangle id="rover" x="238.3" y="245" width="11.7" height="10"/>
-                <Circle id="rover" radius="5" centerX="250" centerY="250"/>
+                <Rectangle id="rover" height="31.2" width="238.3" x="0" y="234.4" />
+                <Rectangle id="rover" height="10" width="11.7" x="238.3" y="245" />
+                <Circle id="rover" centerX="250" centerY="250" radius="5" />
             </Group>
             <VBox alignment="center">
-                <VBox.margin><Insets top="5"/></VBox.margin>
-                <ToggleButton fx:id="armConnectButton" text="Enable Arm" selected="false" onAction="#armConnectButtonPressed"/>
+                <VBox.margin><Insets top="5" /></VBox.margin>
+                <ToggleButton fx:id="armConnectButton" onAction="#armConnectButtonPressed" selected="false" text="Enable Arm" />
             </VBox>
         </VBox>
     </children>

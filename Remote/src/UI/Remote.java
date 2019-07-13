@@ -6,10 +6,12 @@
 package UI;
 
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.freedesktop.gstreamer.Gst;
 
 /**
@@ -38,6 +40,13 @@ public class Remote extends Application{
         // primaryStage.setOnCloseRequest(e->handleExit(controller));
         
         // primaryStage.setFullScreen(true);
+        primaryStage.setOnShown(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                controller.runAfterInit();
+            }
+            
+        });
         primaryStage.show();
     }
     
