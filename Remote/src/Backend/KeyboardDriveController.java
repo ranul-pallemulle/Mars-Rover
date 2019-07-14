@@ -69,3 +69,45 @@ public class KeyboardDriveController extends AnimationTimer {
     
     
 }
+
+// Usage
+
+//kbdConsumer = new Consumer<ArrayList<Integer>>() {
+//@Override
+//public void accept(ArrayList<Integer> t) {
+//        // get distance between click and drag
+//        double drag_delx = t.get(1);// - joyBackCircle.getCenterX();
+//        double drag_dely = t.get(0);// - joyBackCircle.getCenterY();
+//
+//        // get new position of joystick
+//        double joy_newx = joyBackCircle.getCenterX() + drag_delx;
+//        double joy_newy = joyBackCircle.getCenterY() + drag_dely;
+//
+//        // calculate radial displacement
+//        double rad2 = joy_newx * joy_newx +
+//                     joy_newy * joy_newy;
+//        double maxrad = joyBackCircle.getRadius() - joyFrontCircle.getRadius();
+//        if (rad2 < maxrad * maxrad) {
+//            joyFrontCircle.setCenterX(joy_newx);
+//            joyFrontCircle.setCenterY(joy_newy);
+//        }
+//        else {
+//            double angle = atan2(joy_newy,joy_newx);
+//            joy_newx = joyBackCircle.getCenterX() + maxrad * cos(angle);
+//            joy_newy = joyBackCircle.getCenterY() + maxrad * sin(angle);
+//            joyFrontCircle.setCenterX(joy_newx);
+//            joyFrontCircle.setCenterY(joy_newy);
+//
+//        }
+//
+//        dispJoyX.setText(String.format("%.1f",joy_newx));
+//        dispJoyY.setText(String.format("%.1f",-joy_newy));
+//            }
+//        };
+//runAfterInitList.add(new Runnable() {
+//    @Override
+//    public void run() {
+//        kbdController = new KeyboardDriveController(primaryStage.getScene(),kbdConsumer);
+//        //kbdController.start();
+//    }
+//});

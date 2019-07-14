@@ -5,6 +5,7 @@
  */
 package UI;
 
+import Backend.JoystickController;
 import Backend.ArmDataController;
 import Backend.KeyboardDriveController;
 import Exceptions.BadDeleteException;
@@ -86,8 +87,6 @@ public class MainFxmlController implements Initializable {
     @FXML private ToggleButton seg3DownButton;
     @FXML private Spinner<Integer> seg3DownOffsetPicker;
     
-    private double joy_mouse_x;
-    private double joy_mouse_y;
     private double[] armX = {250,300,350,400};
     private double[] armY = {250,250,250,250};
     private double[] armT = {0,0,0};
@@ -95,7 +94,7 @@ public class MainFxmlController implements Initializable {
     private double lim_base = 100 * PI/180; // limit of base angle
     private double lim_elbow = 110 * PI/180; // limit of elbow angle
     private double lim_top = 110 * PI/180; // limit of top angle
-    private double lim_sum_angles = 180 * PI/180; // limit of sum of top and elbow angles
+    private double lim_sum_angles = 180 * PI/180; // limit of sum of angles
     private boolean limits_active = false; // arm angle limits
     private boolean sum_limit_active = false; // arm sum of angles limit
     private boolean seg3down = false; // keep last segment down
@@ -103,15 +102,14 @@ public class MainFxmlController implements Initializable {
     private double seg3down_ang = seg3down_ang_orig;
     private int prev_seg3down_sett = -100; // for picker setting calculation
     private final double segL = 50;
-    private final double max_ea = 20 * PI/180; // max elbow angle at which flipping is allowed
+    private final double max_ea = 20 * PI/180; // elbow angle at which to flip
     
     private String ipAddress;
     private String gstPipeline;
     private Stage primaryStage;
+    private JoystickController joyController;
     private ArmDataController armDataController;
-    private KeyboardDriveController kbdController;
     private ArrayList<Runnable> runAfterInitList;
-    private Consumer<ArrayList<Integer>> kbdConsumer;
     
     /**
      * Initializes the controller class.
@@ -177,46 +175,10 @@ public class MainFxmlController implements Initializable {
             
         }
         
-        kbdConsumer = new Consumer<ArrayList<Integer>>() {
-            @Override
-            public void accept(ArrayList<Integer> t) {
-                // get distance between click and drag
-                double drag_delx = t.get(1);// - joyBackCircle.getCenterX();
-                double drag_dely = t.get(0);// - joyBackCircle.getCenterY();
+        // initialise joystick controller
+        double max_rad = joyBackCircle.getRadius() - joyFrontCircle.getRadius();
+        joyController = new JoystickController(max_rad);
 
-                // get new position of joystick
-                double joy_newx = joyBackCircle.getCenterX() + drag_delx;
-                double joy_newy = joyBackCircle.getCenterY() + drag_dely;
-
-                // calculate radial displacement
-                double rad2 = joy_newx * joy_newx +
-                             joy_newy * joy_newy;
-                double maxrad = joyBackCircle.getRadius() - joyFrontCircle.getRadius();
-                if (rad2 < maxrad * maxrad) {
-                    joyFrontCircle.setCenterX(joy_newx);
-                    joyFrontCircle.setCenterY(joy_newy);
-                }
-                else {
-                    double angle = atan2(joy_newy,joy_newx);
-                    joy_newx = joyBackCircle.getCenterX() + maxrad * cos(angle);
-                    joy_newy = joyBackCircle.getCenterY() + maxrad * sin(angle);
-                    joyFrontCircle.setCenterX(joy_newx);
-                    joyFrontCircle.setCenterY(joy_newy);
-
-                }
-
-                dispJoyX.setText(String.format("%.1f",joy_newx));
-                dispJoyY.setText(String.format("%.1f",-joy_newy));
-                    }
-                };
-        runAfterInitList.add(new Runnable() {
-            @Override
-            public void run() {
-                kbdController = new KeyboardDriveController(primaryStage.getScene(),kbdConsumer);
-                //kbdController.start();
-            }
-        });
-        
     }
     
     public void runAfterInit() {
@@ -325,8 +287,7 @@ public class MainFxmlController implements Initializable {
      * @param e 
      */
     public void pressCoordsJoystick (MouseEvent e) {
-        joy_mouse_x = e.getX();
-        joy_mouse_y = e.getY();
+        joyController.setMouseclickPosition(e.getX(), e.getY());
     }
     
     /**
@@ -334,12 +295,13 @@ public class MainFxmlController implements Initializable {
      * @param e
      */
     public void snapBackJoystick (MouseEvent e) {
-        double centerx = joyBackCircle.getCenterX();
-        double centery = joyBackCircle.getCenterY();
-        joyFrontCircle.setCenterX(centerx);
-        joyFrontCircle.setCenterY(centery);
-        dispJoyX.setText(String.format("%.1f",centerx));
-        dispJoyY.setText(String.format("%.1f",centery));
+        joyController.returnToCenter();
+        double newx = joyBackCircle.getCenterX() + joyController.getX();
+        double newy = joyBackCircle.getCenterY() + joyController.getY();
+        joyFrontCircle.setCenterX(newx);
+        joyFrontCircle.setCenterY(newy);
+        dispJoyX.setText(String.format("%.1f", newx));
+        dispJoyY.setText(String.format("%.1f", newy));
     }
     
     /**
@@ -347,40 +309,20 @@ public class MainFxmlController implements Initializable {
      * @param e
      */
     public void updateJoystick (MouseEvent e) {
-        // get distance between click and drag
-        double drag_delx = e.getX() - joy_mouse_x;
-        double drag_dely = e.getY() - joy_mouse_y;
-        
-        // get new position of joystick
-        double joy_newx = joyBackCircle.getCenterX() + drag_delx;
-        double joy_newy = joyBackCircle.getCenterY() + drag_dely;
-        
-        // calculate radial displacement
-        double rad2 = joy_newx * joy_newx +
-                     joy_newy * joy_newy;
-        double maxrad = joyBackCircle.getRadius() - joyFrontCircle.getRadius();
-        if (rad2 < maxrad * maxrad) {
-            joyFrontCircle.setCenterX(joy_newx);
-            joyFrontCircle.setCenterY(joy_newy);
-        }
-        else {
-            double angle = atan2(joy_newy,joy_newx);
-            joy_newx = joyBackCircle.getCenterX() + maxrad * cos(angle);
-            joy_newy = joyBackCircle.getCenterY() + maxrad * sin(angle);
-            joyFrontCircle.setCenterX(joy_newx);
-            joyFrontCircle.setCenterY(joy_newy);
-            
-        }
-        
-        dispJoyX.setText(String.format("%.1f",joy_newx));
-        dispJoyY.setText(String.format("%.1f",-joy_newy));
+        joyController.update(e.getX(), e.getY());
+        double newx = joyBackCircle.getCenterX() + joyController.getX();
+        double newy = joyBackCircle.getCenterY() + joyController.getY();
+        joyFrontCircle.setCenterX(newx);
+        joyFrontCircle.setCenterY(newy);
+        dispJoyX.setText(String.format("%.1f",newx));
+        dispJoyY.setText(String.format("%.1f",-newy));
     }
     
     /**
      * Event handler for when the gripper slider is moved
      * @param e 
      */
-    public void updateGripperSlider (MouseEvent e) {
+    public void updateGripper (MouseEvent e) {
         double sliderX = e.getX();
         double startX = sliderLine.getStartX();
         double endX = sliderLine.getEndX();
