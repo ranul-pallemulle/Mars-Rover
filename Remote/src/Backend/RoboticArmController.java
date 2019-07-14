@@ -43,12 +43,13 @@ public class RoboticArmController {
         gripper_val = 0;
         segL = 50;
         seg3down = false;
+        seg3down_ang = PI/2;
         limits_active = false;
         sum_limit_active = false;
         max_ea = 20 * PI/180;
         lim_base = 100 * PI/180;
-        lim_elbow = 110 * PI/180;
-        lim_top = 110 * PI/180;
+        lim_elbow = 120 * PI/180;
+        lim_top = 120 * PI/180;
         lim_sum = 180 * PI/180;
     }
     
@@ -197,17 +198,24 @@ public class RoboticArmController {
     
     /** 
      * Set the angle at which the arm points at the floor when seg3down is 
-     * enabled.
-     * @param value
-     * @return successfully updated the arm coo
+     * enabled. 
+     * @param value - new angle in radians
+     * @return true if seg3down is enabled and the angle change was successful. 
+     * If the change is unsuccessful, the previous value is restored.
      */
-    public boolean setSeg3DownOffsetAngle(double value) {
+    public boolean setSeg3DownAngle(double value) {
+        double backup = seg3down_ang;
         seg3down_ang = value;
         if (seg3down) {
             double reqx3 = armX[2] + cos(seg3down_ang)*segL;
             double reqy3 = armY[2] + sin(seg3down_ang)*segL;
-            return moveThirdJoint(reqx3,reqy3);
+            boolean success = moveThirdJoint(reqx3,reqy3);
+            if (!success) {
+                seg3down_ang = backup;
+            }
+            return success;
         }
+        seg3down_ang = backup;
         return false;
     }
     
@@ -264,6 +272,18 @@ public class RoboticArmController {
         return armY;
     }
     
+    public double[] getServoAngles() {
+        return armT;
+    }
+    
+    public double getGripperValue() {
+        return gripper_val;
+    }
+    
+    public double getSeg3DownAngle() {
+        return seg3down_ang;
+    }
+    
     
     
     /// private methods
@@ -300,8 +320,8 @@ public class RoboticArmController {
         armY[3] = armY[2] + sin(armT[0] + armT[1] + armT[2]) * segL;
     }
     
-    private double[] inverseKinematics2R(double reqx3, double reqy3, double reqx2, 
-                                     double reqy2) {
+    private double[] inverseKinematics2R(double reqx3, double reqy3, 
+                                         double reqx2, double reqy2) {
         double lX2 = reqx2 - armX[0];
         double lY2 = reqy2 - armY[0];
         double lX3 = reqx3 - armX[0];
@@ -320,7 +340,7 @@ public class RoboticArmController {
                     if (armT[1] < max_ea) { // elbow angle small enough to flip
                         res[1] = -acos(ct2); // flip
                     }
-                    else { // elbow angle change would be too large, keep elbow down
+                    else { // elbow angle change too large, keep elbow down
                         res[1] = acos(ct2); // don't flip
                     }
                 }
@@ -333,7 +353,7 @@ public class RoboticArmController {
                     if (armT[1] > -max_ea) { // elbow angle small enough to flip
                         res[1] = acos(ct2); // flip
                     }
-                    else { // elbow angle change would be too large, keep elbow up
+                    else { // elbow angle change too large, keep elbow up
                         res[1] = -acos(ct2); // don't flip
                     }
                 }
