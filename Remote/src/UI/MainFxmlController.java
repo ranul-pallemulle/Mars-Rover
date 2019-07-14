@@ -7,7 +7,9 @@ package UI;
 
 import Backend.ArmDataController;
 import Backend.KeyboardDriveController;
+import Exceptions.BadDeleteException;
 import Exceptions.FormatException;
+import Exceptions.NotFoundException;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
@@ -22,9 +24,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
@@ -99,7 +98,9 @@ public class MainFxmlController implements Initializable {
     private boolean limits_active = false; // arm angle limits
     private boolean sum_limit_active = false; // arm sum of angles limit
     private boolean seg3down = false; // keep last segment down
-    private final double seg3down_ang = 90 * PI/180;
+    private final double seg3down_ang_orig = 90 * PI/180;
+    private double seg3down_ang = seg3down_ang_orig;
+    private int prev_seg3down_sett = -100; // for picker setting calculation
     private final double segL = 50;
     private final double max_ea = 20 * PI/180; // max elbow angle at which flipping is allowed
     
@@ -127,7 +128,7 @@ public class MainFxmlController implements Initializable {
         sumLimitsButton.setSelected(true);
         sumLimitsButtonPressed();
         seg3DownOffsetPicker.setValueFactory(
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(-10,10,0));
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(-15,15,0));
         
         // initialise ipSelector
         ipSelector.getItems().setAll("WiFi","Ethernet","Local");
@@ -147,12 +148,15 @@ public class MainFxmlController implements Initializable {
         // initialise combo boxes
         positionEditor.getEditor().setText(":0.0,0.0,0.0,0.0");
         
+        // initialise spinner
+        seg3DownOffsetPicker.setDisable(true);
+        
         // initialise other objects
         runAfterInitList = new ArrayList<>();
         armDataController = new ArmDataController();
-        String default_file = "example_data_bad2.dat";
+        String default_file = "example_data.dat";
         try {
-            armDataController.importFile(new File(default_file));  
+            armDataController.importFile(new File(default_file)); 
             dataFileTextField.setText(default_file);
             List<String> list = armDataController.getAllItems();
             for (String item : list) {
@@ -164,12 +168,12 @@ public class MainFxmlController implements Initializable {
                 @Override
                 public void run() {
                     Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
-                    alert.setHeaderText("Invalid Data File.");
+                    alert.setHeaderText("Cannot Load Data File.");
                     alert.showAndWait();
                 }
             });
             
-        } 
+        }
     }
     
     public void runAfterInit() {
@@ -382,7 +386,7 @@ public class MainFxmlController implements Initializable {
         if (seg3down) {
             top_ang = seg3down_ang - armT[1] - base_ang;
         }
-        setAngles(base_ang, armT[1], top_ang);
+        setAngles(base_ang, armT[1], top_ang, gripper_val);
         forwardKinematics();
         setArmGui();
     }
@@ -396,7 +400,7 @@ public class MainFxmlController implements Initializable {
             double [] angs = inverseKinematics2R(armX[3],armY[3],e.getX(),e.getY());
             double base_ang = angs[0];
             double elbow_ang = angs[1];
-            setAngles(base_ang, elbow_ang, armT[2]);
+            setAngles(base_ang, elbow_ang, armT[2], gripper_val);
         }
         else {
             double reqx3 = e.getX() + segL*cos(seg3down_ang);
@@ -405,7 +409,7 @@ public class MainFxmlController implements Initializable {
             double base_ang = angs[0];
             double elbow_ang = angs[1];
             double top_ang = seg3down_ang - elbow_ang - base_ang;
-            setAngles(base_ang, elbow_ang, top_ang);
+            setAngles(base_ang, elbow_ang, top_ang, gripper_val);
         }
         
         forwardKinematics();
@@ -445,7 +449,7 @@ public class MainFxmlController implements Initializable {
             top_ang = top_ang - 2*PI;
         }
         
-        setAngles(base_ang, elbow_ang, top_ang);
+        setAngles(base_ang, elbow_ang, top_ang, gripper_val);
         forwardKinematics();
         setArmGui();
     }
@@ -476,31 +480,30 @@ public class MainFxmlController implements Initializable {
     }
     
     public void positionSaveButtonPressed () {
-        if (armDataController.haveFile()) {
-            String data = positionEditor.getValue();
-            try {
-                armDataController.editDataItem(data);
-            } catch (IOException ex) {
-                Logger.getLogger(MainFxmlController.class.getName()).log(Level.SEVERE, null, ex);
+        String data = positionEditor.getValue();
+        try {
+            boolean changed = armDataController.editDataItem(data);
+            if (changed) {
+                positionSelector.getItems().clear();
+                positionEditor.getItems().clear();
+                List<String> list = armDataController.getAllItems();
+                for (String item : list) {
+                    positionSelector.getItems().add(item);
+                    positionEditor.getItems().add(item);
+                }
             }
-            positionSelector.getItems().clear();
-            positionEditor.getItems().clear();
-            List<String> list = armDataController.getAllItems();
-            for (String item : list) {
-                positionSelector.getItems().add(item);
-                positionEditor.getItems().add(item);
-            }
+            
+        } catch (IOException | FormatException ex) {
+            Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.setHeaderText("Cannot Save.");
+            alert.showAndWait();
         }
     }
     
     public void positionRemoveButtonPressed () {
-        if (armDataController.haveFile()) {
-            String data = positionEditor.getValue();
-            try {
-                armDataController.removeDataItem(data);
-            } catch (IOException ex) {
-                Logger.getLogger(MainFxmlController.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        String data = positionEditor.getValue();
+        try {
+            armDataController.removeDataItem(data);
             positionSelector.getItems().clear();
             positionEditor.getItems().clear();
             List<String> list = armDataController.getAllItems();
@@ -508,40 +511,119 @@ public class MainFxmlController implements Initializable {
                 positionSelector.getItems().add(item);
                 positionEditor.getItems().add(item);
             }
+        } catch (IOException | NotFoundException | BadDeleteException ex) {
+            Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.setHeaderText("Cannot Delete Data.");
+            alert.showAndWait();
         }
+        
     }
     
     public void positionSetButtonPressed () {
         String value;
         if ((value = positionSelector.getValue()) != null) {
-            double[] angles = armDataController.parseData(value);
-            boolean possible = setAngles(angles[0],angles[1],angles[2]);
-            if (!possible) {
-                Alert alert = new Alert(AlertType.WARNING, 
-                        "This arm setting is not possible with the current angle "
-                      + "limits. Disable limits to enable this setting (not recommended).");
+            try {
+                double[] angles = armDataController.parseData(value);
+                boolean possible = setAngles(angles[0],angles[1],angles[2], angles[3]);
+                if (!possible) {
+                    Alert alert = new Alert(AlertType.WARNING,
+                            "This arm setting is not possible with the current angle "
+                                    + "limits. Disable limits to enable this setting (not recommended).");
+                    alert.setHeaderText("Cannot Set Arm.");
+                    alert.show();
+                }
+                forwardKinematics();
+                setArmGui();
+            } catch (FormatException ex) {
+                Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
                 alert.setHeaderText("Cannot Set Arm.");
-                alert.show();
+                alert.showAndWait();
             }
-            forwardKinematics();
-            setArmGui();
         }
     }
     
     public void drop1PositionButtonPressed () {
-        
+        try {
+            double[] angles = armDataController.getAnglesByName("DROP1");
+            boolean possible = setAngles(angles[0],angles[1],angles[2], angles[3]);
+                if (!possible) {
+                    Alert alert = new Alert(AlertType.WARNING,
+                            "This arm setting is not possible with the current angle "
+                                    + "limits. Disable limits to enable this setting (not recommended).");
+                    alert.setHeaderText("Cannot Set Arm.");
+                    alert.show();
+                }
+                forwardKinematics();
+                setArmGui();
+        }
+        catch (FormatException | NotFoundException ex) {
+            Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.setHeaderText("Cannot Set Arm.");
+            alert.showAndWait();
+        }
     }
     
     public void drop2PositionButtonPressed () {
-        
+        try {
+            double[] angles = armDataController.getAnglesByName("DROP2");
+            boolean possible = setAngles(angles[0],angles[1],angles[2], angles[3]);
+                if (!possible) {
+                    Alert alert = new Alert(AlertType.WARNING,
+                            "This arm setting is not possible with the current angle "
+                                    + "limits. Disable limits to enable this setting (not recommended).");
+                    alert.setHeaderText("Cannot Set Arm.");
+                    alert.show();
+                }
+                forwardKinematics();
+                setArmGui();
+        }
+        catch (FormatException | NotFoundException ex) {
+            Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.setHeaderText("Cannot Set Arm.");
+            alert.showAndWait();
+        }
     }
     
     public void watchPositionButtonPressed () {
-        
+        try {
+            double[] angles = armDataController.getAnglesByName("WATCH");
+            boolean possible = setAngles(angles[0],angles[1],angles[2], angles[3]);
+                if (!possible) {
+                    Alert alert = new Alert(AlertType.WARNING,
+                            "This arm setting is not possible with the current angle "
+                                    + "limits. Disable limits to enable this setting (not recommended).");
+                    alert.setHeaderText("Cannot Set Arm.");
+                    alert.show();
+                }
+                forwardKinematics();
+                setArmGui();
+        }
+        catch (FormatException | NotFoundException ex) {
+            Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.setHeaderText("Cannot Set Arm.");
+            alert.showAndWait();
+        }
     }
     
     public void pickPositionButtonPressed () {
-        
+        try {
+            double[] angles = armDataController.getAnglesByName("PICK");
+            boolean possible = setAngles(angles[0],angles[1],angles[2], angles[3]);
+                if (!possible) {
+                    Alert alert = new Alert(AlertType.WARNING,
+                            "This arm setting is not possible with the current angle "
+                                    + "limits. Disable limits to enable this setting (not recommended).");
+                    alert.setHeaderText("Cannot Set Arm.");
+                    alert.show();
+                }
+                forwardKinematics();
+                setArmGui();
+        }
+        catch (FormatException | NotFoundException ex) {
+            Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.setHeaderText("Cannot Set Arm.");
+            alert.showAndWait();
+        }
     }
     
     public void seg3DownButtonPressed () {
@@ -560,25 +642,63 @@ public class MainFxmlController implements Initializable {
                 top_ang = top_ang - 2*PI;
             }
         
-            boolean possible = setAngles(base_ang, elbow_ang, top_ang);
+            boolean possible = setAngles(base_ang, elbow_ang, top_ang, gripper_val);
             if (!possible) {
                 Alert alert = new Alert(AlertType.WARNING, 
                         "Enabling seg3Down in the current arm position would "
                       + "violate the angle limits. Disable angle limits to ignore this warning.");
                 alert.setHeaderText("Cannot Set Arm.");
-                alert.show();
+                alert.showAndWait();
                 seg3down = false;
                 seg3DownButton.setSelected(false);
             }
             forwardKinematics();
             setArmGui();
+            if (possible) {
+                seg3DownOffsetPicker.setDisable(false);
+            }
         }
         else {
             seg3down = false;
+            seg3DownOffsetPicker.setDisable(true);
         }
     }
     
     public void seg3DownOffsetPickerClicked () {
+        int value = seg3DownOffsetPicker.getValue();
+        double backup = seg3down_ang;
+        seg3down_ang = seg3down_ang_orig + value * PI/180;
+        if (seg3down) {
+            double reqx3 = armX[2] + cos(seg3down_ang)*segL;
+            double reqy3 = armY[2] + sin(seg3down_ang)*segL;
+            double[] angs = inverseKinematics2R(reqx3,reqy3,armX[2],armY[2]);
+            double base_ang = angs[0];
+            double elbow_ang = angs[1];
+            double top_ang = seg3down_ang - elbow_ang - base_ang;
+            if (top_ang < -PI) {
+                top_ang = 2*PI + top_ang;
+            }
+            else if (top_ang > PI) {
+                top_ang = top_ang - 2*PI;
+            }
+        
+            boolean possible = setAngles(base_ang, elbow_ang, top_ang, gripper_val);
+            if (!possible) {
+                seg3DownOffsetPicker.getValueFactory().setValue(prev_seg3down_sett);
+                seg3down_ang = backup;
+                Alert alert = new Alert(AlertType.WARNING, 
+                        "Changing the seg3down angle in the current arm position would "
+                      + "violate the angle limits. Disable angle limits to ignore this warning.");
+                alert.setHeaderText("Cannot Set Arm.");
+                alert.show();
+                
+            }
+            forwardKinematics();
+            setArmGui();
+            if (possible) {
+                prev_seg3down_sett = value;
+            }
+        }
         
     }
     
@@ -590,23 +710,24 @@ public class MainFxmlController implements Initializable {
         File file = chooser.showOpenDialog(primaryStage);
         if (file != null) {
             String filename = file.getName();
+            dataFileTextField.setText(filename);
             try {
                 armDataController.importFile(file);
-                List<String> list = armDataController.getAllItems();                
-                positionSelector.getItems().clear();
-                positionEditor.getItems().clear();
-                for (String item : list) {
-                    positionSelector.getItems().add(item);
-                    positionEditor.getItems().add(item);
-                }
-                dataFileTextField.setText(filename);
-            } catch (IOException ex) {
-                Logger.getLogger(MainFxmlController.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (FormatException ex) {
+                
+            } catch (IOException | FormatException ex) {
+                dataFileTextField.setText("");
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
                 alert.setHeaderText("Invalid Data File.");
                 alert.showAndWait();
+                
             }
+            List<String> list = armDataController.getAllItems();                
+            positionSelector.getItems().clear();
+            positionEditor.getItems().clear();
+            for (String item : list) {
+                positionSelector.getItems().add(item);
+                positionEditor.getItems().add(item);
+            } 
         }
     }
     
@@ -655,6 +776,8 @@ public class MainFxmlController implements Initializable {
         String armT1Str = String.format("%.1f",-armT[1]*180/PI);
         String armT2Str = String.format("%.1f",-armT[2]*180/PI);
         String gripperStr = String.format("%.1f",gripper_val);
+        // clear positionEditor selection so that previous selection can be selected again later.
+        positionEditor.getSelectionModel().clearSelection();
         positionEditor.getEditor().setText(":"+armT0Str+","+armT1Str+","+armT2Str+","+gripperStr);
     }
     
@@ -726,7 +849,7 @@ public class MainFxmlController implements Initializable {
         return res;
     }
     
-    private boolean setAngles(double base_ang, double elbow_ang, double top_ang) {
+    private boolean setAngles(double base_ang, double elbow_ang, double top_ang, double gripper) {
         
         if (limits_active) {
         
@@ -748,8 +871,10 @@ public class MainFxmlController implements Initializable {
         armT[0] = base_ang;
         armT[1] = elbow_ang;
         armT[2] = top_ang;
+        gripper_val = gripper;
         return true;
     }
+    
     
     private void createVideoScreen(final SwingNode swingNode) {
         gstPipeline = "tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! rtph264depay ! avdec_h264 ! videoconvert ! capsfilter caps=video/x-raw,width=640,height=400";

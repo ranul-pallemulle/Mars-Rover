@@ -5,6 +5,7 @@
  */
 package Backend;
 
+import Exceptions.BadDeleteException;
 import Exceptions.FormatException;
 import Exceptions.NotFoundException;
 import java.io.BufferedReader;
@@ -41,33 +42,39 @@ public class ArmDataController {
      * Attempt to open a data file. If a file was previously open, close it.
      * @param _file
      * @throws IOException - if file cannot be opened for read and write
-     * @throws FormatException - if the file is of the wrong format
+     * @throws FormatException - if the file data is of the wrong format
      */
     public void importFile(File _file) throws IOException, FormatException {
         if (file != null) {
             closeFile(); // close previously open file
         }
         file = _file;
-        bReader = new BufferedReader(new FileReader(file));
-        bWriter = new BufferedWriter(new FileWriter(file, true)); // open in append mode
-        // Read data in to the member list
-        lines.clear(); // discard previous data, if present
-        String line;
-        while ((line = bReader.readLine()) != null) {
-            lines.add(line); // read data in to member list
+        try {
+            bReader = new BufferedReader(new FileReader(file));
+            bWriter = new BufferedWriter(new FileWriter(file, true)); // open in append mode
+            // Read data in to the member list
+            String line;
+            while ((line = bReader.readLine()) != null) {
+                lines.add(line); // read data in to member list
+            }      
+        }
+        catch (IOException ex) {
+            closeFile();
+            throw ex;
         }
         // Check that new data is valid
         String error;
         if ((error = invalidData(lines)) != null) {
+            closeFile();
             throw new FormatException (error);
         }
         // Check that the new data contains settings for DROP1, DROP2, WATCH and PICK
         if (!containsData(lines,"DROP1") || !containsData(lines,"DROP2") ||
             !containsData(lines,"WATCH") || !containsData(lines,"PICK")) {
-                throw new FormatException("Data file does not contain required "
-                        + "settings for DROP1,DROP2,WATCH and PICK.");
+            closeFile();
+            throw new FormatException("Data file does not contain required "
+                    + "settings for DROP1,DROP2,WATCH and PICK.");
         }
-        
     }
     
     
@@ -77,27 +84,35 @@ public class ArmDataController {
      * @param data - data string containing data name and angles
      * @throws IOException - if file is not open
      * @throws FormatException - if data argument is not of the right format
+     * @return - true if data was changed, else false.
      */
-    public void editDataItem(String data) throws IOException, FormatException{
+    public boolean editDataItem(String data) throws IOException, FormatException{
         if (!isValidDataString(data)) {
             throw new FormatException("Invalid data format.");
         }
         String dataName = findDataName(data);
         for (int i = 0; i < lines.size(); ++i) { // loop over all lines
             if (lines.get(i).equals(data)) { // data already exists
-                return; // nothing to do
+                return false; // nothing to do
             }
             if (lines.get(i).contains(dataName)) { // different data of same name exists
                 lines.set(i, data); // edit member list
                 updateFileWithList(); // write out changes
-                return;
+                return true;
             }
         }
         // data does not exist, add it
         lines.add(data);
-        bWriter.newLine();
-        bWriter.write(data);
-        bWriter.flush();
+        try {
+            bWriter.newLine();
+            bWriter.write(data);
+            bWriter.flush();            
+        }
+        catch (IOException ex) {
+            closeFile();
+            throw ex;
+        }
+        return true;
     }
     
     
@@ -109,13 +124,35 @@ public class ArmDataController {
      * @throws NotFoundException - specified data does not exist on the member 
      * list to delete it.
      */
-    public void removeDataItem(String data) throws IOException, NotFoundException {
+    public void removeDataItem(String data) throws IOException, NotFoundException, BadDeleteException {
+        if (!isValidDataString(data)) {
+            throw new NotFoundException("Data not found.");
+        }
         int delIdx = lines.indexOf(data);
         if (delIdx == -1) {
             throw new NotFoundException("Data not found.");
         }
+        String name = findDataName(data);
+        if (name.equals("DROP1") || name.equals("DROP2") || name.equals("WATCH") 
+            || name.equals("DEFAULT") || name.equals("PICK")) {
+            throw new BadDeleteException("DEFAULT,DROP1,DROP2,WATCH,PICK are "
+                    + "required settings");
+        }
         lines.remove(data); // edit member list
         updateFileWithList(); // write out changes
+    }
+    
+    
+    
+    public double[] getAnglesByName(String name) throws FormatException, NotFoundException {
+        String dataString;
+        if ((dataString = getDataString(lines,name)) != null) {
+            double[] angles = parseData(dataString);
+            return angles;
+        }
+        else {
+            throw new NotFoundException("Data not found.");
+        } 
     }
     
     
@@ -124,6 +161,7 @@ public class ArmDataController {
      */
     public void closeFile () {
         try {
+            lines.clear();
             bReader.close();
             bWriter.close();
             file = null;
@@ -156,9 +194,10 @@ public class ArmDataController {
         String angleData = findAngleString(data);
         String[] angleStringList = angleData.split(","); // list of angles
         double[] angles = new double[4];
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 3; ++i) {
             angles[i] = -Double.parseDouble(angleStringList[i])*PI/180;
         }
+        angles[3] = Double.parseDouble(angleStringList[3]); // gripper
         return angles;
     }
     
@@ -177,20 +216,26 @@ public class ArmDataController {
      * @throws IOException - if the data file is not open
      */
     private void updateFileWithList() throws IOException {
-        bWriter.close(); // close while in append mode
-        bWriter = new BufferedWriter(new FileWriter(file, false)); // reopen in overwrite mode
-        if (lines.size() > 0) {
-            bWriter.write(lines.get(0)); // write first line
+        try {
+            bWriter.close(); // close while in append mode
+            bWriter = new BufferedWriter(new FileWriter(file, false)); // reopen in overwrite mode
+            if (lines.size() > 0) {
+                bWriter.write(lines.get(0)); // write first line
+            }
+            bWriter.flush();
+            bWriter.close(); // close while in overwrite mode
+            bWriter = new BufferedWriter(new FileWriter(file, true)); // reopen in append mode
+            for (int i = 1; i < lines.size(); ++i) { // append rest of lines
+                bWriter.newLine();
+                bWriter.write(lines.get(i));
+            }
+            bWriter.flush();
+            bReader = new BufferedReader(new FileReader(file)); // reinitialize reader
         }
-        bWriter.flush();
-        bWriter.close(); // close while in overwrite mode
-        bWriter = new BufferedWriter(new FileWriter(file, true)); // reopen in append mode
-        for (int i = 1; i < lines.size(); ++i) { // append rest of lines
-            bWriter.newLine();
-            bWriter.write(lines.get(i));
+        catch (IOException ex) {
+            closeFile();
+            throw ex;
         }
-        bWriter.flush();
-        bReader = new BufferedReader(new FileReader(file)); // reinitialize reader
     }
     
     
@@ -210,6 +255,24 @@ public class ArmDataController {
             }
         }
         return false;
+    }
+    
+    
+    /**
+     * Retrieve the data string inside a list, given the name. Assume data is 
+     * of the correct format and no duplicates are present.
+     * @param data
+     * @param name
+     * @return 
+     */
+    private String getDataString(List<String> data, String name) {
+        for (String line : data) {
+            String dataName = findDataName(line);
+            if (dataName.equals(name)) {
+                return line;
+            }
+        }
+        return null;
     }
     
     
@@ -251,7 +314,11 @@ public class ArmDataController {
      * @return - true if data is of the right format
      */
     private boolean isValidDataString(String data) {
-        String regex = "\\w+:-?[0-9]{1,3},-?[0-9]{1,3},-?[0-9]{1,3},-?[0-9]{1,3}"; 
+        // valid string has form: "dataName:ang1,ang2,ang3,ang4"
+        if (data == null) {
+            return false;
+        }
+        String regex = "\\w+:(-?[0-9]{1,3}(\\.[0-9])?,){3}-?[0-9]{1,3}(\\.[0-9])?"; 
         Pattern pattern = Pattern.compile(regex);
         Matcher m = pattern.matcher(data);
         return m.matches();

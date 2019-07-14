@@ -20,21 +20,15 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.embed.swing.SwingNode?>
 
-<!--<GridPane fx:id="gridPane" alignment="center" styleClass="root"
-          prefWidth="${screen.visualBounds.width}" 
-          prefHeight="${screen.visualBounds.height}" 
-          xmlns:fx="http://javafx.com/fxml/1" 
-          fx:controller="UI.MainFxmlController">-->
+<?import UI.TrackingSpinner?>
 
-<GridPane fx:id="gridPane" alignment="center" maxWidth="1300.0" prefHeight="720.0" styleClass="root" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.1" fx:controller="UI.MainFxmlController">        
+<GridPane fx:id="gridPane" alignment="center" prefWidth="1300.0" prefHeight="720.0" 
+          styleClass="root" xmlns:fx="http://javafx.com/fxml/1" 
+          fx:controller="UI.MainFxmlController"> 
     
     <stylesheets>
         <URL value="@mainfxml.css" />
     </stylesheets>
-    
-<!--    <fx:define>
-        <Screen fx:factory="getPrimary" fx:id="screen"/>
-    </fx:define>-->
     
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="25" />
@@ -127,7 +121,7 @@
                 <Button fx:id="watchPositionButton" onAction="#watchPositionButtonPressed" text="Watch" />
                 <Button fx:id="pickPositionButton" onAction="#pickPositionButtonPressed" text="Pick" />
                 <ToggleButton fx:id="seg3DownButton" onAction="#seg3DownButtonPressed" text="Seg3Down" />
-                <Spinner fx:id="seg3DownOffsetPicker" onMouseClicked="#seg3DownOffsetPickerClicked" prefHeight="30" prefWidth="55" />
+                <Spinner fx:id="seg3DownOffsetPicker" onMouseClicked="#seg3DownOffsetPickerClicked" prefHeight="30" prefWidth="65" />
             </HBox>
             <Group>
                 <Circle id="Armrange" centerX="250" centerY="250" radius="150" />
