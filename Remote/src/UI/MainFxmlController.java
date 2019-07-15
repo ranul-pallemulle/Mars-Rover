@@ -7,6 +7,7 @@ package UI;
 
 import Backend.JoystickController;
 import Backend.ArmDataController;
+import Backend.Connection;
 import Backend.RoboticArmController;
 import Exceptions.BadDeleteException;
 import Exceptions.FormatException;
@@ -19,6 +20,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javax.swing.SwingUtilities;
 import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
@@ -38,7 +40,6 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.stage.Stage;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
@@ -85,6 +86,7 @@ public class MainFxmlController implements Initializable {
     private RoboticArmController armController; // logic for robotic arm
     private ArmDataController armDataController; // logic for data file handling
     private ArrayList<Runnable> runAfterInitList; // run after UI initialisation
+    private Connection connection; // connection to rover
     
     
     /**
@@ -104,13 +106,11 @@ public class MainFxmlController implements Initializable {
         armConnectButton.setDisable(true);
         limitsButton.setSelected(true); // limits should be active by default
         sumLimitsButton.setSelected(true);
-        runAfterInitList.add(new Runnable () { // simulate limits button presses
-            @Override
-            public void run() {
-               limitsButtonPressed();
-               sumLimitsButtonPressed();
-            }
-        });
+        runAfterInitList.add((Runnable) () -> {
+            limitsButtonPressed();
+            sumLimitsButtonPressed();
+        } // simulate limits button presses
+        );
         seg3DownOffsetPicker.setValueFactory(
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(-15,15,0));
         seg3DownOffsetPicker.setDisable(true);
@@ -128,13 +128,10 @@ public class MainFxmlController implements Initializable {
                 positionEditor.getItems().add(item);
             } 
         } catch (IOException | FormatException ex) {
-            runAfterInitList.add(new Runnable() {
-                @Override
-                public void run() {
-                    Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
-                    alert.setHeaderText("Cannot Load Data File.");
-                    alert.showAndWait();
-                }
+            runAfterInitList.add((Runnable) () -> {
+                Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.setHeaderText("Cannot Load Data File.");
+                alert.showAndWait();
             });  
         }
         
@@ -162,10 +159,11 @@ public class MainFxmlController implements Initializable {
         double[] armY = {250,250,250,250};
         double[] armT = {0,0,0}; // angles
         armController = new RoboticArmController(armX,armY,armT);
+        
+        // initialise connection
+        connection = new Connection();
     }
     
-    
-
     
     /**
      * Event handler for when connectRoverButton is pressed.
@@ -185,12 +183,26 @@ public class MainFxmlController implements Initializable {
                             "Please wait until a connection is established "
                           + "with the rover.");
             alert.setHeaderText("Connecting...");
-            alert.show();
             // Connecting ...
-            // Connected
-            if (alert.isShowing()) {
-                alert.close();
-            }            
+            Platform.runLater(()-> {
+                try {
+                    connection.open(selectedIpAddress, 5560);
+                } catch (IOException ex) {
+                    if (alert.isShowing()) {
+                        alert.close();
+                    }
+                    Alert conn_alert = new Alert(AlertType.ERROR, ex.getMessage());
+                    conn_alert.setHeaderText("Cannot connect.");
+                    conn_alert.show();
+                    connectRoverButton.setSelected(false);
+                    return;
+                }
+                // Connected
+                if (alert.isShowing()) {
+                    alert.close();
+                }
+            });
+            alert.showAndWait();
             setButtonsOnConnectionActivated();
         }
         else {
