@@ -268,6 +268,7 @@ public class MainFxmlController implements Initializable {
                 connection.sendWithDelay("START JOYSTICK 5562",1);
                 joyController.getConnection().open("localhost", 5562, 2);
             } catch (IOException ex) {
+                connection.sendWithDelay("STOP JOYSTICK",1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
                 alert.setHeaderText("Cannot Enable Joystick.");
                 alert.show();
@@ -288,10 +289,8 @@ public class MainFxmlController implements Initializable {
             try {
                 connection.sendWithDelay("START ROBOTICARM 5563",1);
                 armController.getConnection().open("localhost", 5563, 2);
-                // double [] angles = armController.getServoAngles();
-                // double gripval = armController.getGripperValue();
-                // armController.moveByServoAngles(angles[0], angles[1], angles[2], gripval);
             } catch (IOException ex) {
+                connection.sendWithDelay("STOP ROBOTICARM", 1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
                 alert.setHeaderText("Cannot Enable Robotic Arm.");
                 alert.show();
@@ -836,11 +835,11 @@ public class MainFxmlController implements Initializable {
     }
     
     private void onJoyDisconnected(Exception e) {
-        
+    
     }
     
     private void onArmDisconnected(Exception e) {
-        
+    
     }
     
     
