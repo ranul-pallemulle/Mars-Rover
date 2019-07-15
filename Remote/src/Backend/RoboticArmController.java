@@ -5,6 +5,7 @@
  */
 package Backend;
 
+import java.io.IOException;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.acos;
@@ -12,6 +13,9 @@ import static java.lang.Math.asin;
 import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -35,6 +39,8 @@ public class RoboticArmController {
     private double[] armT; // arm servo angles
     private double gripper_val; // gripper setting value
     
+    private Connection connection;
+    
     
     public RoboticArmController(double[] x, double[] y, double[] theta) {
         armX = x;
@@ -51,6 +57,10 @@ public class RoboticArmController {
         lim_elbow = 120 * PI/180;
         lim_top = 120 * PI/180;
         lim_sum = 180 * PI/180;
+    }
+    
+    public void initialiseConnection(Consumer<Exception> c) {
+        connection = new Connection(c);
     }
     
     
@@ -73,6 +83,11 @@ public class RoboticArmController {
         boolean success = setAngles(base_ang, armT[1], top_ang, gripper_val);
         if (success) {
             forwardKinematics();
+            if (connection.isActive()) {
+                String data = String.format("%d,%d,%d,%d", 
+                    (int)(gripper_val),(int)(-armT[2]*180/PI), (int)(-armT[1]*180/PI), (int)(-armT[0]*180/PI));
+                connection.send(data);
+            }
         }
         return success;
     }
@@ -104,6 +119,11 @@ public class RoboticArmController {
         
         if (success) {
             forwardKinematics();
+            if (connection.isActive()) {
+                String data = String.format("%d,%d,%d,%d", 
+                    (int)(gripper_val),(int)(-armT[2]*180/PI), (int)(-armT[1]*180/PI), (int)(-armT[0]*180/PI));
+                connection.send(data);
+            }
         }
         return success;
     }
@@ -146,6 +166,11 @@ public class RoboticArmController {
         boolean success = setAngles(base_ang, elbow_ang, top_ang, gripper_val);
         if (success) {
             forwardKinematics();
+            if (connection.isActive()) {
+                String data = String.format("%d,%d,%d,%d", 
+                    (int)(gripper_val),(int)(-armT[2]*180/PI), (int)(-armT[1]*180/PI), (int)(-armT[0]*180/PI));
+                connection.send(data);
+            }
         }
         return success;
     }
@@ -164,12 +189,22 @@ public class RoboticArmController {
         boolean success = setAngles(base, elbow, top, gripper);
         if (success) {
             forwardKinematics();
+            if (connection.isActive()) {
+                String data = String.format("%d,%d,%d,%d", 
+                    (int)(gripper_val),(int)(-armT[2]*180/PI), (int)(-armT[1]*180/PI), (int)(-armT[0]*180/PI));
+                connection.send(data);
+            }
         }
         return success;
     }
     
      public void moveGripper(double value) {
         gripper_val = value;
+        if (connection.isActive()) {
+            String data = String.format("%d,%d,%d,%d", 
+                (int)(gripper_val),(int)(-armT[2]*180/PI), (int)(-armT[1]*180/PI), (int)(-armT[0]*180/PI));
+            connection.send(data);
+        }
     }
 
     
@@ -282,6 +317,10 @@ public class RoboticArmController {
     
     public double getSeg3DownAngle() {
         return seg3down_ang;
+    }
+    
+    public Connection getConnection() {
+        return connection;
     }
     
     

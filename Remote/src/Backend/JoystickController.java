@@ -8,6 +8,7 @@ package Backend;
 import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
+import java.util.function.Consumer;
 
 /**
  *
@@ -24,12 +25,18 @@ public class JoystickController {
     // maximum radial displacement possible
     private double max_rad;
     
+    private Connection connection;
+    
     public JoystickController(double _max_rad) {
         joy_x = 0;
         joy_y = 0;
         max_rad = _max_rad;
         click_x = 0;
         click_y = 0;
+    }
+    
+    public void initialiseConnection(Consumer<Exception> e) {
+        connection = new Connection(e);
     }
     
     public void setMouseclickPosition(double x, double y) {
@@ -59,11 +66,19 @@ public class JoystickController {
         // set to new position
         joy_x = joy_newx;
         joy_y = joy_newy;
+            if (connection.isActive()) {
+                String data = String.format("%d,%d", (int)joy_x, (int)joy_y);
+                connection.send(data);
+            }
     }
     
     public void returnToCenter() {
         joy_x = 0;
         joy_y = 0;
+        if (connection.isActive()) {
+            String data = String.format("%d,%d", (int)joy_x, (int)joy_y);
+            connection.send(data);
+        }
     }
     
     public double getX() {
@@ -72,5 +87,9 @@ public class JoystickController {
     
     public double getY() {
         return joy_y;
+    }
+    
+    public Connection getConnection() {
+        return connection;
     }
 }

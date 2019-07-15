@@ -161,14 +161,24 @@ public class MainFxmlController implements Initializable {
         // initialise joystick controller
         double max_rad = joyBackCircle.getRadius() - joyFrontCircle.getRadius();
         joyController = new JoystickController(max_rad);
+        joyController.initialiseConnection((Consumer<Exception>)(e)->{
+            Platform.runLater(()->{
+                onJoyDisconnected(e);
+            });
+        });
         
         // initialise robotic arm controller
         double[] armX = {250,300,350,400}; // initial coordinates for arm
         double[] armY = {250,250,250,250};
         double[] armT = {0,0,0}; // angles
         armController = new RoboticArmController(armX,armY,armT);
+        armController.initialiseConnection((Consumer<Exception>)(e)->{
+            Platform.runLater(()->{
+                onArmDisconnected(e);
+            });
+        });
         
-        // initialise connection
+        // initialise main connection
         connection = new Connection((Consumer<Exception>)(e)->{
             Platform.runLater(()->{
                 onRoverDisconnected(e);
@@ -227,11 +237,11 @@ public class MainFxmlController implements Initializable {
             // user may cancel connection using the alert
             alert.showAndWait().ifPresent(response -> {
                 if (response == cancelButton) {
-                        connection.close();
+                    connection.close();
                 }
             });
         }
-        else {
+        else { // connectRoverButton deselected
             Alert alert = new Alert(AlertType.INFORMATION,
                             "Please wait until the rover is disconnected.");
             alert.setHeaderText("Disconnecting...");
@@ -254,12 +264,18 @@ public class MainFxmlController implements Initializable {
      */
     public void joyConnectButtonPressed () {
         if (joyConnectButton.isSelected()) {
-            // Connecting joystick ...
-            // Connected
+            try {
+                connection.sendWithDelay("START JOYSTICK 5562",1);
+                joyController.getConnection().open("localhost", 5562, 2);
+            } catch (IOException ex) {
+                Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.setHeaderText("Cannot Enable Joystick.");
+                alert.show();
+                joyConnectButton.setSelected(false);
+            }
         }
         else {
-            // Disconnecting joystick ...
-            // Disconnected
+            joyController.getConnection().close();
         }
     }
     
@@ -269,12 +285,21 @@ public class MainFxmlController implements Initializable {
      */
     public void armConnectButtonPressed () {
         if (armConnectButton.isSelected()) {
-            // Connecting arm ...
-            // Connected
+            try {
+                connection.sendWithDelay("START ROBOTICARM 5563",1);
+                armController.getConnection().open("localhost", 5563, 2);
+                // double [] angles = armController.getServoAngles();
+                // double gripval = armController.getGripperValue();
+                // armController.moveByServoAngles(angles[0], angles[1], angles[2], gripval);
+            } catch (IOException ex) {
+                Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.setHeaderText("Cannot Enable Robotic Arm.");
+                alert.show();
+                armConnectButton.setSelected(false);
+            }
         }
         else {
-            // Disconnecting arm ...
-            // Disconnected
+            armController.getConnection().close();
         }
     }
     
@@ -808,6 +833,14 @@ public class MainFxmlController implements Initializable {
         Alert conn_alert = new Alert(AlertType.ERROR, e.getMessage());
         conn_alert.setHeaderText("Disconnected");
         conn_alert.showAndWait();
+    }
+    
+    private void onJoyDisconnected(Exception e) {
+        
+    }
+    
+    private void onArmDisconnected(Exception e) {
+        
     }
     
     
