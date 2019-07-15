@@ -85,6 +85,8 @@ python3 start_rover.py <port> <settings>")
                 dg.print(str(e))
                 cleanup()
                 sys.exit(1)
+            if result[0] == "PING": # ping request received
+                continue # already ACKed
             action_thread = Thread(target=call_action,args=[result])
             action_thread.start() # carry out action directed by the received
                                   # command, in a separate thread.

@@ -30,6 +30,9 @@ def parse_entry(command_string):
     arg_list = command_string.split(' ')
     if arg_list.count('') > 0:
         raise CommandError("Command has extra spaces or is empty")
+    if arg_list[0] == "PING":
+        parsed_list.append(arg_list[0])
+        return parsed_list
     if is_opmode(arg_list[0]):
         if arg_list[1] == '->':
             parsed_list.append(get_opmode_enum_val(arg_list[0]).name)
