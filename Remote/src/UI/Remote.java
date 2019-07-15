@@ -6,6 +6,7 @@
 package UI;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -43,7 +44,7 @@ public class Remote extends Application{
         stage.setScene(scene);
         stage.setResizable(true);
         
-        // stage.setOnCloseRequest(e->handleExit(controller));
+        stage.setOnCloseRequest(e->handleExit(controller));
         
         // stage.setFullScreen(true);
         stage.setOnShown(new EventHandler<WindowEvent>() {
@@ -54,6 +55,11 @@ public class Remote extends Application{
         });
         
         stage.show();
+    }
+    
+    public void handleExit(MainFxmlController controller) {
+        Platform.exit();
+        System.exit(0);
     }
     
 }

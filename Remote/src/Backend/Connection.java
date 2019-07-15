@@ -11,6 +11,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -21,24 +25,28 @@ public class Connection {
     private Socket socket;
     private BufferedReader input;
     private DataOutputStream output;
+    private Consumer<Exception> onConnectionLoss;
     
-    public void open(String IP, int port) throws IOException {
+    public Connection(Consumer<Exception> run_on_connection_loss) {
+        onConnectionLoss = run_on_connection_loss;
+    }
+    
+    public void open(String IP, int port, int timeout) throws IOException {
         socket = new Socket();
-        socket.connect(new InetSocketAddress(IP,port),5000); // 5 second timeout
+        socket.setSoTimeout(timeout*1000); // timeout on read operations
+        socket.connect(new InetSocketAddress(IP,port),timeout*1000);
         input = new BufferedReader(
                 new InputStreamReader(socket.getInputStream()));
         output = new DataOutputStream(socket.getOutputStream());
     }
     
-    public void close() throws IOException {
-        if (output != null) {
-            output.close();
-        }
-        if (input != null) {
-            input.close();
-        }
+    public void close() {
         if (socket != null) {
-            socket.close();
+            try {
+                socket.close();
+            } catch (IOException ex) {
+                // ignore
+            }
         }
     }
     
@@ -46,5 +54,21 @@ public class Connection {
         byte[] bytes = data.getBytes();
         output.write(bytes);
         return input.readLine() != null;
+    }
+    
+    public void startPing() {
+        new Thread(() -> {
+            try {
+                while (true) {
+                    output.write("PING".getBytes());
+                    input.readLine();
+                    TimeUnit.SECONDS.sleep(1);
+                }
+            } catch (IOException ex) { // connection error or read timeout
+                onConnectionLoss.accept(ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }).start();
     }
 }

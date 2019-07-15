@@ -16,10 +16,16 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import static java.lang.Math.PI;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.nio.channels.IllegalBlockingModeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javax.swing.SwingUtilities;
 import javafx.embed.swing.SwingNode;
@@ -28,6 +34,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -118,7 +126,7 @@ public class MainFxmlController implements Initializable {
         
         // initialise arm data controller and try to open the default file
         armDataController = new ArmDataController();
-        String default_file = "example_data_bad2.dat";
+        String default_file = "example_data.dat";
         try {
             armDataController.importFile(new File(default_file)); 
             dataFileTextField.setText(default_file);
@@ -161,7 +169,11 @@ public class MainFxmlController implements Initializable {
         armController = new RoboticArmController(armX,armY,armT);
         
         // initialise connection
-        connection = new Connection();
+        connection = new Connection((Consumer<Exception>)(e)->{
+            Platform.runLater(()->{
+                onRoverDisconnected(e);
+            });
+        });
     }
     
     
@@ -179,43 +191,60 @@ public class MainFxmlController implements Initializable {
                 connectRoverButton.setSelected(false);
                 return;
             }
+            ButtonType cancelButton = new ButtonType(
+                    "Cancel", ButtonBar.ButtonData.YES);
             Alert alert = new Alert(AlertType.INFORMATION, 
                             "Please wait until a connection is established "
-                          + "with the rover.");
+                          + "with the rover.", cancelButton);
             alert.setHeaderText("Connecting...");
-            // Connecting ...
-            Platform.runLater(()-> {
+            // Connect in a new thread, allow user to cancel in main thread
+            new Thread(()-> {
                 try {
-                    connection.open(selectedIpAddress, 5560);
+                    connection.open("localhost", 5560, 2); // 2 second timeout
+                    Platform.runLater(()->{
+                        setButtonsOnConnectionActivated();
+                        if (alert.isShowing()) {
+                            alert.close();
+                        }
+                    });
+                    connection.startPing();
                 } catch (IOException ex) {
-                    if (alert.isShowing()) {
-                        alert.close();
-                    }
-                    Alert conn_alert = new Alert(AlertType.ERROR, ex.getMessage());
-                    conn_alert.setHeaderText("Cannot connect.");
-                    conn_alert.show();
-                    connectRoverButton.setSelected(false);
-                    return;
-                }
-                // Connected
-                if (alert.isShowing()) {
-                    alert.close();
+                    Platform.runLater(()->{
+                        if (alert.isShowing()) {
+                            alert.close();
+                        }
+                        if (!(alert.getResult()==cancelButton)) {
+                            // error isn't cancellation of connection opening
+                            Alert conn_alert = new Alert(AlertType.ERROR, 
+                                                         ex.getMessage());
+                            conn_alert.setHeaderText("Cannot connect.");
+                            conn_alert.show();
+                        }
+                        connectRoverButton.setSelected(false);
+                    });
+                } 
+            }).start();
+            // user may cancel connection using the alert
+            alert.showAndWait().ifPresent(response -> {
+                if (response == cancelButton) {
+                        connection.close();
                 }
             });
-            alert.showAndWait();
-            setButtonsOnConnectionActivated();
         }
         else {
             Alert alert = new Alert(AlertType.INFORMATION,
                             "Please wait until the rover is disconnected.");
             alert.setHeaderText("Disconnecting...");
-            alert.show();
-            // Disconnecting ...
-            // Disconnected
-            if (alert.isShowing()) {
-                alert.close();
-            }
-            setButtonsOnConnectionDeactivated();
+            new Thread(()->{
+                connection.close();
+                Platform.runLater(()->{
+                    if (alert.isShowing()) {
+                        alert.close();
+                    }
+                    setButtonsOnConnectionDeactivated();
+                });
+            }).start();
+            alert.showAndWait();
         }
     }
     
@@ -767,6 +796,18 @@ public class MainFxmlController implements Initializable {
         autoGoalSelector.setDisable(true);
         autoGoalSelector.getSelectionModel().clearSelection();
         ipSelector.setDisable(false);
+    }
+    
+    
+    private void onRoverDisconnected(Exception e) {
+        if (!connectRoverButton.isSelected()) {
+            return; // no error, we chose to disconnect
+        }
+        setButtonsOnConnectionDeactivated();
+        connectRoverButton.setSelected(false);
+        Alert conn_alert = new Alert(AlertType.ERROR, e.getMessage());
+        conn_alert.setHeaderText("Disconnected");
+        conn_alert.showAndWait();
     }
     
     
