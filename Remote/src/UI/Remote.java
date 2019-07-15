@@ -20,34 +20,40 @@ import org.freedesktop.gstreamer.Gst;
  */
 public class Remote extends Application{
     
+    private static Stage stage;
+    
     public static void main(String[] args) {
         Gst.init("Remote",args);
         launch(args);
     }
+    
+    public static Stage getStage() {
+        return stage;
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        stage = primaryStage;
         final FXMLLoader loader = new FXMLLoader(getClass().getResource("MainFxml.fxml"));
         final Parent root = (Parent) loader.load();
         final MainFxmlController controller = loader.<MainFxmlController>getController();   
         
         Scene scene = new Scene(root);
-        primaryStage.setTitle("ICSS Rover");
-        primaryStage.setScene(scene);
-        primaryStage.setResizable(true);
-        controller.setCurrentStage(primaryStage);
+        stage.setTitle("ICSS Rover");
+        stage.setScene(scene);
+        stage.setResizable(true);
         
-        // primaryStage.setOnCloseRequest(e->handleExit(controller));
+        // stage.setOnCloseRequest(e->handleExit(controller));
         
-        // primaryStage.setFullScreen(true);
-        primaryStage.setOnShown(new EventHandler<WindowEvent>() {
+        // stage.setFullScreen(true);
+        stage.setOnShown(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
                 controller.runAfterInit();
             }
-            
         });
-        primaryStage.show();
+        
+        stage.show();
     }
     
 }

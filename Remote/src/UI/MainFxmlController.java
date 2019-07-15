@@ -81,15 +81,10 @@ public class MainFxmlController implements Initializable {
     @FXML private ToggleButton seg3DownButton;
     @FXML private Spinner<Integer> seg3DownOffsetPicker;
     
-    private String gstPipeline;
-    private Stage primaryStage;
-    private JoystickController joyController;
-    private RoboticArmController armController;
-    private ArmDataController armDataController;
-    private ArrayList<Runnable> runAfterInitList;
-    
-    
-    /// public methods ///
+    private JoystickController joyController; // logic for joystick
+    private RoboticArmController armController; // logic for robotic arm
+    private ArmDataController armDataController; // logic for data file handling
+    private ArrayList<Runnable> runAfterInitList; // run after UI initialisation
     
     
     /**
@@ -99,54 +94,31 @@ public class MainFxmlController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // initialise joystick controller
-        double max_rad = joyBackCircle.getRadius() - joyFrontCircle.getRadius();
-        joyController = new JoystickController(max_rad);
-        
-        // initialise robotic arm controller
-        double[] armX = {250,300,350,400};
-        double[] armY = {250,250,250,250};
-        double[] armT = {0,0,0};
-        armController = new RoboticArmController(armX,armY,armT);
-        
+        // methods on this list are run after the UI is done initialising
+        runAfterInitList = new ArrayList<>();
+
         // initialise joystick connect button
         joyConnectButton.setDisable(true);
         
         // initialise arm control buttons
         armConnectButton.setDisable(true);
         limitsButton.setSelected(true); // limits should be active by default
-        limitsButtonPressed();
         sumLimitsButton.setSelected(true);
-        sumLimitsButtonPressed();
+        runAfterInitList.add(new Runnable () { // simulate limits button presses
+            @Override
+            public void run() {
+               limitsButtonPressed();
+               sumLimitsButtonPressed();
+            }
+        });
         seg3DownOffsetPicker.setValueFactory(
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(-15,15,0));
-        
-        // initialise ipSelector
-        ipSelector.getItems().setAll("WiFi","Ethernet","Local");
-        
-        
-        // initialise video connect button and screen
-        vidConnectButton.setDisable(true); // cannot activate until connected
-        createVideoScreen(videoScreen);
-        
-        // initialise auto mode buttons and selector
-        autoGoalEnableButton.setDisable(true);
-        autoGoalDisableButton.setDisable(true);
-        autoGoalDisableAllButton.setDisable(true);
-        autoGoalSelector.getItems().setAll(
-                "Collect Samples","Stream Object Detection");
-        autoGoalSelector.setDisable(true);
-        
-        // initialise combo boxes
+        seg3DownOffsetPicker.setDisable(true);
         positionEditor.getEditor().setText(":0.0,0.0,0.0,0.0");
         
-        // initialise spinner
-        seg3DownOffsetPicker.setDisable(true);
-        
         // initialise arm data controller and try to open the default file
-        runAfterInitList = new ArrayList<>();
         armDataController = new ArmDataController();
-        String default_file = "example_data.dat";
+        String default_file = "example_data_bad2.dat";
         try {
             armDataController.importFile(new File(default_file)); 
             dataFileTextField.setText(default_file);
@@ -163,23 +135,41 @@ public class MainFxmlController implements Initializable {
                     alert.setHeaderText("Cannot Load Data File.");
                     alert.showAndWait();
                 }
-            });
-            
+            });  
         }
-
+        
+        // initialise ipSelector
+        ipSelector.getItems().setAll("WiFi","Ethernet","Local");
+               
+        // initialise video connect button and screen
+        vidConnectButton.setDisable(true); // cannot activate until connected
+        createVideoScreen(videoScreen);
+        
+        // initialise auto mode buttons and selector
+        autoGoalEnableButton.setDisable(true);
+        autoGoalDisableButton.setDisable(true);
+        autoGoalDisableAllButton.setDisable(true);
+        autoGoalSelector.getItems().setAll(
+                "Collect Samples","Stream Object Detection");
+        autoGoalSelector.setDisable(true);
+        
+        // initialise joystick controller
+        double max_rad = joyBackCircle.getRadius() - joyFrontCircle.getRadius();
+        joyController = new JoystickController(max_rad);
+        
+        // initialise robotic arm controller
+        double[] armX = {250,300,350,400}; // initial coordinates for arm
+        double[] armY = {250,250,250,250};
+        double[] armT = {0,0,0}; // angles
+        armController = new RoboticArmController(armX,armY,armT);
     }
     
+    
+
     
     /**
-     * Run all methods in runAfterInitList. This method is to be called by the 
-     * main function when the stage is showing.
+     * Event handler for when connectRoverButton is pressed.
      */
-    public void runAfterInit() {
-        for (Runnable method : runAfterInitList) {
-            method.run();
-        }
-    }
-    
     public void connectRoverButtonPressed () {
         if (connectRoverButton.isSelected()) {
             String selectedIpAddress = ipSelector.getValue();
@@ -201,14 +191,7 @@ public class MainFxmlController implements Initializable {
             if (alert.isShowing()) {
                 alert.close();
             }            
-            joyConnectButton.setDisable(false);
-            armConnectButton.setDisable(false);
-            vidConnectButton.setDisable(false);
-            autoGoalEnableButton.setDisable(false);
-            autoGoalDisableButton.setDisable(false);
-            autoGoalDisableAllButton.setDisable(true); // initially disabled
-            autoGoalSelector.setDisable(false);
-            ipSelector.setDisable(true);
+            setButtonsOnConnectionActivated();
         }
         else {
             Alert alert = new Alert(AlertType.INFORMATION,
@@ -220,18 +203,14 @@ public class MainFxmlController implements Initializable {
             if (alert.isShowing()) {
                 alert.close();
             }
-            joyConnectButton.setDisable(true);
-            armConnectButton.setDisable(true);
-            vidConnectButton.setDisable(true);
-            autoGoalEnableButton.setDisable(true);
-            autoGoalDisableButton.setDisable(true);
-            autoGoalDisableAllButton.setDisable(true);
-            autoGoalSelector.setDisable(true);
-            autoGoalSelector.getSelectionModel().clearSelection();
-            ipSelector.setDisable(false);
+            setButtonsOnConnectionDeactivated();
         }
     }
     
+    
+    /**
+     * Event handler for when joyConnectButton is pressed
+     */
     public void joyConnectButtonPressed () {
         if (joyConnectButton.isSelected()) {
             // Connecting joystick ...
@@ -243,6 +222,10 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    
+    /**
+     * Event handler for when armConnectButton is pressed
+     */
     public void armConnectButtonPressed () {
         if (armConnectButton.isSelected()) {
             // Connecting arm ...
@@ -254,6 +237,10 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    
+    /**
+     * Event handler for when vidConnectButton is pressed
+     */
     public void vidConnectButtonPressed () {
         if (vidConnectButton.isSelected()) {
             // Connecting video ...
@@ -265,17 +252,30 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    
+    /**
+     * Event handler for when autoGoalEnableButton is pressed
+     */
     public void autoGoalEnableButtonPressed () {
         
     }
     
+    
+    /**
+     * Event handler for when autoGoalDisableButton is pressed
+     */
     public void autoGoalDisableButtonPressed () {
         
     }
     
+    
+    /**
+     * Event handler for when autoGoalDisableAllButton is pressed
+     */
     public void autoGoalDisableAllButtonPressed () {
         
     }
+    
     
     /**
      * Event handler for mouse press on joystick.
@@ -284,6 +284,7 @@ public class MainFxmlController implements Initializable {
     public void pressCoordsJoystick (MouseEvent e) {
         joyController.setMouseclickPosition(e.getX(), e.getY());
     }
+    
     
     /**
      * Event handler for when mouse is released after dragging joystick.
@@ -299,6 +300,7 @@ public class MainFxmlController implements Initializable {
         dispJoyY.setText(String.format("%.1f", newy));
     }
     
+    
     /**
      * Event handler for when mouse is dragged on joystick.
      * @param e
@@ -312,6 +314,7 @@ public class MainFxmlController implements Initializable {
         dispJoyX.setText(String.format("%.1f",newx));
         dispJoyY.setText(String.format("%.1f",-newy));
     }
+    
     
     /**
      * Event handler for when the gripper slider is moved
@@ -332,6 +335,7 @@ public class MainFxmlController implements Initializable {
         setArmGui();
     }
     
+    
     /**
      * Event handler for when gripperButton is pressed
      */
@@ -351,6 +355,7 @@ public class MainFxmlController implements Initializable {
         setArmGui();
     }
     
+    
     /**
      * Event handler for when the first arm joint is dragged
      * @param e 
@@ -363,6 +368,7 @@ public class MainFxmlController implements Initializable {
             setArmLimitColours(true);
         }
     }
+    
     
     /**
      * Event handler for when the second arm joint is dragged
@@ -377,6 +383,7 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    
     /**
      * Event handler for when the final joint is dragged
      * @param e 
@@ -389,6 +396,7 @@ public class MainFxmlController implements Initializable {
             setArmLimitColours(true);
         }
     }
+    
     
     /**
      * Event handler for when limitsButton is pressed.
@@ -406,6 +414,10 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    
+    /**
+     * Event handler for when sumLimitsButton is pressed.
+     */
     public void sumLimitsButtonPressed() {
         if (sumLimitsButton.isSelected()) {
             armController.enableSumLimit(true);
@@ -415,6 +427,10 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    
+    /**
+     * Event handler for when positionSaveButton is pressed.
+     */
     public void positionSaveButtonPressed () {
         String data = positionEditor.getValue();
         try {
@@ -436,6 +452,10 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    
+    /**
+     * Event handler for when positionRemoveButton is pressed.
+     */
     public void positionRemoveButtonPressed () {
         String data = positionEditor.getValue();
         try {
@@ -455,6 +475,10 @@ public class MainFxmlController implements Initializable {
         
     }
     
+    
+    /**
+     * Event handler for when positionSetButton is pressed.
+     */
     public void positionSetButtonPressed () {
         String value;
         if ((value = positionSelector.getValue()) != null) {
@@ -481,26 +505,45 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    
+    /**
+     * Event handler for when drop1PositionButton is pressed.
+     */
     public void drop1PositionButtonPressed () {
         setAnglesByName("DROP1");
     }
     
+    
+    /**
+     * Event handler for when drop2PositionButton is pressed.
+     */
     public void drop2PositionButtonPressed () {
         setAnglesByName("DROP2");
     }
     
+    
+    /**
+     * Event handler for when watchPositionButton is pressed.
+     */
     public void watchPositionButtonPressed () {
         setAnglesByName("WATCH");
     }
     
+    
+    /**
+     * Event handler for when pickPositionButton is pressed.
+     */
     public void pickPositionButtonPressed () {
         setAnglesByName("PICK");
     }
     
+    
+    /**
+     * Event handler for when seg3DownButton is pressed.
+     */
     public void seg3DownButtonPressed () {
         if (seg3DownButton.isSelected()) {
-            boolean success = armController.enableSeg3Down(true);
-            if (!success) {
+            if (!armController.enableSeg3Down(true)) {
                 Alert alert = new Alert(AlertType.WARNING, 
                         "Enabling seg3Down in the current arm position would "
                       + "violate the angle limits. Disable angle limits to "
@@ -520,13 +563,16 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    
+    /**
+     * Event handler for when seg3DownOffsetPicker is clicked.
+     */
     public void seg3DownOffsetPickerClicked () {
         int value = seg3DownOffsetPicker.getValue();
         int backup = (int) 
                 ( 180/PI * (armController.getSeg3DownAngle() - PI/2) );
         double new_angle = (90 + value)*PI/180;
-        boolean success = armController.setSeg3DownAngle(new_angle);
-        if (!success) {
+        if (!armController.setSeg3DownAngle(new_angle)) {
             seg3DownOffsetPicker.getValueFactory().setValue(backup);
             Alert alert = new Alert(AlertType.WARNING, 
                         "Changing the seg3down angle in the current arm "
@@ -541,13 +587,17 @@ public class MainFxmlController implements Initializable {
         
     }
     
+    
+    /**
+     * Event handler for when dataFileOpenButton is pressed.
+     */
     public void dataFileOpenButtonPressed () {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Open Data File");
         chooser.setInitialDirectory(new File(System.getProperty("user.dir")));
         chooser.getExtensionFilters().add(new ExtensionFilter("Data files",
                                                               "*.dat"));
-        File file = chooser.showOpenDialog(primaryStage);
+        File file = chooser.showOpenDialog(Remote.getStage());
         if (file != null) {
             String filename = file.getName();
             dataFileTextField.setText(filename);
@@ -571,8 +621,16 @@ public class MainFxmlController implements Initializable {
         }
     }
     
-    public void setCurrentStage (Stage stage) {
-        primaryStage = stage;
+    /// public methods ///
+    
+    /**
+     * Run all methods in runAfterInitList. This method is to be called by the 
+     * main function when the stage is showing.
+     */
+    public void runAfterInit() {
+        for (Runnable method : runAfterInitList) {
+            method.run();
+        }
     }
     
     
@@ -587,7 +645,6 @@ public class MainFxmlController implements Initializable {
         double[] arm_x = armController.getXCoords();
         double[] arm_y = armController.getYCoords();
         double[] arm_T = armController.getServoAngles();
-        double gripper_val = armController.getGripperValue();
         armJoint1.setCenterX(arm_x[1]);
         armJoint1.setCenterY(arm_y[1]);
         armJoint2.setCenterX(arm_x[2]);
@@ -605,9 +662,9 @@ public class MainFxmlController implements Initializable {
         lineSeg3.setEndX(arm_x[3]);
         lineSeg3.setEndY(arm_y[3]);
         
+        double gripper_val = armController.getGripperValue();
         double endX = sliderLine.getEndX();
         double startX = sliderLine.getStartX();
-        
         sliderBall.setCenterX((gripper_val/90)*(endX-startX) + startX);
         
         setArmLimitColours(false);
@@ -621,6 +678,11 @@ public class MainFxmlController implements Initializable {
                 ":"+armT0Str+","+armT1Str+","+armT2Str+","+gripperStr);
     }
     
+    
+    /**
+     * Set the GUI arm based on named configurations found in the data file.
+     * @param name 
+     */
     private void setAnglesByName(String name) {
         try {
             double[] angles = armDataController.getAnglesByName(name);
@@ -645,6 +707,12 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    
+    /**
+     * Change the color of the GUI arm joints if the arm limits are preventing 
+     * it from moving to the requested location.
+     * @param yes - 
+     */
     private void setArmLimitColours(boolean yes) {
         if (yes) {
             armJoint1.setFill(Color.web("#FF0000"));
@@ -658,8 +726,45 @@ public class MainFxmlController implements Initializable {
         }
     }
     
-
+    
+    /**
+     * Enable/Disable buttons when connection to rover is activated
+     */
+    private void setButtonsOnConnectionActivated() {
+        joyConnectButton.setDisable(false);
+        armConnectButton.setDisable(false);
+        vidConnectButton.setDisable(false);
+        autoGoalEnableButton.setDisable(false);
+        autoGoalDisableButton.setDisable(false);
+        autoGoalDisableAllButton.setDisable(true); // initially disabled
+        autoGoalSelector.setDisable(false);
+        ipSelector.setDisable(true);
+    }
+    
+    
+    /**
+     * Enable/Disable buttons when connection to rover is deactivated
+     */
+    private void setButtonsOnConnectionDeactivated() {
+        joyConnectButton.setDisable(true);
+        armConnectButton.setDisable(true);
+        vidConnectButton.setDisable(true);
+        autoGoalEnableButton.setDisable(true);
+        autoGoalDisableButton.setDisable(true);
+        autoGoalDisableAllButton.setDisable(true);
+        autoGoalSelector.setDisable(true);
+        autoGoalSelector.getSelectionModel().clearSelection();
+        ipSelector.setDisable(false);
+    }
+    
+    
+    /**
+     * Initialize video screen using a GStreamer pipeline and set its 
+     * dimensions.
+     * @param swingNode - container to display video on
+     */
     private void createVideoScreen(final SwingNode swingNode) {
+        String gstPipeline;
         gstPipeline = "tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! "
                 + "rtph264depay ! avdec_h264 ! videoconvert ! capsfilter "
                 + "caps=video/x-raw,width=640,height=400";
@@ -679,5 +784,6 @@ public class MainFxmlController implements Initializable {
         vc.setPreferredSize(new Dimension(640,400));
         vc.setKeepAspect(true);
     }
+    
     
 }
