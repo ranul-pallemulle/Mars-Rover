@@ -7,6 +7,7 @@ class CommandPrefixes(Enum):
     START = 1
     STOP = 2
     PING = 3
+    SHUTDOWN = 4
 
 class CommandError(Exception):
     pass
@@ -32,7 +33,7 @@ def parse_entry(command_string):
     if arg_list.count('') > 0:
         raise CommandError("Command has extra spaces or is empty")
     if is_prefix(arg_list[0]): # is a command
-        if arg_list[0] == "PING": # the only one word command
+        if arg_list[0] == "PING" or arg_list[0] == "SHUTDOWN": # the only one word command
             parsed_list.append(arg_list[0])
             return parsed_list
         if len(arg_list) < 2:

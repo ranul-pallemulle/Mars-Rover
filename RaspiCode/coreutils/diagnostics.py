@@ -21,20 +21,27 @@ class Diagnostics:
 
     @classmethod
     def initialise(cls):
+        '''Begin diagnostics operation. If diagnostics is enabled in settings,
+        wait for a connection from remote.'''
         enabled = cfg.overall_config.diagnostics_enabled()
-        if not enabled:
+        if not enabled: # diagnostics connection won't be attempted
             return
         port = cfg.overall_config.diagnostics_port()
         thread = Thread(target=cls._make_socket_connection, args=[port])
         thread.start()
 
+
     @classmethod
     def _make_socket_connection(cls,port):
-        try:
-            cls.socket = TcpSocket(port)
-            cls.socket.set_max_recv_bytes(1024)
-        except TcpSocketError as e:
-            raise DiagnosticsError(str(e))
+        '''Run in separate thread - cannot raise exceptions. Call only in a
+        DiagState.CLOSED state - else will result in a warning and return.'''
+        with cls.state_lock: # prevent close() from running in this section
+            try:
+                cls.socket = TcpSocket(port)
+                cls.socket.set_max_recv_bytes(1024)
+            except TcpSocketError as e:
+                cls.print("Diagnostics connection error: "+str(e))
+                return
         cls.print("Waiting for diagnostics connection on port {}...".format(port))
         with cls.state_lock:
             cls.state = DiagState.PENDING
@@ -49,10 +56,16 @@ class Diagnostics:
             cls.state = DiagState.ESTABLISHED
         cls.print("Diagnostics connection established.")  
         thread = Thread(target=cls._detect_close, args=[])
-        thread.start()
+        thread.start() # release lock after thread started
+
 
     @classmethod
     def _detect_close(cls):
+        '''Run in separate thread - cannot raise exceptions. Call when in a 
+        DiagState.ESTABLISHED state. If the connection is closed during the 
+        time between going into the ESTABLISHED state and calling this 
+        function, this function will detect it and amend the state accordingly.
+        '''
         while True:
             try:
                 data = cls.socket.read()
@@ -67,9 +80,11 @@ class Diagnostics:
                 cls.print("Diagnostics closed by remote.")
                 return
 
+
     @classmethod
     def print(cls, msg):
-        '''Send a message on an established diagnostics connection. Does not raise exceptions - prints to console if exception occurs.'''
+        '''Send a message on an established diagnostics connection. Does not 
+        raise exceptions - prints only to console if exception occurs.'''
         print(msg)
         with cls.state_lock:
             if cls.state != DiagState.ESTABLISHED:
@@ -84,10 +99,16 @@ class Diagnostics:
                 cls.state = DiagState.CLOSED
             cls.print("Diagnostics connection lost.")
 
+
     @classmethod
     def close(cls):
         '''If diagnostics connection is pending, stop waiting for connection.'''
-        with cls.state_lock:
+        with cls.state_lock: # ensure that this block is not run concurrently 
+                             # with _make_socket_connection or with itself
             if cls.state == DiagState.PENDING or \
                 cls.state == DiagState.ESTABLISHED:
                 cls.socket.unblock()
+        while True: # wait till closed
+            with cls.state_lock:
+                if cls.state == DiagState.CLOSED:
+                    break;
