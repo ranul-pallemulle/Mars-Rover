@@ -1,4 +1,5 @@
 import sys
+import os
 from coreutils.diagnostics import Diagnostics as dg
 import coreutils.resource_manager as mgr
 import coreutils.configure as cfg
@@ -68,7 +69,9 @@ python3 start_rover.py <port> <settings>")
             if comm_str is None:
                 dg.print("Connection lost")
                 cleanup()
-                sys.exit(1)
+                # sys.exit(1)
+                sys.stdout.flush() # flush out data on open file descriptors
+                os.execvp("python3",["rover","start_rover.py","5560","laptop_settings.xml"])
             result = parse_entry(comm_str) # command received; interpret it
         except TcpSocketError as e:        # connection error occurred
             dg.print(str(e))
@@ -86,7 +89,7 @@ python3 start_rover.py <port> <settings>")
                 cleanup()
                 sys.exit(1)
             if result[0] == "PING": # ping request received
-                continue # already ACKed
+                continue # do nothing
             action_thread = Thread(target=call_action,args=[result])
             action_thread.start() # carry out action directed by the received
                                   # command, in a separate thread.

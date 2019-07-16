@@ -6,6 +6,7 @@ OP_MODES = None
 class CommandPrefixes(Enum):
     START = 1
     STOP = 2
+    PING = 3
 
 class CommandError(Exception):
     pass
@@ -30,27 +31,27 @@ def parse_entry(command_string):
     arg_list = command_string.split(' ')
     if arg_list.count('') > 0:
         raise CommandError("Command has extra spaces or is empty")
-    if arg_list[0] == "PING":
-        parsed_list.append(arg_list[0])
-        return parsed_list
-    if is_opmode(arg_list[0]):
-        if arg_list[1] == '->':
-            parsed_list.append(get_opmode_enum_val(arg_list[0]).name)
-            for x in arg_list[2:]:
-                parsed_list.append(x)
+    if is_prefix(arg_list[0]): # is a command
+        if arg_list[0] == "PING": # the only one word command
+            parsed_list.append(arg_list[0])
             return parsed_list
-        raise CommandError("Invalid submode command (command needs form <OPMODE> -> <ARGS>)")
-    if is_prefix(arg_list[0]):
         if len(arg_list) < 2:
             raise CommandError("Invalid command (specify mode to run command on)")
-        if is_opmode(arg_list[1]):
+        if is_opmode(arg_list[1]): # command acts on an operational mode
             parsed_list.append(get_prefix_enum_val(arg_list[0]))
             parsed_list.append(get_opmode_enum_val(arg_list[1]).name)
             for x in arg_list[2:]:
                 parsed_list.append(x)
             return parsed_list
         raise CommandError("Cannot call {}. Invalid mode '{}'.".format(arg_list[0], arg_list[1]))
-    split_first = arg_list[0].split('_')
+    if is_opmode(arg_list[0]): # submode command
+        if arg_list[1] == '->':
+            parsed_list.append(get_opmode_enum_val(arg_list[0]).name)
+            for x in arg_list[2:]:
+                parsed_list.append(x)
+            return parsed_list
+        raise CommandError("Invalid submode command (command needs form <OPMODE> -> <ARGS>)")
+    split_first = arg_list[0].split('_') # _ used instead of spaces
     split_first_len = len(split_first)
     if split_first_len != 2:
         raise CommandError("Invalid command.")
