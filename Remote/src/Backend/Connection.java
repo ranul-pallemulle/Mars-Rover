@@ -69,7 +69,7 @@ public class Connection {
         try{
             String data = input.readLine();
             return data;
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             active = false;
             onConnectionLoss.accept(e);
         }

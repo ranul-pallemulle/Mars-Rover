@@ -20,6 +20,7 @@ import static java.lang.Math.PI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
@@ -183,6 +184,9 @@ public class MainFxmlController implements Initializable {
                 onDiagnosticMessageReceived(q);
             });
         });
+        diagnostics.initialiseConnection((Consumer<Exception>)(e)->{
+            // do nothing
+        });
         diagnosticsTextArea.setText(""); // else null pointer when trying to appendText
         
         // initialise main connection
@@ -273,9 +277,7 @@ public class MainFxmlController implements Initializable {
     public void diagnosticsConnectButtonPressed() {
         if (diagnosticsConnectButton.isSelected()) {
             try {
-                diagnostics.initialiseConnection((Consumer<Exception>)(e)->{
-                    diagnostics.getConnection().close();
-                });
+                
                 diagnostics.getConnection().open("localhost", 5570, 2, false); // no read timeout
                 diagnostics.begin();
             } catch (IOException ex) {
@@ -287,6 +289,10 @@ public class MainFxmlController implements Initializable {
         }
         else {
             diagnostics.getConnection().close();
+            while(diagnostics.getConnection().isActive()) {
+                // wait
+            }
+            diagnosticsTextArea.clear();
         }
     }
     
@@ -882,9 +888,13 @@ public class MainFxmlController implements Initializable {
     }
     
     private void onDiagnosticMessageReceived(Queue<String> q) {
-        diagnosticsTextArea.setText("");
-        for (String msg : q) {
-            diagnosticsTextArea.appendText(msg+"\n");
+        diagnosticsTextArea.setText(" ");
+        try {
+            for (String msg : q) {
+                diagnosticsTextArea.appendText(msg+"\n");
+            }
+        } catch (NoSuchElementException e) {
+            // ignore
         }
     }
     
