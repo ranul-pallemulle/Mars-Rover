@@ -21,7 +21,7 @@ public class IPAddressManager {
     private String currentIP;
     public IPAddressManager() {
         ip_addresses = new HashMap<>();
-        ip_addresses.put("WiFi", "192.168.4.1");
+        ip_addresses.put("WiFi", "192.168.2.21");
         ip_addresses.put("Ethernet", "10.42.0.137");
         ip_addresses.put("Local","localhost");
     }
