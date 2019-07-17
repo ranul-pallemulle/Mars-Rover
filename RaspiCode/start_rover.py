@@ -9,6 +9,7 @@ from coreutils.tcpsocket import TcpSocket, TcpSocketError
 import coreutils.launcher as launcher
 from coreutils.launcher import LauncherError
 from threading import Thread
+from interfaces.cam_user import CameraUser
 
 def main(argv):
     '''Rover operation starts here! Wait for a connection from a remote
@@ -58,6 +59,8 @@ python3 start_rover.py <port> <settings>")
         dg.print("Waiting for connection...")
         try:
             main_sock = wait_for_remote(port)
+            host,_ = main_sock.get_ip_address()
+            CameraUser.set_ip(host)
         except TcpSocketError as e: # connection error
             dg.print(str(e))
             cleanup()

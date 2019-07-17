@@ -149,3 +149,6 @@ class TcpSocket:
             self.close()
             raise TcpSocketError('max_recv_bytes needs to be positive')
         self.max_recv_bytes = numbytes
+
+    def get_ip_address(self):
+        return self.conn.getsockname()

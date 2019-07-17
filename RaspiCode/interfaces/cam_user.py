@@ -17,12 +17,17 @@ class CameraUserError(Exception):
 class CameraUser:
     '''Provides an interface to the camera resource.'''
     __metaclass__ = ABCMeta
+    ip = '127.0.0.1'
 
     def __init__(self):
         self.camera = None
         self.stream_writer = None
         self.streaming = False
         self.framerate_list = []
+
+    @classmethod
+    def set_ip(cls, ip):
+        cls.ip = ip
 
     def _stream(self):
         '''Run in separate thread - cannot raise exceptions.'''
@@ -68,7 +73,8 @@ class CameraUser:
         if not self.have_camera():
             raise CameraUserError('Camera not acquired.')
         
-        host = cfg.overall_config.ip_address()
+        # host = cfg.overall_config.ip_address()
+        host = self.__class__.ip
         if source is None:
             strm_port = cfg.cam_config.stream_port()
             strm_framerate = cfg.cam_config.stream_framerate()
