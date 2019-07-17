@@ -9,6 +9,7 @@ import Backend.JoystickController;
 import Backend.ArmDataController;
 import Backend.Connection;
 import Backend.Diagnostics;
+import Backend.IPAddressManager;
 import Backend.RoboticArmController;
 import Exceptions.BadDeleteException;
 import Exceptions.FormatException;
@@ -96,6 +97,7 @@ public class MainFxmlController implements Initializable {
     private ArrayList<Runnable> runAfterInitList; // run after UI initialisation
     private Connection connection; // connection to rover
     private Diagnostics diagnostics; // receive diagnostic messages
+    private IPAddressManager ipAddressManager;
     
     
     /**
@@ -144,12 +146,18 @@ public class MainFxmlController implements Initializable {
             });  
         }
         
-        // initialise ipSelector
-        ipSelector.getItems().setAll("WiFi","Ethernet","Local");
+        // initialise IPAddressManager and ipSelector
+        ipAddressManager = new IPAddressManager();
+        ipAddressManager.locateRaspberryPi();
+        List<String> names = ipAddressManager.getNames();
+        for (String name : names) {
+            ipSelector.getItems().add(name);
+        }
                
         // initialise video connect button and screen
         vidConnectButton.setDisable(true); // cannot activate until connected
-        createVideoScreen(videoScreen);
+        // createVideoScreen(videoScreen);
+        createEmptyVideoScreen(videoScreen);
         
         // initialise auto mode buttons and selector
         autoGoalEnableButton.setDisable(true);
@@ -203,7 +211,8 @@ public class MainFxmlController implements Initializable {
      */
     public void connectRoverButtonPressed () {
         if (connectRoverButton.isSelected()) {
-            String selectedIpAddress = ipSelector.getValue();
+            String selectedIpAddress = ipAddressManager.getIpFromKey(ipSelector.getValue());
+            ipAddressManager.setCurrentIP(selectedIpAddress);
             if (selectedIpAddress == null) { // nothing selected
                 Alert alert = new Alert(AlertType.ERROR, 
                         "Invalid IP address selected.");
@@ -221,7 +230,7 @@ public class MainFxmlController implements Initializable {
             // Connect in a new thread, allow user to cancel in main thread
             new Thread(()-> {
                 try {
-                    connection.open("localhost", 5560, 2, true); // 2 second timeout
+                    connection.open(selectedIpAddress, 5560, 2, true); // 2 second timeout
                     Platform.runLater(()->{
                         setButtonsOnConnectionActivated();
                         if (alert.isShowing()) {
@@ -278,7 +287,7 @@ public class MainFxmlController implements Initializable {
         if (diagnosticsConnectButton.isSelected()) {
             try {
                 
-                diagnostics.getConnection().open("localhost", 5570, 2, false); // no read timeout
+                diagnostics.getConnection().open(ipAddressManager.getCurrentIP(), 5570, 2, false); // no read timeout
                 diagnostics.begin();
             } catch (IOException ex) {
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
@@ -304,7 +313,7 @@ public class MainFxmlController implements Initializable {
         if (joyConnectButton.isSelected()) {
             try {
                 connection.sendWithDelay("START JOYSTICK 5562",1);
-                joyController.getConnection().open("localhost", 5562, 2, true);
+                joyController.getConnection().open(ipAddressManager.getCurrentIP(), 5562, 2, true);
             } catch (IOException ex) {
                 connection.sendWithDelay("STOP JOYSTICK",1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
@@ -326,7 +335,7 @@ public class MainFxmlController implements Initializable {
         if (armConnectButton.isSelected()) {
             try {
                 connection.sendWithDelay("START ROBOTICARM 5563",1);
-                armController.getConnection().open("localhost", 5563, 2, true);
+                armController.getConnection().open(ipAddressManager.getCurrentIP(), 5563, 2, true);
             } catch (IOException ex) {
                 connection.sendWithDelay("STOP ROBOTICARM", 1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
@@ -346,12 +355,12 @@ public class MainFxmlController implements Initializable {
      */
     public void vidConnectButtonPressed () {
         if (vidConnectButton.isSelected()) {
-            // Connecting video ...
-            // Connected
+            connection.sendWithDelay("START STREAM", 1);
+            startVideo(videoScreen);
         }
         else {
-            // Disconnecting video ...
-            // Disconnected
+            connection.sendWithDelay("STOP STREAM", 1);
+            createEmptyVideoScreen(videoScreen);
         }
     }
     
@@ -904,26 +913,57 @@ public class MainFxmlController implements Initializable {
      * dimensions.
      * @param swingNode - container to display video on
      */
-    private void createVideoScreen(final SwingNode swingNode) {
-        String gstPipeline;
-        gstPipeline = "tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! "
+//    private void createVideoScreen(final SwingNode swingNode) {
+//        String gstPipeline;
+//        gstPipeline = "tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! "
+//                + "rtph264depay ! avdec_h264 ! videoconvert ! capsfilter "
+//                + "caps=video/x-raw,width=640,height=400";
+//        SimpleVideoComponent vc = new SimpleVideoComponent();
+//        vc.getElement().set("sync",false);
+//        Bin bin = Gst.parseBinFromDescription(gstPipeline, true);
+//        Pipeline pipe = new Pipeline();
+//        pipe.addMany(bin, vc.getElement());
+//        Pipeline.linkMany(bin,vc.getElement());
+//        SwingUtilities.invokeLater(new Runnable() {
+//            @Override
+//            public void run() {
+//                swingNode.setContent(vc);
+//            }
+//        });
+//        
+//        vc.setPreferredSize(new Dimension(640,400));
+//        vc.setKeepAspect(true);
+//    }
+    
+    private void createEmptyVideoScreen(final SwingNode swingNode) {
+        SimpleVideoComponent vc = new SimpleVideoComponent();
+        SwingUtilities.invokeLater(()->{
+            swingNode.setContent(vc);
+        });
+        vc.setKeepAspect(true);
+    }
+    
+    private void startVideo(final SwingNode swingNode) {
+        String ip = ipAddressManager.getCurrentIP();
+        if (ip == null) {
+            return;
+        }
+        String gst_str = "tcpclientsrc host="+ip+" port=5564 ! gdpdepay ! "
                 + "rtph264depay ! avdec_h264 ! videoconvert ! capsfilter "
                 + "caps=video/x-raw,width=640,height=400";
         SimpleVideoComponent vc = new SimpleVideoComponent();
-        vc.getElement().set("sync",false);
-        Bin bin = Gst.parseBinFromDescription(gstPipeline, true);
+        vc.getElement().set("sync", false);
+        Bin bin = Gst.parseBinFromDescription(gst_str, true);
         Pipeline pipe = new Pipeline();
         pipe.addMany(bin, vc.getElement());
         Pipeline.linkMany(bin,vc.getElement());
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                swingNode.setContent(vc);
-            }
+        SwingUtilities.invokeLater(() -> {
+            swingNode.setContent(vc);
         });
-        
         vc.setPreferredSize(new Dimension(640,400));
         vc.setKeepAspect(true);
+        pipe.play();
+        swingNode.setVisible(true);
     }
     
     
