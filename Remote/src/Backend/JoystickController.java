@@ -67,7 +67,7 @@ public class JoystickController {
         joy_x = joy_newx;
         joy_y = joy_newy;
             if (connection.isActive()) {
-                String data = String.format("%d,%d", (int)joy_x, (int)joy_y);
+                String data = String.format("%d,%d", (int)joy_x, -(int)joy_y);
                 connection.send(data);
             }
     }

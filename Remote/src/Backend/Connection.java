@@ -33,10 +33,13 @@ public class Connection {
         active = false;
     }
     
-    public void open(String IP, int port, int timeout) throws IOException {
+    public void open(String IP, int port, int timeout, boolean timeout_on_read) 
+            throws IOException {
         try {
             socket = new Socket();
-            socket.setSoTimeout(timeout*1000); // timeout on read operations
+            if (timeout_on_read) {
+                socket.setSoTimeout(timeout*1000); // timeout on read operations
+            }
             socket.connect(new InetSocketAddress(IP,port),timeout*1000);
             input = new BufferedReader(
                     new InputStreamReader(socket.getInputStream()));
@@ -60,6 +63,17 @@ public class Connection {
                 active = false;
             }
         }
+    }
+    
+    public String receive() {
+        try{
+            String data = input.readLine();
+            return data;
+        } catch (IOException e) {
+            active = false;
+            onConnectionLoss.accept(e);
+        }
+        return null;
     }
     
     public boolean send(String data) {

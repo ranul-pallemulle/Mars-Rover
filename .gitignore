@@ -16,4 +16,4 @@ __pycache__/
 /Java_Backend/build/
 /Remote/nbproject/private/
 /Remote/build/
-/Remote/dist/
+#/Remote/dist/

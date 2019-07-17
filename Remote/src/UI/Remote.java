@@ -58,6 +58,9 @@ public class Remote extends Application{
     }
     
     public void handleExit(MainFxmlController controller) {
+        if (controller.getConnection().isActive()) {
+            // controller.getConnection().close();
+        }
         Platform.exit();
         System.exit(0);
     }

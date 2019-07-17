@@ -8,6 +8,7 @@ package UI;
 import Backend.JoystickController;
 import Backend.ArmDataController;
 import Backend.Connection;
+import Backend.Diagnostics;
 import Backend.RoboticArmController;
 import Exceptions.BadDeleteException;
 import Exceptions.FormatException;
@@ -16,16 +17,12 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import static java.lang.Math.PI;
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.nio.channels.IllegalBlockingModeException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javax.swing.SwingUtilities;
 import javafx.embed.swing.SwingNode;
@@ -39,6 +36,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
@@ -78,8 +76,7 @@ public class MainFxmlController implements Initializable {
     @FXML private ToggleButton armConnectButton;
     @FXML private ToggleButton vidConnectButton;
     @FXML private ComboBox<String> autoGoalSelector;
-    @FXML private Button autoGoalEnableButton;
-    @FXML private Button autoGoalDisableButton;
+    @FXML private ToggleButton autoGoalEnableButton;
     @FXML private Button autoGoalDisableAllButton;
     @FXML private ToggleButton limitsButton;
     @FXML private ToggleButton sumLimitsButton;
@@ -89,12 +86,15 @@ public class MainFxmlController implements Initializable {
     @FXML private ComboBox<String> positionSelector;
     @FXML private ToggleButton seg3DownButton;
     @FXML private Spinner<Integer> seg3DownOffsetPicker;
+    @FXML private TextArea diagnosticsTextArea;
+    @FXML private ToggleButton diagnosticsConnectButton;
     
     private JoystickController joyController; // logic for joystick
     private RoboticArmController armController; // logic for robotic arm
     private ArmDataController armDataController; // logic for data file handling
     private ArrayList<Runnable> runAfterInitList; // run after UI initialisation
     private Connection connection; // connection to rover
+    private Diagnostics diagnostics; // receive diagnostic messages
     
     
     /**
@@ -152,7 +152,6 @@ public class MainFxmlController implements Initializable {
         
         // initialise auto mode buttons and selector
         autoGoalEnableButton.setDisable(true);
-        autoGoalDisableButton.setDisable(true);
         autoGoalDisableAllButton.setDisable(true);
         autoGoalSelector.getItems().setAll(
                 "Collect Samples","Stream Object Detection");
@@ -177,6 +176,14 @@ public class MainFxmlController implements Initializable {
                 onArmDisconnected(e);
             });
         });
+        
+        // initialise diagnostics
+        diagnostics = new Diagnostics((Consumer<Queue>)(q)->{
+            Platform.runLater(()->{
+                onDiagnosticMessageReceived(q);
+            });
+        });
+        diagnosticsTextArea.setText(""); // else null pointer when trying to appendText
         
         // initialise main connection
         connection = new Connection((Consumer<Exception>)(e)->{
@@ -210,7 +217,7 @@ public class MainFxmlController implements Initializable {
             // Connect in a new thread, allow user to cancel in main thread
             new Thread(()-> {
                 try {
-                    connection.open("localhost", 5560, 2); // 2 second timeout
+                    connection.open("localhost", 5560, 2, true); // 2 second timeout
                     Platform.runLater(()->{
                         setButtonsOnConnectionActivated();
                         if (alert.isShowing()) {
@@ -218,6 +225,7 @@ public class MainFxmlController implements Initializable {
                         }
                     });
                     connection.startPing();
+                    
                 } catch (IOException ex) {
                     Platform.runLater(()->{
                         if (alert.isShowing()) {
@@ -260,13 +268,37 @@ public class MainFxmlController implements Initializable {
     
     
     /**
+     * Event handler for when diagnosticsConnectButton is pressed
+     */
+    public void diagnosticsConnectButtonPressed() {
+        if (diagnosticsConnectButton.isSelected()) {
+            try {
+                diagnostics.initialiseConnection((Consumer<Exception>)(e)->{
+                    diagnostics.getConnection().close();
+                });
+                diagnostics.getConnection().open("localhost", 5570, 2, false); // no read timeout
+                diagnostics.begin();
+            } catch (IOException ex) {
+                Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.setHeaderText("Cannot Enable Diagnostics.");
+                alert.show();
+                diagnosticsConnectButton.setSelected(false);
+            }
+        }
+        else {
+            diagnostics.getConnection().close();
+        }
+    }
+    
+    
+    /**
      * Event handler for when joyConnectButton is pressed
      */
     public void joyConnectButtonPressed () {
         if (joyConnectButton.isSelected()) {
             try {
                 connection.sendWithDelay("START JOYSTICK 5562",1);
-                joyController.getConnection().open("localhost", 5562, 2);
+                joyController.getConnection().open("localhost", 5562, 2, true);
             } catch (IOException ex) {
                 connection.sendWithDelay("STOP JOYSTICK",1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
@@ -288,7 +320,7 @@ public class MainFxmlController implements Initializable {
         if (armConnectButton.isSelected()) {
             try {
                 connection.sendWithDelay("START ROBOTICARM 5563",1);
-                armController.getConnection().open("localhost", 5563, 2);
+                armController.getConnection().open("localhost", 5563, 2, true);
             } catch (IOException ex) {
                 connection.sendWithDelay("STOP ROBOTICARM", 1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
@@ -698,6 +730,10 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    public Connection getConnection() {
+        return connection;
+    }
+    
     
     /// private methods ///
     
@@ -800,7 +836,6 @@ public class MainFxmlController implements Initializable {
         armConnectButton.setDisable(false);
         vidConnectButton.setDisable(false);
         autoGoalEnableButton.setDisable(false);
-        autoGoalDisableButton.setDisable(false);
         autoGoalDisableAllButton.setDisable(true); // initially disabled
         autoGoalSelector.setDisable(false);
         ipSelector.setDisable(true);
@@ -808,14 +843,18 @@ public class MainFxmlController implements Initializable {
     
     
     /**
-     * Enable/Disable buttons when connection to rover is deactivated
+     * Enable/Disable buttons when connection to rover is deactivated. Also set
+     * selected to false.
      */
     private void setButtonsOnConnectionDeactivated() {
         joyConnectButton.setDisable(true);
+        joyConnectButton.setSelected(false);
         armConnectButton.setDisable(true);
+        armConnectButton.setSelected(false);
         vidConnectButton.setDisable(true);
+        vidConnectButton.setSelected(false);
         autoGoalEnableButton.setDisable(true);
-        autoGoalDisableButton.setDisable(true);
+        autoGoalEnableButton.setSelected(false);
         autoGoalDisableAllButton.setDisable(true);
         autoGoalSelector.setDisable(true);
         autoGoalSelector.getSelectionModel().clearSelection();
@@ -840,6 +879,13 @@ public class MainFxmlController implements Initializable {
     
     private void onArmDisconnected(Exception e) {
     
+    }
+    
+    private void onDiagnosticMessageReceived(Queue<String> q) {
+        diagnosticsTextArea.setText("");
+        for (String msg : q) {
+            diagnosticsTextArea.appendText(msg+"\n");
+        }
     }
     
     

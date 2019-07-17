@@ -56,10 +56,11 @@
                 <ToggleButton fx:id="joyConnectButton" onAction="#joyConnectButtonPressed" selected="false" text="Enable Joystick" />
             </VBox>
             <VBox alignment="center">
-                <VBox.margin><Insets bottom="20" left="20" right="20" top="30" /></VBox.margin>
+                <VBox.margin><Insets bottom="20" left="5" right="5" top="30" /></VBox.margin>
                 <Text>Output from rover</Text>
-                <TextArea fx:id="diagnosticsTextArea" editable="false" prefHeight="200" prefWidth="400" />
+                <TextArea fx:id="diagnosticsTextArea" editable="false" prefHeight="250" prefWidth="500" />
             </VBox>
+            <ToggleButton fx:id="diagnosticsConnectButton" onAction="#diagnosticsConnectButtonPressed" selected="false" text="Enable Messages" />
         </VBox>
 
         <GridPane alignment="center" GridPane.columnIndex="1" GridPane.rowIndex="0">
@@ -79,8 +80,7 @@
                 </HBox>
                 <HBox alignment="center" spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="0">
                     <ComboBox fx:id="autoGoalSelector" promptText="Autonomous Mode Goal" />
-                    <Button fx:id="autoGoalEnableButton" onAction="#autoGoalEnableButtonPressed" text="Enable" />
-                    <Button fx:id="autoGoalDisableButton" onAction="#autoGoalDisableButtonPressed" text="Disable" />
+                    <ToggleButton fx:id="autoGoalEnableButton" onAction="#autoGoalEnableButtonPressed" text="Enable" />
                     <Button fx:id="autoGoalDisableAllButton" onAction="#autoGoalDisableAllButtonPressed" text="Disable All" />
                 </HBox>
             </VBox>
