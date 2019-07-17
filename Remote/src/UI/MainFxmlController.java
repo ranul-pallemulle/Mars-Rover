@@ -240,7 +240,7 @@ public class MainFxmlController implements Initializable {
                         }
                         connectRoverButton.setSelected(false);
                     });
-                } 
+                }
             }).start();
             // user may cancel connection using the alert
             alert.showAndWait().ifPresent(response -> {
