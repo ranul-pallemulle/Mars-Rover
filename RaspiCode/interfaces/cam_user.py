@@ -25,6 +25,7 @@ class CameraUser:
         self.framerate_list = []
 
     def _stream(self):
+        '''Run in separate thread - cannot raise exceptions.'''
         if self.stream_writer is None:
             raise CameraUserError('Stream writer not initialised.')
         if not self.have_camera():
@@ -91,11 +92,9 @@ class CameraUser:
         if device == 'rpicamsrc':
             compressor = 'omxh264enc'
             tune = ' '
-        elif device == 'v4l2src':
+        elif device == 'v4l2src' or device == 'avfvideosrc' \
+            or device == "autovideosrc":
             compressor = 'x264enc'
-            tune = ' tune=zerolatency '
-        elif device == 'avfvideosrc':
-            compressor = 'x264enc'            
             tune = ' tune=zerolatency '
         comm = 'appsrc ! videoconvert ! video/x-raw,width='+str(src_width)+\
             ',height='+str(src_height)+',framerate='+str(src_framerate)+\

@@ -148,7 +148,8 @@ class CameraConfiguration(Configuration):
 
     def device(self):
         dev = self._generic_string_setting('device')
-        if dev == 'rpicamsrc' or dev == 'v4l2src' or dev == 'avfvideosrc':
+        if dev == 'rpicamsrc' or dev == 'v4l2src' or dev == 'avfvideosrc' or \
+           dev == 'autovideosrc':
             return dev
         raise ConfigurationError("Error in camera settings: invalid device specified, can only be 'rpicamsrc','v4l2src' or 'avfvideosrc'.")
            

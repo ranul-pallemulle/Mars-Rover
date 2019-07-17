@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 ExecStart=/bin/bash -u startup_script.sh
-WorkingDirectory=/home/pi/RaspiCode
+WorkingDirectory=/home/pi/Mars-Rover/RaspiCode
 StandardOutput=inherit
 StandardError=inherit
 SyslogIdentifier=Mars Rover

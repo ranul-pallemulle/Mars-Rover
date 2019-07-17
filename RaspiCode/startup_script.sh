@@ -16,9 +16,8 @@ while true; do
 done
 echo "Network up"
 
-while true; do
-    # if python3 /home/pi/RaspiCode/start_rover.py 5560; then
-    # break
-    # fi
-    cd /home/pi/Mars-Rover/RaspiCode && python3 start_rover.py 5560
-done
+# while true; do
+    # cd /home/pi/Mars-Rover/RaspiCode && python3 start_rover.py 5560
+# done
+
+cd /home/pi/Mars-Rover/RaspiCode && python3 start_rover.py 5560
