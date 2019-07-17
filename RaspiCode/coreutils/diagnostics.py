@@ -26,23 +26,23 @@ class Diagnostics:
         enabled = cfg.overall_config.diagnostics_enabled()
         if not enabled: # diagnostics connection won't be attempted
             return
-        port = cfg.overall_config.diagnostics_port()
-        thread = Thread(target=cls._make_socket_connection, args=[port])
+        cls.port = cfg.overall_config.diagnostics_port()
+        thread = Thread(target=cls._make_socket_connection, args=[])
         thread.start()
 
 
     @classmethod
-    def _make_socket_connection(cls,port):
+    def _make_socket_connection(cls):
         '''Run in separate thread - cannot raise exceptions. Call only in a
         DiagState.CLOSED state - else will result in a warning and return.'''
         with cls.state_lock: # prevent close() from running in this section
             try:
-                cls.socket = TcpSocket(port)
+                cls.socket = TcpSocket(cls.port)
                 cls.socket.set_max_recv_bytes(1024)
             except TcpSocketError as e:
                 cls.print("Diagnostics connection error: "+str(e))
                 return
-        cls.print("Waiting for diagnostics connection on port {}...".format(port))
+        cls.print("Waiting for diagnostics connection on port {}...".format(cls.port))
         with cls.state_lock:
             cls.state = DiagState.PENDING
         try:
@@ -73,11 +73,19 @@ class Diagnostics:
                 with cls.state_lock:
                     cls.state = DiagState.CLOSED
                 cls.print("Diagnostics closed (connection error).")
+                cls.socket.close()
+                cls.socket = None
+                # return
+                Thread(target=cls._make_socket_connection, args=[]).start()
                 return
             if data is None:
                 with cls.state_lock:
                     cls.state = DiagState.CLOSED
                 cls.print("Diagnostics closed by remote.")
+                cls.socket.close()
+                cls.socket = None
+                # return
+                Thread(target=cls._make_socket_connection, args=[]).start()
                 return
 
 
@@ -111,4 +119,4 @@ class Diagnostics:
         while True: # wait till closed
             with cls.state_lock:
                 if cls.state == DiagState.CLOSED:
-                    break;
+                    break

@@ -113,4 +113,4 @@ class MockArmMotors(Resource):
         dg.print("PWM value for middle servo: {}".format(self.angle_middle))
         dg.print("PWM value for bottom servo: {}".format(self.angle_bottom))
 
-        time.sleep(1)
+        time.sleep(0.03)

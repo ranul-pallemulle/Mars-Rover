@@ -50,9 +50,12 @@ python3 start_rover.py <port> <settings>")
     except mgr.ResourceError as e:
         dg.print(str(e) + "\nExiting...")
         sys.exit(1) # exit with error code
+
+    dg.initialise() # start diagnostics
     
     # start operation
     while (True):
+        dg.print("Waiting for connection...")
         try:
             main_sock = wait_for_remote(port)
         except TcpSocketError as e: # connection error
@@ -63,12 +66,11 @@ python3 start_rover.py <port> <settings>")
         if shutdown:
             break
     cleanup()
+    dg.close()
     sys.exit(0) # shutdown
 
 
 def wait_for_remote(port):
-    dg.initialise()             # start diagnostics connection
-    dg.print("Waiting for connection...")
     sock = TcpSocket(port)
     sock.wait_for_connection() # wait for remote connection
     dg.print("Connected.")
@@ -138,7 +140,7 @@ def call_action(arg_list):
 def cleanup():
     '''Run cleaning up functions so that all threads can stop for a clean exit.'''
     launcher.release_all()
-    dg.close()
+    # dg.close()
 
         
 if __name__ == '__main__':
