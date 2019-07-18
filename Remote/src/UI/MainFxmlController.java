@@ -7,6 +7,7 @@ package UI;
 
 import Backend.JoystickController;
 import Backend.ArmDataController;
+import Backend.AutoModeManager;
 import Backend.Connection;
 import Backend.Diagnostics;
 import Backend.IPAddressManager;
@@ -98,6 +99,7 @@ public class MainFxmlController implements Initializable {
     private Connection connection; // connection to rover
     private Diagnostics diagnostics; // receive diagnostic messages
     private IPAddressManager ipAddressManager;
+    private AutoModeManager autoModeManager;
     
     
     /**
@@ -158,13 +160,6 @@ public class MainFxmlController implements Initializable {
         // createVideoScreen(videoScreen);
 //        createEmptyVideoScreen(videoScreen);
         
-        // initialise auto mode buttons and selector
-        autoGoalEnableButton.setDisable(true);
-        autoGoalDisableAllButton.setDisable(true);
-        autoGoalSelector.getItems().setAll(
-                "Collect Samples","Stream Object Detection");
-        autoGoalSelector.setDisable(true);
-        
         // initialise joystick controller
         double max_rad = joyBackCircle.getRadius() - joyFrontCircle.getRadius();
         joyController = new JoystickController(max_rad);
@@ -202,6 +197,20 @@ public class MainFxmlController implements Initializable {
                 onRoverDisconnected(e);
             });
         });
+        
+        // initialise AutoModeManager
+        autoModeManager = new AutoModeManager(connection);
+        
+        // initialise auto mode buttons and selector
+        List<String> goals = autoModeManager.getNames();
+        autoGoalEnableButton.setDisable(true);
+        autoGoalDisableAllButton.setDisable(true);
+         for (String name : goals) {
+            autoGoalSelector.getItems().add(name);
+        }
+//        autoGoalSelector.getItems().setAll(
+//                "Collect Samples","Stream Object Detection");
+        autoGoalSelector.setDisable(true);
     }
     
     
@@ -407,7 +416,8 @@ public class MainFxmlController implements Initializable {
      * Event handler for when autoGoalEnableButton is pressed
      */
     public void autoGoalEnableButtonPressed () {
-        
+         String selectedGoal= autoGoalSelector.getValue();
+         autoModeManager.enableGoal(selectedGoal);
     }
     
     
@@ -415,7 +425,8 @@ public class MainFxmlController implements Initializable {
      * Event handler for when autoGoalDisableButton is pressed
      */
     public void autoGoalDisableButtonPressed () {
-        
+        String selectedGoal = autoGoalSelector.getValue();
+        autoModeManager.disableGoal(selectedGoal);
     }
     
     
@@ -423,7 +434,7 @@ public class MainFxmlController implements Initializable {
      * Event handler for when autoGoalDisableAllButton is pressed
      */
     public void autoGoalDisableAllButtonPressed () {
-        
+        autoModeManager.disableAllGoals();
     }
     
     
@@ -889,7 +900,7 @@ public class MainFxmlController implements Initializable {
         armConnectButton.setDisable(false);
 //        vidConnectButton.setDisable(false);
         autoGoalEnableButton.setDisable(false);
-        autoGoalDisableAllButton.setDisable(true); // initially disabled
+        autoGoalDisableAllButton.setDisable(false);
         autoGoalSelector.setDisable(false);
         ipSelector.setDisable(true);
     }
