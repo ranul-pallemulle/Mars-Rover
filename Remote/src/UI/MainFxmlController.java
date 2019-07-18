@@ -125,7 +125,7 @@ public class MainFxmlController implements Initializable {
         } // simulate limits button presses
         );
         seg3DownOffsetPicker.setValueFactory(
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(-15,15,0));
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(-45,45,0));
         seg3DownOffsetPicker.setDisable(true);
         positionEditor.getEditor().setText(":0.0,0.0,0.0,0.0");
         
