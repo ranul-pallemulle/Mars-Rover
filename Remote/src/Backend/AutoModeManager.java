@@ -88,4 +88,12 @@ public class AutoModeManager {
         }
         return list;
     }
+    
+    public String getGoalStatu(String goal) {
+        if (goal == null) {
+            return null;
+        }
+        String status = goalStatuses.get(goal);
+        return status;
+    }
 }

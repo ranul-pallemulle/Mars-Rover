@@ -80,7 +80,7 @@
                     <Button fx:id="scanButton" onAction="#scanButtonPressed" text="Scan"/>
                 </HBox>
                 <HBox alignment="center" spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                    <ComboBox fx:id="autoGoalSelector" promptText="Autonomous Mode Goal" />
+                    <ComboBox fx:id="autoGoalSelector" promptText="Autonomous Mode Goal" onAction="#autoGoalSelectorSelectionChanged"/>
                     <ToggleButton fx:id="autoGoalEnableButton" onAction="#autoGoalEnableButtonPressed" text="Enable" />
                     <Button fx:id="autoGoalDisableAllButton" onAction="#autoGoalDisableAllButtonPressed" text="Disable All" />
                 </HBox>
