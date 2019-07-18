@@ -13,7 +13,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import org.freedesktop.gstreamer.Gst;
+//import org.freedesktop.gstreamer.Gst;
 
 /**
  *
@@ -24,7 +24,7 @@ public class Remote extends Application{
     private static Stage stage;
     
     public static void main(String[] args) {
-        Gst.init("Remote",args);
+//        Gst.init("Remote",args);
         launch(args);
     }
     

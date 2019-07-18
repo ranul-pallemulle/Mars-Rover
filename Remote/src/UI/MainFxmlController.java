@@ -14,7 +14,7 @@ import Backend.RoboticArmController;
 import Exceptions.BadDeleteException;
 import Exceptions.FormatException;
 import Exceptions.NotFoundException;
-import java.awt.Dimension;
+//import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import static java.lang.Math.PI;
@@ -26,8 +26,8 @@ import java.util.Queue;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import javafx.application.Platform;
-import javax.swing.SwingUtilities;
-import javafx.embed.swing.SwingNode;
+//import javax.swing.SwingUtilities;
+//import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -48,9 +48,9 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
-import org.freedesktop.gstreamer.Bin;
-import org.freedesktop.gstreamer.Gst;
-import org.freedesktop.gstreamer.Pipeline;
+//import org.freedesktop.gstreamer.Bin;
+//import org.freedesktop.gstreamer.Gst;
+//import org.freedesktop.gstreamer.Pipeline;
 
 /**
  * FXML Controller class
@@ -72,12 +72,11 @@ public class MainFxmlController implements Initializable {
     @FXML private Circle sliderBall;
     @FXML private Line sliderLine;
     @FXML private ComboBox<String> ipSelector;
-    @FXML private SwingNode videoScreen;
+//    @FXML private SwingNode videoScreen;
     @FXML private ToggleButton connectRoverButton;
-    @FXML private Button scanButton;
     @FXML private ToggleButton joyConnectButton;
     @FXML private ToggleButton armConnectButton;
-    @FXML private ToggleButton vidConnectButton;
+//    @FXML private ToggleButton vidConnectButton;
     @FXML private ComboBox<String> autoGoalSelector;
     @FXML private ToggleButton autoGoalEnableButton;
     @FXML private Button autoGoalDisableAllButton;
@@ -155,9 +154,9 @@ public class MainFxmlController implements Initializable {
         }
                
         // initialise video connect button and screen
-        vidConnectButton.setDisable(true); // cannot activate until connected
+//        vidConnectButton.setDisable(true); // cannot activate until connected
         // createVideoScreen(videoScreen);
-        createEmptyVideoScreen(videoScreen);
+//        createEmptyVideoScreen(videoScreen);
         
         // initialise auto mode buttons and selector
         autoGoalEnableButton.setDisable(true);
@@ -392,16 +391,16 @@ public class MainFxmlController implements Initializable {
     /**
      * Event handler for when vidConnectButton is pressed
      */
-    public void vidConnectButtonPressed () {
-        if (vidConnectButton.isSelected()) {
-            connection.sendWithDelay("START STREAM", 1);
-            startVideo(videoScreen);
-        }
-        else {
-            connection.sendWithDelay("STOP STREAM", 1);
-            createEmptyVideoScreen(videoScreen);
-        }
-    }
+//    public void vidConnectButtonPressed () {
+//        if (vidConnectButton.isSelected()) {
+//            connection.sendWithDelay("START STREAM", 1);
+//            startVideo(videoScreen);
+//        }
+//        else {
+//            connection.sendWithDelay("STOP STREAM", 1);
+//            createEmptyVideoScreen(videoScreen);
+//        }
+//    }
     
     
     /**
@@ -888,7 +887,7 @@ public class MainFxmlController implements Initializable {
     private void setButtonsOnConnectionActivated() {
         joyConnectButton.setDisable(false);
         armConnectButton.setDisable(false);
-        vidConnectButton.setDisable(false);
+//        vidConnectButton.setDisable(false);
         autoGoalEnableButton.setDisable(false);
         autoGoalDisableAllButton.setDisable(true); // initially disabled
         autoGoalSelector.setDisable(false);
@@ -905,8 +904,8 @@ public class MainFxmlController implements Initializable {
         joyConnectButton.setSelected(false);
         armConnectButton.setDisable(true);
         armConnectButton.setSelected(false);
-        vidConnectButton.setDisable(true);
-        vidConnectButton.setSelected(false);
+//        vidConnectButton.setDisable(true);
+//        vidConnectButton.setSelected(false);
         autoGoalEnableButton.setDisable(true);
         autoGoalEnableButton.setSelected(false);
         autoGoalDisableAllButton.setDisable(true);
@@ -974,36 +973,36 @@ public class MainFxmlController implements Initializable {
 //        vc.setKeepAspect(true);
 //    }
     
-    private void createEmptyVideoScreen(final SwingNode swingNode) {
-        SimpleVideoComponent vc = new SimpleVideoComponent();
-        SwingUtilities.invokeLater(()->{
-            swingNode.setContent(vc);
-        });
-        vc.setKeepAspect(true);
-    }
-    
-    private void startVideo(final SwingNode swingNode) {
-        String ip = ipAddressManager.getCurrentIP();
-        if (ip == null) {
-            return;
-        }
-        String gst_str = "tcpclientsrc host="+ip+" port=5564 ! gdpdepay ! "
-                + "rtph264depay ! avdec_h264 ! videoconvert ! capsfilter "
-                + "caps=video/x-raw,width=640,height=400";
-        SimpleVideoComponent vc = new SimpleVideoComponent();
-        vc.getElement().set("sync", false);
-        Bin bin = Gst.parseBinFromDescription(gst_str, true);
-        Pipeline pipe = new Pipeline();
-        pipe.addMany(bin, vc.getElement());
-        Pipeline.linkMany(bin,vc.getElement());
-        SwingUtilities.invokeLater(() -> {
-            swingNode.setContent(vc);
-        });
-        vc.setPreferredSize(new Dimension(640,400));
-        vc.setKeepAspect(true);
-        pipe.play();
-        swingNode.setVisible(true);
-    }
+//    private void createEmptyVideoScreen(final SwingNode swingNode) {
+//        SimpleVideoComponent vc = new SimpleVideoComponent();
+//        SwingUtilities.invokeLater(()->{
+//            swingNode.setContent(vc);
+//        });
+//        vc.setKeepAspect(true);
+//    }
+//    
+//    private void startVideo(final SwingNode swingNode) {
+//        String ip = ipAddressManager.getCurrentIP();
+//        if (ip == null) {
+//            return;
+//        }
+//        String gst_str = "tcpclientsrc host="+ip+" port=5564 ! gdpdepay ! "
+//                + "rtph264depay ! avdec_h264 ! videoconvert ! capsfilter "
+//                + "caps=video/x-raw,width=640,height=400";
+//        SimpleVideoComponent vc = new SimpleVideoComponent();
+//        vc.getElement().set("sync", false);
+//        Bin bin = Gst.parseBinFromDescription(gst_str, true);
+//        Pipeline pipe = new Pipeline();
+//        pipe.addMany(bin, vc.getElement());
+//        Pipeline.linkMany(bin,vc.getElement());
+//        SwingUtilities.invokeLater(() -> {
+//            swingNode.setContent(vc);
+//        });
+//        vc.setPreferredSize(new Dimension(640,400));
+//        vc.setKeepAspect(true);
+//        pipe.play();
+//        swingNode.setVisible(true);
+//    }
     
     
 }

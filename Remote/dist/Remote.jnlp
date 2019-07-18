@@ -8,10 +8,8 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="Remote.jar" size="47956" download="eager" />
+    <jar href="Remote.jar" size="36069" download="eager" />
     <jar href="lib/commons-collections4-4.4.jar" size="751914" download="eager" />
-    <jar href="lib/gst1-java-core-1.1.0.jar" size="575270" download="eager" />
-    <jar href="lib/jna-5.3.1.jar" size="1505196" download="eager" />
   </resources>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="Remote" >
     <param name="requiredFXVersion" value="8.0+"/>
