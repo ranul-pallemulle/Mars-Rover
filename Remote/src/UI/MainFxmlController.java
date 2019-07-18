@@ -230,7 +230,7 @@ public class MainFxmlController implements Initializable {
             // Connect in a new thread, allow user to cancel in main thread
             new Thread(()-> {
                 try {
-                    connection.open(selectedIpAddress, 5560, 2, true); // 2 second timeout
+                    connection.open(selectedIpAddress, 5560, 6, true); // 6 second timeout
                     Platform.runLater(()->{
                         setButtonsOnConnectionActivated();
                         if (alert.isShowing()) {
@@ -287,7 +287,7 @@ public class MainFxmlController implements Initializable {
         if (diagnosticsConnectButton.isSelected()) {
             try {
                 
-                diagnostics.getConnection().open(ipAddressManager.getCurrentIP(), 5570, 2, false); // no read timeout
+                diagnostics.getConnection().open(ipAddressManager.getCurrentIP(), 5570, 6, false); // no read timeout
                 diagnostics.begin();
             } catch (IOException ex) {
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
@@ -313,7 +313,7 @@ public class MainFxmlController implements Initializable {
         if (joyConnectButton.isSelected()) {
             try {
                 connection.sendWithDelay("START JOYSTICK 5562",1);
-                joyController.getConnection().open(ipAddressManager.getCurrentIP(), 5562, 2, true);
+                joyController.getConnection().open(ipAddressManager.getCurrentIP(), 5562, 6, true);
             } catch (IOException ex) {
                 connection.sendWithDelay("STOP JOYSTICK",1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
@@ -335,7 +335,7 @@ public class MainFxmlController implements Initializable {
         if (armConnectButton.isSelected()) {
             try {
                 connection.sendWithDelay("START ROBOTICARM 5563",1);
-                armController.getConnection().open(ipAddressManager.getCurrentIP(), 5563, 2, true);
+                armController.getConnection().open(ipAddressManager.getCurrentIP(), 5563, 6, true);
             } catch (IOException ex) {
                 connection.sendWithDelay("STOP ROBOTICARM", 1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
