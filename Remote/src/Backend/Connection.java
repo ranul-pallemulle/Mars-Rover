@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,9 +27,11 @@ public class Connection {
     private BufferedReader input;
     private DataOutputStream output;
     private Consumer<Exception> onConnectionLoss;
+    private ReentrantLock lock; // lock on IO so that messages arent concat-ed
     private boolean active;
     
     public Connection(Consumer<Exception> run_on_connection_loss) {
+        lock = new ReentrantLock();
         onConnectionLoss = run_on_connection_loss;
         active = false;
     }
@@ -66,6 +69,7 @@ public class Connection {
     }
     
     public String receive() {
+        lock.lock();
         try{
             String data = input.readLine();
             return data;
@@ -73,10 +77,14 @@ public class Connection {
             active = false;
             onConnectionLoss.accept(e);
         }
+        finally {
+            lock.unlock();
+        }
         return null;
     }
     
     public boolean send(String data) {
+        lock.lock();
         try {
             byte[] bytes = data.getBytes();
             output.write(bytes);
@@ -86,10 +94,14 @@ public class Connection {
             active = false;
             onConnectionLoss.accept(e);
         }
+        finally {
+            lock.unlock();
+        }
         return false;
     }
     
     public boolean sendWithDelay(String data, int timeout) {
+        lock.lock();
         try {
             byte[] bytes = data.getBytes();
             output.write(bytes);
@@ -100,8 +112,12 @@ public class Connection {
         catch (IOException e) {
             active = false;
             onConnectionLoss.accept(e);
-        } catch (InterruptedException ex) {
+        } 
+        catch (InterruptedException ex) {
             Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally {
+            lock.unlock();
         }
         return false;
     }
@@ -110,11 +126,14 @@ public class Connection {
         new Thread(() -> {
             try {
                 while (true) {
+                    lock.lock();
                     output.write("PING".getBytes());
+                    lock.unlock();
                     input.readLine();
                     TimeUnit.SECONDS.sleep(1);
                 }
             } catch (IOException ex) { // connection error or read timeout
+                lock.unlock();
                 active = false;
                 onConnectionLoss.accept(ex);
             } catch (InterruptedException ex) {

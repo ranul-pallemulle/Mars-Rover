@@ -416,17 +416,14 @@ public class MainFxmlController implements Initializable {
      * Event handler for when autoGoalEnableButton is pressed
      */
     public void autoGoalEnableButtonPressed () {
-         String selectedGoal= autoGoalSelector.getValue();
-         autoModeManager.enableGoal(selectedGoal);
-    }
-    
-    
-    /**
-     * Event handler for when autoGoalDisableButton is pressed
-     */
-    public void autoGoalDisableButtonPressed () {
-        String selectedGoal = autoGoalSelector.getValue();
-        autoModeManager.disableGoal(selectedGoal);
+        if (autoGoalEnableButton.isSelected()) {
+            String selectedGoal= autoGoalSelector.getValue();
+            autoModeManager.enableGoal(selectedGoal);
+        }
+        else {
+            String selectedGoal = autoGoalSelector.getValue();
+            autoModeManager.disableGoal(selectedGoal);
+        }
     }
     
     
