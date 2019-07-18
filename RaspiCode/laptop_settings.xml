@@ -6,7 +6,7 @@
   </DIAGNOSTICS>
   
   <!-- <IP_ADDRESS> 172.24.1.1 </IP_ADDRESS> -->
-  <IP_ADDRESS> localhost </IP_ADDRESS>
+  <!-- <IP_ADDRESS> localhost </IP_ADDRESS> -->
   <!-- <IP_ADDRESS> 192.268.2.3 </IP_ADDRESS> -->
   <!-- <IP_ADDRESS> 10.42.0.69 </IP_ADDRESS> -->
 

@@ -280,9 +280,9 @@ class OverallConfiguration(Configuration):
             raise ConfigurationError("Error in Diagnostics settings: port number needs to be larger than 1000 to prevent conflict with reserved ports.")
         return port
         
-    def ip_address(self):
-        val = self.top_level_element_value("IP_ADDRESS")
-        if val is None:
-            raise ConfigurationError("No settings found for IP address.")
-        return val
+    # def ip_address(self):
+    #     val = self.top_level_element_value("IP_ADDRESS")
+    #     if val is None:
+    #         raise ConfigurationError("No settings found for IP address.")
+    #     return val
 
