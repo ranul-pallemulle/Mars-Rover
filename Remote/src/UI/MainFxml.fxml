@@ -77,6 +77,7 @@
                 <HBox alignment="center" spacing="5">
                     <ComboBox fx:id="ipSelector" promptText="Connection Method" />
                     <ToggleButton fx:id="connectRoverButton" onAction="#connectRoverButtonPressed" selected="false" text="Connect to Rover" />
+                    <Button fx:id="scanButton" onAction="#scanButtonPressed" text="Scan"/>
                 </HBox>
                 <HBox alignment="center" spacing="5" GridPane.columnIndex="0" GridPane.rowIndex="0">
                     <ComboBox fx:id="autoGoalSelector" promptText="Autonomous Mode Goal" />

@@ -74,6 +74,7 @@ public class MainFxmlController implements Initializable {
     @FXML private ComboBox<String> ipSelector;
     @FXML private SwingNode videoScreen;
     @FXML private ToggleButton connectRoverButton;
+    @FXML private Button scanButton;
     @FXML private ToggleButton joyConnectButton;
     @FXML private ToggleButton armConnectButton;
     @FXML private ToggleButton vidConnectButton;
@@ -148,7 +149,6 @@ public class MainFxmlController implements Initializable {
         
         // initialise IPAddressManager and ipSelector
         ipAddressManager = new IPAddressManager();
-        ipAddressManager.locateRaspberryPi();
         List<String> names = ipAddressManager.getNames();
         for (String name : names) {
             ipSelector.getItems().add(name);
@@ -230,7 +230,7 @@ public class MainFxmlController implements Initializable {
             // Connect in a new thread, allow user to cancel in main thread
             new Thread(()-> {
                 try {
-                    connection.open(selectedIpAddress, 5560, 6, true); // 6 second timeout
+                    connection.open(selectedIpAddress, 5560, 10, true); // 10 second timeout
                     Platform.runLater(()->{
                         setButtonsOnConnectionActivated();
                         if (alert.isShowing()) {
@@ -281,13 +281,52 @@ public class MainFxmlController implements Initializable {
     
     
     /**
+     * Event handler for when scanButton is pressed
+     */
+    public void scanButtonPressed() {
+        ButtonType cancelButton = new ButtonType(
+                    "Cancel", ButtonBar.ButtonData.YES);
+        Alert alert = new Alert(AlertType.INFORMATION, 
+                            "Please wait until the rover is located", cancelButton);
+        alert.setHeaderText("Finding rover...");
+        new Thread(()->{
+            String ip = ipAddressManager.locateRaspberryPi();
+            if (ip != null) {
+                Platform.runLater(()->{
+                    ipSelector.getItems().clear();
+                    List<String> names = ipAddressManager.getNames();
+                    for (String name : names) {
+                        ipSelector.getItems().add(name);
+                    }
+                    if (alert.isShowing()) {
+                        alert.close();
+                    }
+                });  
+            }
+            else {
+                Platform.runLater(()->{
+                    if (alert.isShowing()) {
+                        alert.close();
+                    }
+                    Alert conn_alert = new Alert(AlertType.ERROR, 
+                        "Search for 'raspberrypi.local' returned no results.");
+                    conn_alert.setHeaderText("Could not locate rover.");
+                    conn_alert.show();
+                });
+            }
+        }).start();
+        alert.showAndWait();
+    }
+    
+    
+    /**
      * Event handler for when diagnosticsConnectButton is pressed
      */
     public void diagnosticsConnectButtonPressed() {
         if (diagnosticsConnectButton.isSelected()) {
             try {
                 
-                diagnostics.getConnection().open(ipAddressManager.getCurrentIP(), 5570, 6, false); // no read timeout
+                diagnostics.getConnection().open(ipAddressManager.getCurrentIP(), 5570, 10, false); // no read timeout
                 diagnostics.begin();
             } catch (IOException ex) {
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
@@ -313,7 +352,7 @@ public class MainFxmlController implements Initializable {
         if (joyConnectButton.isSelected()) {
             try {
                 connection.sendWithDelay("START JOYSTICK 5562",1);
-                joyController.getConnection().open(ipAddressManager.getCurrentIP(), 5562, 6, true);
+                joyController.getConnection().open(ipAddressManager.getCurrentIP(), 5562, 10, true);
             } catch (IOException ex) {
                 connection.sendWithDelay("STOP JOYSTICK",1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
@@ -335,7 +374,7 @@ public class MainFxmlController implements Initializable {
         if (armConnectButton.isSelected()) {
             try {
                 connection.sendWithDelay("START ROBOTICARM 5563",1);
-                armController.getConnection().open(ipAddressManager.getCurrentIP(), 5563, 6, true);
+                armController.getConnection().open(ipAddressManager.getCurrentIP(), 5563, 10, true);
             } catch (IOException ex) {
                 connection.sendWithDelay("STOP ROBOTICARM", 1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());

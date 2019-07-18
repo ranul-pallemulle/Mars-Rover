@@ -30,12 +30,11 @@ public class IPAddressManager {
         try {
             InetAddress ip = InetAddress.getByName("raspberrypi.local");
             String address = ip.getHostAddress();
-            ip_addresses.put("Found pi", address);
+            ip_addresses.put("Found Rover", address);
             return address;
         } catch (UnknownHostException ex) {
-            Logger.getLogger(IPAddressManager.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
-        return null;
     }
     
     public ArrayList<String> getNames() {
