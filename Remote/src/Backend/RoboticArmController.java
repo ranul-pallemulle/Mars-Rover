@@ -28,6 +28,7 @@ public class RoboticArmController {
     private double lim_sum; // limit of sum of arm servo angles
     private double seg3down_ang; // angle of last segment when seg3down
     private boolean seg3down; // keep last segment down
+    private boolean free_arm; // move whole arm
     private boolean limits_active; // arm angles are limited
     private boolean sum_limit_active; // sum of arm angles is limited
     
@@ -47,6 +48,7 @@ public class RoboticArmController {
         segL = 50;
         seg3down = false;
         seg3down_ang = PI/2;
+        free_arm = true;
         limits_active = false;
         sum_limit_active = false;
         max_ea = 20 * PI/180;
@@ -105,22 +107,40 @@ public class RoboticArmController {
     public boolean moveSecondJoint(double x, double y) {
         boolean success;
         if (!seg3down) {
-            double [] angs = inverseKinematics2R(armX[3],armY[3],x,y);
-            double base_ang = angs[0];
-            double elbow_ang = angs[1];
+            double base_ang;
+            double elbow_ang;
+            if (free_arm) { // determine base and elbow using inverse kinematics
+                double [] angs = inverseKinematics2R(armX[3],armY[3],x,y);
+                base_ang = angs[0];
+                elbow_ang = angs[1];
+            }
+            else { // keep base angle locked, elbow angle follows x,y
+                base_ang = armT[0];
+                elbow_ang = atan2(y-armY[1],x-armX[1]) - armT[0];
+            }
+            // top angle doesnt change (stays armT[2])
             success = setAngles(base_ang, elbow_ang, armT[2], gripper_val);
         }
         else {
             double reqx3 = x + segL*cos(seg3down_ang);
             double reqy3 = y + segL*sin(seg3down_ang);
-            double[] angs = inverseKinematics2R(reqx3,reqy3,x,y);
-            double base_ang = angs[0];
-            double elbow_ang = angs[1];
+            double base_ang;
+            double elbow_ang;
+            if (free_arm) {
+                double[] angs = inverseKinematics2R(reqx3,reqy3,x,y);
+                base_ang = angs[0];
+                elbow_ang = angs[1];
+            }
+            else {
+                base_ang = armT[0];
+                elbow_ang = atan2(y-armY[1],x-armX[1]) - armT[0];
+            }
             double top_ang = seg3down_ang - elbow_ang - base_ang;
+            // top angle changes to maintain angle of last segment to horizon
             success = setAngles(base_ang, elbow_ang, top_ang, gripper_val);
         }
         
-        if (success) {
+        if (success) { // movement is possible based on limits
             forwardKinematics();
             if (connection.isActive()) {
                 String data = String.format("%d,%d,%d,%d", 
@@ -141,13 +161,13 @@ public class RoboticArmController {
     public boolean moveThirdJoint(double x, double y) {
         double reqx3 = x;
         double reqy3 = y;
-        double gam;
-        if (!seg3down) {
+        double gam; // angle of last segment to horizon (ground)
+        if (!seg3down) { // gamma calculated based on new position
             double dx3 = reqx3 - armX[2];
             double dy3 = reqy3 - armY[2];
             gam = atan2(dy3,dx3);
         }
-        else {
+        else { // gamma fixed
             gam = seg3down_ang;
         }
         
@@ -155,11 +175,20 @@ public class RoboticArmController {
         double reqx2 = reqx3 - segL*cos(gam);
         double reqy2 = reqy3 - segL*sin(gam);
         
-        double[] angs = inverseKinematics2R(reqx3,reqy3,reqx2,reqy2);
-        double base_ang = angs[0];
-        double elbow_ang = angs[1];
+        double base_ang;
+        double elbow_ang;
+        if (free_arm) {
+            double[] angs = inverseKinematics2R(reqx3,reqy3,reqx2,reqy2);
+            base_ang = angs[0];
+            elbow_ang = angs[1];
+        }
+        else { // no need to move first and second arm segments
+            base_ang = armT[0];
+            elbow_ang = armT[1];
+        }
+        
         double top_ang = gam - elbow_ang - base_ang;
-        if (top_ang < -PI) {
+        if (top_ang < -PI) { // angle range is -PI < top_ang < PI
             top_ang = 2*PI + top_ang;
         }
         else if (top_ang > PI) {
@@ -261,6 +290,17 @@ public class RoboticArmController {
         }
         seg3down_ang = backup;
         return false;
+    }
+    
+
+    /**
+     * If set true, allow all joints to move freely regardless of which joint 
+     * is moved by mouse. If set false, individual segments move when a joint 
+     * is moved by mouse.
+     * @param set 
+     */
+    public void enableFreeArm(boolean set) {
+        free_arm = set;
     }
     
     

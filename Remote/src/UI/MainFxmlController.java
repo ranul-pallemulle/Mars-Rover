@@ -91,6 +91,7 @@ public class MainFxmlController implements Initializable {
     @FXML private ComboBox<String> positionSelector;
     @FXML private ToggleButton seg3DownButton;
     @FXML private Spinner<Integer> seg3DownOffsetPicker;
+    @FXML private ToggleButton freeArmButton;
     @FXML private TextArea diagnosticsTextArea;
     @FXML private ToggleButton diagnosticsConnectButton;
     
@@ -121,10 +122,12 @@ public class MainFxmlController implements Initializable {
         armConnectButton.setDisable(true);
         limitsButton.setSelected(true); // limits should be active by default
         sumLimitsButton.setSelected(true);
+        freeArmButton.setSelected(true);
         runAfterInitList.add((Runnable) () -> {
             limitsButtonPressed();
             sumLimitsButtonPressed();
-        } // simulate limits button presses
+            freeArmButtonPressed();
+        } // simulate button presses
         );
         seg3DownOffsetPicker.setValueFactory(
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(-45,45,0));
@@ -763,6 +766,18 @@ public class MainFxmlController implements Initializable {
         
     }
     
+    
+    /**
+     * Event handler for when freeArmButton is pressed.
+     */
+    public void freeArmButtonPressed() {
+        if (freeArmButton.isSelected()) {
+            armController.enableFreeArm(true);
+        }
+        else {
+            armController.enableFreeArm(false);
+        }
+    }
     
     /**
      * Event handler for when dataFileOpenButton is pressed.

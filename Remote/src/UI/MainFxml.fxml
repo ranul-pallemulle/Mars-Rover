@@ -120,7 +120,8 @@
                 <Button fx:id="watchPositionButton" onAction="#watchPositionButtonPressed" text="Watch" />
                 <Button fx:id="pickPositionButton" onAction="#pickPositionButtonPressed" text="Pick" />
                 <ToggleButton fx:id="seg3DownButton" onAction="#seg3DownButtonPressed" text="Seg3Down" />
-                <Spinner fx:id="seg3DownOffsetPicker" onMouseClicked="#seg3DownOffsetPickerClicked" prefHeight="30" prefWidth="65" />
+                <Spinner fx:id="seg3DownOffsetPicker" onMouseClicked="#seg3DownOffsetPickerClicked" prefHeight="30" prefWidth="60" />
+                <ToggleButton fx:id="freeArmButton" onAction="#freeArmButtonPressed" text="Free Arm"/>
             </HBox>
             <Group>
                 <Circle id="Armrange" centerX="250" centerY="250" radius="150" />
