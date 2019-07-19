@@ -17,7 +17,7 @@ class CameraUserError(Exception):
 class CameraUser:
     '''Provides an interface to the camera resource.'''
     __metaclass__ = ABCMeta
-    ip = '127.0.0.1'
+
 
     def __init__(self):
         self.camera = None
@@ -25,9 +25,6 @@ class CameraUser:
         self.streaming = False
         self.framerate_list = []
 
-    @classmethod
-    def set_ip(cls, ip):
-        cls.ip = ip
 
     def _stream(self):
         '''Run in separate thread - cannot raise exceptions.'''
@@ -73,8 +70,7 @@ class CameraUser:
         if not self.have_camera():
             raise CameraUserError('Camera not acquired.')
         
-        # host = cfg.overall_config.ip_address()
-        host = self.__class__.ip
+        host = cfg.overall_config.get_connected_ip()
         if source is None:
             strm_port = cfg.cam_config.stream_port()
             strm_framerate = cfg.cam_config.stream_framerate()
@@ -116,6 +112,8 @@ gdppay ! tcpserversink host='+host+' port='+str(strm_port)+' sync=false'
         else:
             thread = Thread(target=self._stream_nondefault, args=[source])
         thread.start()
+        dg.print("Using camera device '{}' and encoder '{}'".format(device,compressor))
+        dg.print("Streaming on IP address {} and port {}".format(host,strm_port))
 
     def end_stream(self):
         '''Stop streaming.'''

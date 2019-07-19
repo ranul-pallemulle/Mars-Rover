@@ -127,7 +127,8 @@ class TcpSocket:
             self.disconn_sender = None
 
     def unblock(self):
-        '''Force read() to return with None to indicate broken connection. Should not raise exceptions.'''
+        '''Force socket select.select() to return readable on disconn_listener 
+to prevent blocking on socket.recv() or socket.accept().'''
         try:
             self.disconn_sender.sendall(str.encode('d'))
         except (OSError): # sockets might be closed (bad file descriptor)
