@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 /**
  *
- * @author ranul
+ * @author Ranul Pallemulle
  */
 public class AutoModeManager {
     private HashMap<String,String> goalStatuses;
@@ -28,14 +28,14 @@ public class AutoModeManager {
         
         for (String key : goalStatuses.keySet()) {
             String stat = goalStatuses.get(key);
-            if (stat == "Enabled") {
+            if (stat.equals("Enabled")) {
                 allDisabled = false; // at least one goal is enabled
             }
         }
         if (status == null) { // Bad key
             return; // TODO
         }
-        if (status == "Disabled") {
+        if (status.equals("Disabled")) {
             goalStatuses.put(goal, "Enabled");
             if (connection.isActive()) {
                 if (allDisabled) {
@@ -54,7 +54,7 @@ public class AutoModeManager {
         if (status == null) { // Bad key
             return; // TODO
         }
-        if (status == "Enabled") {
+        if (status.equals("Enabled")) {
             goalStatuses.put(goal, "Disabled");
             if (connection.isActive()) {
                 connection.send("AUTO -> Goal "+goal+" stop");
@@ -71,7 +71,7 @@ public class AutoModeManager {
             if (status == null) {
                 continue;
             }
-            if (status == "Enabled") {
+            if (status.equals("Enabled")) {
                 goalStatuses.put(key, "Disabled");
             }
         }

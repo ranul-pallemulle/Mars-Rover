@@ -5,7 +5,6 @@
  */
 package Backend;
 
-import java.io.IOException;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.acos;
@@ -14,8 +13,6 @@ import static java.lang.Math.atan2;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -59,6 +56,12 @@ public class RoboticArmController {
         lim_sum = 180 * PI/180;
     }
     
+    
+    /**
+     * Initialize the this.connection field by providing it a consumer of 
+     * exceptions.
+     * @param c 
+     */
     public void initialiseConnection(Consumer<Exception> c) {
         connection = new Connection(c);
     }
@@ -177,7 +180,8 @@ public class RoboticArmController {
     
     
     /**
-     * Move arm by changing the individual servo angles
+     * Move arm by changing the individual servo angles. Angles should be 
+     * provided in radians.
      * @param base
      * @param elbow
      * @param top
@@ -198,6 +202,11 @@ public class RoboticArmController {
         return success;
     }
     
+    
+    /**
+     * Move the gripper servo by providing it a value.
+     * @param value - new angle in degrees
+     */
      public void moveGripper(double value) {
         gripper_val = value;
         if (connection.isActive()) {
@@ -255,19 +264,30 @@ public class RoboticArmController {
     }
     
     
+    /**
+     * Enable limits on the robotic arm.
+     * @param set 
+     */
     public void enableLimits(boolean set) {
         limits_active = set;
     }
     
     
+    /**
+     * Enable limit based on the sum of the elbow and top angles.
+     * @param set 
+     */
     public void enableSumLimit(boolean set) {
         sum_limit_active = set;
     }
     
     
-   
-    
-    
+    /**
+     * Set angle limits in radians.
+     * @param base
+     * @param elbow
+     * @param top 
+     */
     public void setLimits(double base, double elbow, double top) {
         lim_base = base;
         lim_elbow = elbow;
@@ -275,11 +295,22 @@ public class RoboticArmController {
     }
     
     
+    /**
+     * Enable limit based on sum of elbow and top angles.
+     * @param sum 
+     */
     public void setSumLimit(double sum) {
         lim_sum = sum;
     }
     
-    
+    /**
+     * Set arm angle limits, including the sum limit. Angles should be provided 
+     * in radians.
+     * @param base
+     * @param elbow
+     * @param top
+     * @param sum 
+     */
     public void setLimits(double base, double elbow, double top, double sum) {
         lim_base = base;
         lim_elbow = elbow;

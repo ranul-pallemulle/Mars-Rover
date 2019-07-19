@@ -36,6 +36,15 @@ public class Connection {
         active = false;
     }
     
+    
+    /**
+     * Attempt a connection to the specified address.
+     * @param IP - IP address to connect to
+     * @param port - port to connect to
+     * @param timeout - maximum time to wait for successful connection
+     * @param timeout_on_read - if true, reads will have a timeout (=timeout)
+     * @throws IOException - if connection attempt fails
+     */
     public void open(String IP, int port, int timeout, boolean timeout_on_read) 
             throws IOException {
         try {
@@ -53,9 +62,12 @@ public class Connection {
             active = false;
             throw e;
         }
-        
     }
     
+    
+    /**
+     * If a connection is active, close it. Does not throw exceptions.
+     */
     public void close() {
         if (socket != null) {
             try {
@@ -68,6 +80,13 @@ public class Connection {
         }
     }
     
+    
+    /**
+     * Read a line from the active connection. Blocks until something is 
+     * received. If an exception occurs, send it to this.onConnectionLoss. Does 
+     * not throw exceptions.
+     * @return 
+     */
     public String receive() {
         lock.lock();
         try{
@@ -83,6 +102,16 @@ public class Connection {
         return null;
     }
     
+    
+    /**
+     * Send a string on the active connection. Expects a reply and blocks on 
+     * read. The read will timeout based on whether the connection has timeouts 
+     * enabled on reads or not. If an exception occurs, send it to 
+     * this.onConnectionLoss. Does not throw exceptions.
+     * @param data - string to send.
+     * @return - true if a valid reply was received. false if an exception 
+     * occurs.
+     */
     public boolean send(String data) {
         lock.lock();
         try {
@@ -100,6 +129,15 @@ public class Connection {
         return false;
     }
     
+    
+    /**
+     * Same as send() but with after sending the string and receiving a reply, 
+     * the thread sleeps for a specified duration. Does not throw exceptions.
+     * @param data
+     * @param timeout
+     * @return - true if the delay completes successfully. false if an 
+     * exception occurs.
+     */
     public boolean sendWithDelay(String data, int timeout) {
         lock.lock();
         try {
@@ -122,6 +160,12 @@ public class Connection {
         return false;
     }
     
+    
+    /**
+     * Continuously write the string "PING" and expect a reply. A delay of 1 
+     * second follows the reply. Spawn a new thread for this. Does not throw 
+     * exceptions.
+     */
     public void startPing() {
         new Thread(() -> {
             try {
@@ -143,6 +187,12 @@ public class Connection {
         }).start();
     }
     
+    
+    /**
+     * Get the value of the this.active field. If the value is true, the 
+     * connection is active.
+     * @return - the current connection status.
+     */
     public boolean isActive() {
         return active;
     }

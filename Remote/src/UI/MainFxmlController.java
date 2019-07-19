@@ -100,8 +100,8 @@ public class MainFxmlController implements Initializable {
     private ArrayList<Runnable> runAfterInitList; // run after UI initialisation
     private Connection connection; // connection to rover
     private Diagnostics diagnostics; // receive diagnostic messages
-    private IPAddressManager ipAddressManager;
-    private AutoModeManager autoModeManager;
+    private IPAddressManager ipAddressManager; // hold IP addresses and names
+    private AutoModeManager autoModeManager; // hold auto goal on/off statuses
     
     
     /**
@@ -434,12 +434,16 @@ public class MainFxmlController implements Initializable {
         autoGoalEnableButton.setSelected(false);
     }
     
+    
+    /**
+     * Event handler for when autoGoalSelector's value is changed
+     */
     public void autoGoalSelectorSelectionChanged () {
         String current = autoGoalSelector.getValue();
-        if (current == "Enabled") {
+        if (current.equals("Enabled")) {
             autoGoalEnableButton.setSelected(true);
         }
-        else if (current == "Disabled") {
+        else if (current.equals("Disabled")) {
             autoGoalEnableButton.setSelected(false);
         }
         else { // probably null - not allowed
