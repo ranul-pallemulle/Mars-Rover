@@ -1,0 +1,197 @@
+/*
+ * Empty Stylesheet file.
+ */
+
+*{
+    -fx-theme-background-color: #39373b;/*#edfbff;*/
+    -fx-theme-joy-color: #555555;/*#72b3ff;*/
+    -fx-theme-joy-hover-color: #777777;/*#afd4ff;*/
+    -fx-theme-joyback-color: #AAAAAA;/*#1984ff;*/
+    -fx-theme-label-color: #FFFFFF;/*#10427c;*/
+    -fx-theme-text-color: #FFFFFF;
+    -fx-theme-textarea-background-color: #2a262b;
+    -fx-theme-button-color: #1b171c;/*#72b3ff;*/
+    -fx-theme-button-hover-color: #777777;/*#afd4ff;*/
+    -fx-theme-button-selected-color: #3f3d40;
+    -fx-theme-button-text-color: -fx-theme-text-color;
+}
+
+.root{
+    -fx-background-color: -fx-theme-background-color;
+}
+
+.button{
+    -fx-background-color: -fx-theme-button-color;
+    -fx-text-fill: -fx-theme-button-text-color;
+}
+.button:hover{
+    -fx-background-color: -fx-theme-button-hover-color;
+}
+.button:pressed{
+    -fx-background-color: #35233d;
+}
+.button:selected{
+    -fx-background-color: -fx-theme-button-selected-color;
+}
+
+.text-id {
+    /*-fx-fill: -fx-theme-text-color;*/
+    -fx-fill: #bdbabf;
+}
+
+.text-field {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-background-insets: 0;
+    -fx-control-inner-background: -fx-theme-textarea-background-color;
+    -fx-background-color: -fx-theme-textarea-background-color;
+    -fx-background: -fx-theme-textarea-background-color;
+}
+
+.text-area {
+    -fx-background-insets: 0;
+    -fx-background-color: transparent, -fx-theme-textarea-background-color, transparent, -fx-theme-textarea-background-color;
+    -fx-text-fill: -fx-theme-text-color;
+}
+
+.text-area .content {
+    -fx-background-color: transparent, -fx-theme-textarea-background-color, transparent, -fx-theme-textarea-background-color;
+}
+
+.text-area:focused .content {
+    -fx-background-color: transparent, -fx-theme-textarea-background-color, transparent, -fx-theme-textarea-background-color;
+}
+
+.text-area:focused {
+    -fx-highlight-fill: #7ecfff;
+}
+
+.text-area .content {
+    -fx-padding: 10px;
+    -fx-highlight-fill: #7ecfff;
+}
+
+.combo-box {
+    -fx-background-color: -fx-theme-textarea-background-color;
+}
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+.combo-box .list-cell {
+    -fx-background-color: -fx-theme-textarea-background-color;
+    -fx-text-fill: -fx-theme-text-color;
+}
+.combo-box .list-view {
+    -fx-background-color: -fx-theme-textarea-background-color;
+    -fx-background-insets: 0, 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 8, 0.0, 0, 0);
+}
+.combo-box-popup .list-view .list-cell:filled:selected, .combo-box-popup .list-view .list-cell:filled:hover {
+    -fx-background: -fx-accent;
+    -fx-background-color: -fx-theme-button-color;
+}
+
+.spinner .arrow-button{
+    -fx-background-color: transparent;
+}
+
+#joyBackCircle{
+    -fx-fill: -fx-theme-joyback-color;
+    -fx-stroke: #000000;
+}
+
+#joyFrontCircle{
+    -fx-fill: -fx-theme-joy-color;
+    -fx-stroke: #000000;
+}
+
+#joyFrontCircle:hover{
+    -fx-fill: -fx-theme-joy-hover-color;
+}
+
+#sliderline{
+    -fx-stroke: #000000;
+}
+
+#sliderBall{
+    -fx-fill: -fx-theme-button-color;
+    -fx-stroke: #000000;
+}
+
+#sliderBall:hover{
+    -fx-fill: -fx-theme-button-hover-color;
+}
+
+#sliderBall:pressed{
+    -fx-stroke: -fx-theme-button-hover-color;
+}
+
+#sliderSnap{
+    -fx-fill: -fx-theme-button-color;
+    -fx-stroke: #000000;
+}
+
+#sliderSnap:hover{
+    -fx-fill: -fx-theme-button-hover-color;
+}
+
+#sliderSnap:pressed{
+    -fx-stroke: -fx-theme-button-hover-color;
+}
+
+#rover{
+    -fx-fill: #AAAAAA;
+    -fx-stroke: #000000;
+}
+
+#Armrange{
+    -fx-fill: #AAAAAA66;
+}
+
+#ground{
+    -fx-fill: #cc7722;
+}
+
+#groundline{
+    -fx-stroke: #000000;
+}
+
+
+#armJoint1{
+    -fx-fill: #ffaa55;
+    -fx-stroke: #000000;
+}
+
+#armJoint1:hover{
+    -fx-fill: #dd8833;
+}
+
+#armJoint2{
+    -fx-fill: #ffaa55;
+    -fx-stroke: #000000;
+}
+
+#armJoint2:hover{
+    -fx-fill: #dd8833;
+}
+
+#armJoint3{
+    -fx-fill: #ff8855;
+    -fx-stroke: #000000;
+}
+
+#armJoint3:hover{
+    -fx-fill: #dd8833;
+}
+
+#lineSeg1{
+    -fx-stroke: #dd9955;
+}
+
+#lineSeg2{
+    -fx-stroke: #dd9955;
+}
+
+#lineSeg3{
+    -fx-stroke: #dd9955;
+}

@@ -39,6 +39,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextArea;
@@ -193,7 +194,12 @@ public class MainFxmlController implements Initializable {
         diagnostics.initialiseConnection((Consumer<Exception>)(e)->{
             // do nothing
         });
+        diagnosticsTextArea.setWrapText(true);
         diagnosticsTextArea.setText(""); // else null pointer when trying to appendText
+        runAfterInitList.add((Runnable) () -> {
+            ScrollBar vertScroll = (ScrollBar) diagnosticsTextArea.lookup(".scroll-bar:vertical");
+            vertScroll.setDisable(true);
+        });
         
         // initialise main connection
         connection = new Connection((Consumer<Exception>)(e)->{
@@ -976,7 +982,7 @@ public class MainFxmlController implements Initializable {
     }
     
     private void onDiagnosticMessageReceived(Queue<String> q) {
-        diagnosticsTextArea.setText(" ");
+        diagnosticsTextArea.setText("");
         try {
             for (String msg : q) {
                 diagnosticsTextArea.appendText(msg+"\n");
