@@ -4,28 +4,17 @@
     <STATE> Enabled </STATE>
     <PORT> 5570 </PORT>
   </DIAGNOSTICS>
-  
-  <!-- <IP_ADDRESS> 172.24.1.1 </IP_ADDRESS> -->
-  <!-- <IP_ADDRESS> localhost </IP_ADDRESS> -->
-  <!-- <IP_ADDRESS> 192.268.2.3 </IP_ADDRESS> -->
-  <!-- <IP_ADDRESS> 10.42.0.69 </IP_ADDRESS> -->
 
   <CAMERA>
-    <!-- <DEVICE> v4l2src </DEVICE> -->
-    <!-- <DEVICE> avfvideosrc </DEVICE> -->
     <DEVICE> autovideosrc </DEVICE>
     <CAPTURE_FRAMERATE> 30 </CAPTURE_FRAMERATE>
     <CAPTURE_FRAME_WIDTH> 640 </CAPTURE_FRAME_WIDTH>
     <CAPTURE_FRAME_HEIGHT> 480 </CAPTURE_FRAME_HEIGHT>
-    <!-- <CAPTURE_FRAME_WIDTH> 320 </CAPTURE_FRAME_WIDTH> -->
-    <!-- <CAPTURE_FRAME_HEIGHT> 240 </CAPTURE_FRAME_HEIGHT> -->
     
     <STREAM_PORT> 5564 </STREAM_PORT>
     <STREAM_FRAMERATE> 30 </STREAM_FRAMERATE>
     <STREAM_FRAME_WIDTH> 640 </STREAM_FRAME_WIDTH>
     <STREAM_FRAME_HEIGHT> 480 </STREAM_FRAME_HEIGHT>
-    <!-- <STREAM_FRAME_WIDTH> 320 </STREAM_FRAME_WIDTH> -->
-    <!-- <STREAM_FRAME_HEIGHT> 240 </STREAM_FRAME_HEIGHT> -->
   </CAMERA>
 
   <AUTONOMOUS>
@@ -67,6 +56,21 @@
   </MOTORS>
 
   <MOTORS NAME="DeployableCamera">
+    <MOTOR NAME="Servo1">
+      <PIN TYPE="Other"> 1 </PIN> <!--top-->
+      <LIMIT NAME="Upper"> 90 </LIMIT>
+      <LIMIT NAME="Lower"> -90 </LIMIT>
+    </MOTOR>
+    <MOTOR NAME="Servo2">
+      <PIN TYPE="Other"> 2 </PIN> <!--middle-->
+      <LIMIT NAME="Upper"> 90 </LIMIT>
+      <LIMIT NAME="Lower"> -90 </LIMIT>
+    </MOTOR>
+    <MOTOR NAME="Servo3">
+      <PIN TYPE="Other"> 3 </PIN>	<!--bottom-->
+      <LIMIT NAME="Upper"> 90 </LIMIT>
+      <LIMIT NAME="Lower"> -90 </LIMIT>
+    </MOTOR>
   </MOTORS>
 
   <OPMODES_DIRECTORIES>
@@ -74,7 +78,8 @@
     robotic_arm,
     dummy_opmode,
     camera_feed,
-    autonomous
+    autonomous,
+    deployable_camera
   </OPMODES_DIRECTORIES>
 
   <RESOURCES_DIRECTORIES>

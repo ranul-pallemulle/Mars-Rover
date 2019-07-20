@@ -12,8 +12,6 @@ class UltrasoundSensor(Resource):
         self.policy = Policy.SHARED
         self.register_name("Ultrasound")
         try:
-            self.power_pin = cfg.auto_config.ultrasound_power_pin()
-            self.ground_pin = cfg.auto_config.ultrasound_ground_pin()
             self.trigger_pin = cfg.auto_config.ultrasound_trigger_pin()
             self.echo_pin = cfg.auto_config.ultrasound_echo_pin()
         except cfg.ConfigurationError as e:
@@ -31,12 +29,8 @@ class UltrasoundSensor(Resource):
     def start_capture(self):
         if not self.active:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(self.power_pin, GPIO.OUT)
-            GPIO.setup(self.ground_pin, GPIO.OUT)
             GPIO.setup(self.trigger_pin, GPIO.OUT)
             GPIO.setup(self.echo_pin, GPIO.IN)
-            GPIO.output(self.ground_pin, GPIO.LOW)
-            GPIO.output(self.power_pin, GPIO.HIGH)
             GPIO.output(self.trigger_pin, GPIO.LOW)
             time.sleep(1)
             self.active = True
@@ -47,7 +41,6 @@ class UltrasoundSensor(Resource):
             self.active = False
         time.sleep(1)
         GPIO.output(self.trigger_pin, GPIO.LOW)
-        GPIO.output(self.power_pin, GPIO.LOW)
         # GPIO.cleanup()
 
     def read(self):
@@ -65,12 +58,9 @@ class UltrasoundSensor(Resource):
         while self.active:
             start_fresh = False
             timeout_count = 0
-            # print("sending pulse")
             self._send_pulse()
 
             while self.active and GPIO.input(self.echo_pin) == 0:
-                # print("IN ONE")
-                # print("IN ONE: {}".format(timeout_count))
                 timeout_count += 1
                 if timeout_count == 200:
                     start_fresh = True
@@ -79,11 +69,9 @@ class UltrasoundSensor(Resource):
 
 
             while self.active and GPIO.input(self.echo_pin) == 1:
-                # print("IN TWO")
                 pulse_end = time.time()
 
             if start_fresh:
-                # print("Starting fresh")
                 time.sleep(0.2)
                 continue
 
@@ -96,4 +84,4 @@ class UltrasoundSensor(Resource):
             self.lock.acquire_write()
             self.distance = distance
             self.lock.release()
-            # print("Distance: {}".format(distance))
+

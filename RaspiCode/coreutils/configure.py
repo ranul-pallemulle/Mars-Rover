@@ -52,6 +52,17 @@ class Configuration:
                         return subthing
                 except KeyError:
                     return None
+                
+    def _getsubelemvaluebyname(self, elem, subname, pred, match):
+        for things in elem:
+            for subthing in things:
+                if subthing.tag == subname:
+                    try:
+                        if subthing.attrib[pred] == match:
+                            return subthing
+                    except KeyError:
+                        return None
+
 
     def _make_searchstr_list(self, req_list):
         searchstr_list = []
@@ -100,7 +111,8 @@ class MotorConfiguration(Configuration):
         req = ["{Motors}[name]"+motor_group+".{Motor}[name]"
                +motor_name]
         motor = self.provide_settings(req)
-        pin = self._getsubelemvalue(motor[0],"TYPE","PWM")
+        # pin = self._getsubelemvalue(motor[0],"TYPE","PWM")
+        pin = self._getsubelemvaluebyname(motor[0], "PIN", "TYPE", "PWM")
         try:
             return int(pin.text)
         except ValueError as e:
@@ -110,7 +122,8 @@ class MotorConfiguration(Configuration):
         req = ["{Motors}[name]"+motor_group+".{Motor}[name]"
                +motor_name]
         motor = self.provide_settings(req)
-        pin = self._getsubelemvalue(motor[0], "TYPE", "Digital")
+        # pin = self._getsubelemvalue(motor[0], "TYPE", "Digital")
+        pin = self._getsubelemvaluebyname(motor[0], "PIN", "TYPE", "Digital")
         try:
             return int(pin.text)
         except ValueError as e:
@@ -120,11 +133,27 @@ class MotorConfiguration(Configuration):
         req = ["{Motors}[name]"+motor_group+".{Motor}[name]"
                +motor_name]
         motor = self.provide_settings(req)
-        pin = self._getsubelemvalue(motor[0], "TYPE", "Other")
+        # pin = self._getsubelemvalue(motor[0], "TYPE", "Other")
+        pin = self._getsubelemvaluebyname(motor[0], "PIN", "TYPE", "Other")
         try:
             return int(pin.text)
         except ValueError as e:
-            raise ConfigurationError("Bad value in settings file for pin of motor '"+motor_name+"'. Error: "+str(e))         
+            raise ConfigurationError("Bad value in settings file for pin of motor '"+motor_name+"'. Error: "+str(e))        
+
+    def get_limit(self, motor_group, motor_name, lim_name):
+        req = ["{Motors}[name]"+motor_group+".{Motor}[name]"+motor_name]
+        motor = self.provide_settings(req)
+        lim_name = str.capitalize(lim_name)
+        lim = self._getsubelemvaluebyname(motor[0], "LIMIT" ,"NAME", lim_name)
+        try:
+            return float(lim.text)
+        except ValueError as e:
+            raise ConfigurationError("Bad value in settings file for limit '{}'\
+ of motor '{}'. Error: {}".format(lim_name,motor_name,str(e)))
+        except AttributeError as e:
+            raise ConfigurationError("Search for limit '{}' on motor '{}' \
+of group '{}' returned no result".format(lim_name,motor_name,motor_group))
+
 
 class CameraConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
