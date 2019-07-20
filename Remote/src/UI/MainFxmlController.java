@@ -149,6 +149,7 @@ public class MainFxmlController implements Initializable {
         } catch (IOException | FormatException ex) {
             runAfterInitList.add((Runnable) () -> {
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.initOwner(Remote.getStage());
                 alert.setHeaderText("Cannot Load Data File.");
                 alert.showAndWait();
             });  
@@ -232,6 +233,7 @@ public class MainFxmlController implements Initializable {
             if (selectedIpAddress == null) { // nothing selected
                 Alert alert = new Alert(AlertType.ERROR, 
                         "Invalid IP address selected.");
+                alert.initOwner(Remote.getStage());
                 alert.setHeaderText("Cannot connect.");
                 alert.show();
                 connectRoverButton.setSelected(false);
@@ -242,6 +244,7 @@ public class MainFxmlController implements Initializable {
             Alert alert = new Alert(AlertType.INFORMATION, 
                             "Please wait until a connection is established "
                           + "with the rover.", cancelButton);
+            alert.initOwner(Remote.getStage());
             alert.setHeaderText("Connecting...");
             // Connect in a new thread, allow user to cancel in main thread
             new Thread(()-> {
@@ -264,6 +267,7 @@ public class MainFxmlController implements Initializable {
                             // error isn't cancellation of connection opening
                             Alert conn_alert = new Alert(AlertType.ERROR, 
                                                          ex.getMessage());
+                            conn_alert.initOwner(Remote.getStage());
                             conn_alert.setHeaderText("Cannot connect.");
                             conn_alert.show();
                         }
@@ -281,6 +285,7 @@ public class MainFxmlController implements Initializable {
         else { // connectRoverButton deselected
             Alert alert = new Alert(AlertType.INFORMATION,
                             "Please wait until the rover is disconnected.");
+            alert.initOwner(Remote.getStage());
             alert.setHeaderText("Disconnecting...");
             new Thread(()->{
                 connection.close();
@@ -304,6 +309,7 @@ public class MainFxmlController implements Initializable {
                     "Cancel", ButtonBar.ButtonData.YES);
         Alert alert = new Alert(AlertType.INFORMATION, 
                             "Please wait until the rover is located", cancelButton);
+        alert.initOwner(Remote.getStage());
         alert.setHeaderText("Finding rover...");
         new Thread(()->{
             String ip = ipAddressManager.locateRaspberryPi();
@@ -326,6 +332,7 @@ public class MainFxmlController implements Initializable {
                     }
                     Alert conn_alert = new Alert(AlertType.ERROR, 
                         "Search for 'raspberrypi.local' returned no results.");
+                    conn_alert.initOwner(Remote.getStage());
                     conn_alert.setHeaderText("Could not locate rover.");
                     conn_alert.show();
                 });
@@ -346,6 +353,7 @@ public class MainFxmlController implements Initializable {
                 diagnostics.begin();
             } catch (IOException ex) {
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.initOwner(Remote.getStage());
                 alert.setHeaderText("Cannot Enable Diagnostics.");
                 alert.show();
                 diagnosticsConnectButton.setSelected(false);
@@ -372,6 +380,7 @@ public class MainFxmlController implements Initializable {
             } catch (IOException ex) {
                 connection.sendWithDelay("STOP JOYSTICK",1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.initOwner(Remote.getStage());
                 alert.setHeaderText("Cannot Enable Joystick.");
                 alert.show();
                 joyConnectButton.setSelected(false);
@@ -394,6 +403,7 @@ public class MainFxmlController implements Initializable {
             } catch (IOException ex) {
                 connection.sendWithDelay("STOP ROBOTICARM", 1);
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.initOwner(Remote.getStage());
                 alert.setHeaderText("Cannot Enable Robotic Arm.");
                 alert.show();
                 armConnectButton.setSelected(false);
@@ -632,6 +642,7 @@ public class MainFxmlController implements Initializable {
             
         } catch (IOException | FormatException ex) {
             Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.initOwner(Remote.getStage());
             alert.setHeaderText("Cannot Save.");
             alert.showAndWait();
         }
@@ -654,6 +665,7 @@ public class MainFxmlController implements Initializable {
             }
         } catch (IOException | NotFoundException | BadDeleteException ex) {
             Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.initOwner(Remote.getStage());
             alert.setHeaderText("Cannot Delete Data.");
             alert.showAndWait();
         }
@@ -676,6 +688,7 @@ public class MainFxmlController implements Initializable {
                             "This arm setting is not possible with the current "
                           + "angle limits. Disable limits to enable this "
                           + "setting (not recommended).");
+                    alert.initOwner(Remote.getStage());
                     alert.setHeaderText("Cannot Set Arm.");
                     alert.show();
                 }
@@ -684,6 +697,7 @@ public class MainFxmlController implements Initializable {
                 }
             } catch (FormatException ex) {
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.initOwner(Remote.getStage());
                 alert.setHeaderText("Cannot Set Arm.");
                 alert.showAndWait();
             }
@@ -733,6 +747,7 @@ public class MainFxmlController implements Initializable {
                         "Enabling seg3Down in the current arm position would "
                       + "violate the angle limits. Disable angle limits to "
                       + "ignore this warning.");
+                alert.initOwner(Remote.getStage());
                 alert.setHeaderText("Cannot Set Arm.");
                 alert.showAndWait();
                 seg3DownButton.setSelected(false);
@@ -763,6 +778,7 @@ public class MainFxmlController implements Initializable {
                         "Changing the seg3down angle in the current arm "
                       + "position would violate the angle limits. Disable "
                       + "angle limits to ignore this warning.");
+            alert.initOwner(Remote.getStage());
             alert.setHeaderText("Cannot Set Arm.");
             alert.show();
         }
@@ -804,6 +820,7 @@ public class MainFxmlController implements Initializable {
             } catch (IOException | FormatException ex) {
                 dataFileTextField.setText("");
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.initOwner(Remote.getStage());
                 alert.setHeaderText("Invalid Data File.");
                 alert.showAndWait();
                 
@@ -894,6 +911,7 @@ public class MainFxmlController implements Initializable {
                             "This arm setting is not possible with the current "
                           + "angle limits. Disable limits to enable this "
                           + "setting (not recommended).");
+                    alert.initOwner(Remote.getStage());
                     alert.setHeaderText("Cannot Set Arm.");
                     alert.show();
                 }
@@ -903,6 +921,7 @@ public class MainFxmlController implements Initializable {
         }
         catch (FormatException | NotFoundException ex) {
             Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.initOwner(Remote.getStage());
             alert.setHeaderText("Cannot Set Arm.");
             alert.showAndWait();
         }
@@ -969,6 +988,7 @@ public class MainFxmlController implements Initializable {
         setButtonsOnConnectionDeactivated();
         connectRoverButton.setSelected(false);
         Alert conn_alert = new Alert(AlertType.ERROR, e.getMessage());
+        conn_alert.initOwner(Remote.getStage());
         conn_alert.setHeaderText("Disconnected");
         conn_alert.showAndWait();
     }

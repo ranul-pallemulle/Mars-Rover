@@ -46,7 +46,7 @@ public class Remote extends Application{
         
         stage.setOnCloseRequest(e->handleExit(controller));
         
-        // stage.setFullScreen(true);
+        stage.setFullScreen(true);
         stage.setOnShown(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
