@@ -62,6 +62,7 @@ def main(argv):
         sys.exit(1) # exit with error code
 
     dg.initialise() # start diagnostics
+    unit.activate_main_unit_services()
     
     # start operation
     while (True):
@@ -70,7 +71,6 @@ def main(argv):
             main_sock = wait_for_remote(port)
             host,_ = main_sock.get_ip_address()
             cfg.overall_config.set_ip(host)
-            unit.activate_main_unit_services()
         except TcpSocketError as e: # connection error
             dg.print(str(e))
             cleanup()
@@ -79,6 +79,7 @@ def main(argv):
         if shutdown:
             break
     cleanup()
+    unit.deactivate_main_unit_services()
     dg.close()
     sys.exit(0) # shutdown
 
@@ -153,9 +154,8 @@ def call_action(arg_list):
 def cleanup():
     '''Run cleaning up functions so that all threads can stop for a clean exit.'''
     launcher.release_all()
-    unit.deactivate_main_unit_services()
-    
-    
+
+
 def process_as_unit(argv):
     if len(argv) != 3 and len(argv) !=4:
         dg.print(usage_str)

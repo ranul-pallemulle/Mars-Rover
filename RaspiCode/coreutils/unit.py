@@ -10,16 +10,22 @@ class MainService(rpyc.Service):
     '''Services offered by main unit through remote procedure calls by attached 
 units.'''
     ALIASES=['CENTRALSERVER'] # attached unit 
+    unit_list = dict()
     
     def on_connect(self, conn):
         self.conn = conn
- 
+
 
     def on_disconnect(self, conn):
-        dg.print("Unit disconnected.")
-        
-        
+        for key in self.__class__.unit_list.keys():
+            if self.__class__.unit_list[key] == conn:
+                dg.print("Unit {} disconnected.".format(key))
+                return
+        dg.print("Warning: unknown unit disconnected.")
+
+
     def register_unit_name(self, unitname):
+        self.__class__.unit_list[unitname] = self.conn
         dg.print("Found unit {}".format(unitname))
 
 
@@ -30,10 +36,12 @@ def activate_main_unit_services():
         'allow_public_attrs': True,
     })
     Thread(target=main_server.start, args=[]).start()
+    dg.print("Started main unit services.")
     
 def deactivate_main_unit_services():
     global main_server
     main_server.close()
+    dg.print("Stopped main unit services.")
     
 # general functions for attached unit
 def register_unit(unitname):
