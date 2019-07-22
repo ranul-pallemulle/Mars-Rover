@@ -1,5 +1,7 @@
 <SETTINGS>
 
+  <MAIN_HOSTNAME> Macaroni.local </MAIN_HOSTNAME>
+
   <DIAGNOSTICS>
     <STATE> Enabled </STATE>
     <PORT> 5570 </PORT>

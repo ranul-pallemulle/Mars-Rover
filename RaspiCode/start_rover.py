@@ -2,6 +2,7 @@ import sys
 from coreutils.diagnostics import Diagnostics as dg
 import coreutils.resource_manager as mgr
 import coreutils.configure as cfg
+import coreutils.unit as unit
 from interfaces.opmode import OpMode, OpModeError
 from coreutils.parser import parse_entry, CommandPrefixes, CommandError
 from coreutils.tcpsocket import TcpSocket, TcpSocketError
@@ -9,14 +10,24 @@ import coreutils.launcher as launcher
 from coreutils.launcher import LauncherError
 from threading import Thread
 
+usage_str = "Usage: python3 start_rover.py <port> \n    \
+python3 start_rover.py <port> <settings> \n    \
+python3 start_rover.py --as-unit <unitname> \n    \
+python3 start_rover.py --as-unit <unitname> <settings> \n"
+
 def main(argv):
     '''Rover operation starts here! Wait for a connection from a remote
     computer, interpret commands received and take appropriate action.
     '''
-    if len(argv) != 2 and len(argv) != 3:
-        dg.print("Usage: python3 start_rover.py <port> \n       \
-python3 start_rover.py <port> <settings>")
+    if len(argv) < 2 and len(argv) > 4:
+        dg.print(usage_str)
         sys.exit(1)
+        
+    if argv[1] == '--as-unit': # not the main unit
+        process_as_unit(argv)
+        return
+    
+    # The rest of main() should only run on the main unit
         
     try:
         port = int(argv[1])     # port to receive commands on
@@ -59,6 +70,7 @@ python3 start_rover.py <port> <settings>")
             main_sock = wait_for_remote(port)
             host,_ = main_sock.get_ip_address()
             cfg.overall_config.set_ip(host)
+            unit.activate_main_unit_services()
         except TcpSocketError as e: # connection error
             dg.print(str(e))
             cleanup()
@@ -141,8 +153,39 @@ def call_action(arg_list):
 def cleanup():
     '''Run cleaning up functions so that all threads can stop for a clean exit.'''
     launcher.release_all()
-    # dg.close()
+    unit.deactivate_main_unit_services()
+    
+    
+def process_as_unit(argv):
+    if len(argv) != 3 and len(argv) !=4:
+        dg.print(usage_str)
+        sys.exit(1)
 
+    unitname = argv[2]
+    
+    try:
+        if len(argv) == 4:
+            cfg.Configuration.settings_file(argv[3])
+        else:
+            cfg.Configuration.settings_file()
+    except cfg.ConfigurationError as e:
+        dg.print(str(e) + "\nExiting...")
+        sys.exit(1)
         
+    cfg.overall_config.running_as_unit = True
+    
+    success = unit.register_unit(unitname)
+    if not success:
+        dg.print("Could not connect to main unit.\nExiting...")
+        sys.exit(1)
+    dg.print("Running as unit with name {}".format(unitname))
+    
+    try:
+        mgr.global_resources.initialise()
+    except mgr.ResourceError as e:
+        dg.print(str(e) + "\nExiting...")
+        sys.exit(1)
+
+
 if __name__ == '__main__':
     main(sys.argv)

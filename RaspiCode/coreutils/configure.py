@@ -263,6 +263,7 @@ class OverallConfiguration(Configuration):
     def __init__(self, name="settings.xml"):
         Configuration.__init__(self, name)
         self.connected_ip = '0.0.0.0' # ip address to which remote has connected
+        self.running_as_unit = False # if start_rover was called with --as-unit
 
     def opmodes_directories(self):
         dir_list_str = self.top_level_element_value("OPMODES_DIRECTORIES")
@@ -310,6 +311,16 @@ class OverallConfiguration(Configuration):
             raise ConfigurationError("Error in Diagnostics settings: port number needs to be larger than 1000 to prevent conflict with reserved ports.")
         return port
     
+    def set_unitname(self, unitname):
+        self.unitname = unitname
+        
+    def main_hostname(self):
+        hostname = self.top_level_element_value("MAIN_HOSTNAME")
+        if hostname is None:
+            raise ConfigurationError("No settings found for main unit hostname.")
+        hostname = hostname.replace(' ','')
+        return hostname
+        
     def set_ip(self, ip):
         self.connected_ip = ip
         
