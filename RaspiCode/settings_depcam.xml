@@ -1,0 +1,97 @@
+<SETTINGS>
+
+  <MAIN_HOSTNAME> Macaroni.local </MAIN_HOSTNAME>
+
+  <DIAGNOSTICS>
+    <STATE> Enabled </STATE>
+    <PORT> 5570 </PORT>
+  </DIAGNOSTICS>
+
+  <CAMERA>
+    <DEVICE> rpicamsrc </DEVICE>
+    <CAPTURE_FRAMERATE> 60 </CAPTURE_FRAMERATE>
+    <CAPTURE_FRAME_WIDTH> 640 </CAPTURE_FRAME_WIDTH>
+    <CAPTURE_FRAME_HEIGHT> 400 </CAPTURE_FRAME_HEIGHT>
+    
+    <STREAM_PORT> 5564 </STREAM_PORT>
+    <STREAM_FRAMERATE> 60 </STREAM_FRAMERATE>
+    <STREAM_FRAME_WIDTH> 640 </STREAM_FRAME_WIDTH>
+    <STREAM_FRAME_HEIGHT> 400 </STREAM_FRAME_HEIGHT>
+  </CAMERA>
+
+  <AUTONOMOUS>
+    <CVENGINE> OpenCVHaar </CVENGINE>
+    
+    <CAPTURE_FRAMERATE> 60 </CAPTURE_FRAMERATE>
+    <CAPTURE_FRAME_WIDTH> 640 </CAPTURE_FRAME_WIDTH>
+    <CAPTURE_FRAME_HEIGHT> 400 </CAPTURE_FRAME_HEIGHT>
+    <STREAM_PORT> 5593 </STREAM_PORT>
+    <STREAM_FRAMERATE> 60 </STREAM_FRAMERATE>
+    <STREAM_FRAME_WIDTH> 640 </STREAM_FRAME_WIDTH>
+    <STREAM_FRAME_HEIGHT> 400 </STREAM_FRAME_HEIGHT>
+
+    <ULTRASOUND_TRIGGER_PIN> 16 </ULTRASOUND_TRIGGER_PIN>
+    <ULTRASOUND_ECHO_PIN> 19 </ULTRASOUND_ECHO_PIN>
+  </AUTONOMOUS>  
+  
+  <MOTORS NAME="Wheels">
+    <MOTOR NAME="Left">
+      <PIN TYPE="PWM"> 10 </PIN>
+      <PIN TYPE="Digital"> 20 </PIN>
+    </MOTOR>
+    <MOTOR NAME="Right">
+      <PIN TYPE="PWM"> 11 </PIN>
+      <PIN TYPE="Digital"> 21 </PIN>
+    </MOTOR>
+  </MOTORS>
+
+  <MOTORS NAME="Arm">
+    <MOTOR NAME="Servo1">
+      <PIN TYPE="Other"> 13 </PIN> <!--top-->
+    </MOTOR>
+    <MOTOR NAME="Servo2">
+      <PIN TYPE="Other"> 14 </PIN> <!--middle-->
+    </MOTOR>
+    <MOTOR NAME="Servo3">
+      <PIN TYPE="Other"> 15 </PIN> <!--bottom-->
+    </MOTOR>
+    <MOTOR NAME="Gripper">
+      <PIN TYPE="Other"> 12 </PIN>
+    </MOTOR>
+  </MOTORS>
+
+  <MOTORS NAME="DeployableCamera">
+    <MOTOR NAME="Servo1">
+      <PIN TYPE="Other"> 1 </PIN> <!--top-->
+      <LIMIT NAME="Upper"> 90 </LIMIT>
+      <LIMIT NAME="Lower"> -90 </LIMIT>
+    </MOTOR>
+    <MOTOR NAME="Servo2">
+      <PIN TYPE="Other"> 2 </PIN> <!--middle-->
+      <LIMIT NAME="Upper"> 90 </LIMIT>
+      <LIMIT NAME="Lower"> -90 </LIMIT>
+    </MOTOR>
+    <MOTOR NAME="Servo3">
+      <PIN TYPE="Other"> 3 </PIN>	<!--bottom-->
+      <LIMIT NAME="Upper"> 90 </LIMIT>
+      <LIMIT NAME="Lower"> -90 </LIMIT>
+    </MOTOR>
+  </MOTORS>
+
+  <OPMODES_DIRECTORIES>
+    joystick,
+    robotic_arm,
+    <!-- camera_feed, -->
+    <!-- autonomous, -->
+    deployable_camera
+  </OPMODES_DIRECTORIES>
+
+  <RESOURCES_DIRECTORIES>
+    <!-- resources/camera.py, -->
+    resources/mock_motors.py,
+    <!-- resources/depcam_motors.py, -->
+    resources/depcam_ipcamera.py,
+    resources/ultrasound_sensor.py
+  </RESOURCES_DIRECTORIES>
+
+</SETTINGS>

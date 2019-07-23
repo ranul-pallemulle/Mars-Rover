@@ -1,6 +1,5 @@
 from abc import ABC, ABCMeta, abstractmethod
 import coreutils.configure as cfg
-from resources.camera import CameraError
 import coreutils.resource_manager as mgr
 from coreutils.diagnostics import Diagnostics as dg
 from coreutils.rwlock import RWLock
