@@ -1,5 +1,6 @@
 import coreutils.unit as unit
 from coreutils.diagnostics import Diagnostics as dg
+from coreutils.client_socket import ClientSocket, ClientSocketError
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.opmode import OpMode, OpModeError
 
@@ -10,9 +11,21 @@ class DeployableCameraOffload(Receiver, OpMode):
         OpMode.__init__(self)
         self.register_name("DepCamera_OFFLOAD")
         self.attached_unit = None
+        self.clisock = ClientSocket()
         
     def store_received(self, recvd_list):
-        pass
+        if len(recvd_list) != 3:
+            return None
+        try:
+            thet_1 = int(recvd_list[0])
+            thet_2 = int(recvd_list[1])
+            thet_3 = int(recvd_list[2])
+        except (ValueError, IndexError) as e:
+            dg.print(str(e))
+            return None
+        else:
+            self.clisock.write("{},{},{}".format(thet_1,thet_2,thet_3))
+            return 'ACK'
         
     def start(self, args):
         '''port=args[1] will be used as local port. Attached unit will use
@@ -28,6 +41,7 @@ class DeployableCameraOffload(Receiver, OpMode):
             self.begin_receive()
         except ReceiverError as e:
             raise OpModeError(str(e))
+        self.clisock.connect(unit.MainService.unit_list[self.attached_unit][1],int(port)+1)
         
     def stop(self, args):
         if self.connection_active():
