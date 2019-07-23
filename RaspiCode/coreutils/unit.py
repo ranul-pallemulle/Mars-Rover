@@ -4,6 +4,8 @@ from threading import Thread, Event
 from rpyc.utils.server import ThreadedServer
 from coreutils.diagnostics import Diagnostics as dg
 import coreutils.configure as cfg
+import coreutils.launcher as launcher
+from coreutils.parser import parse_entry, CommandError
 
 main_conn = None # global instance of MainService on main unit
 main_server = None # global instance of ThreadedServer using main_conn
@@ -49,10 +51,17 @@ class CommandService(rpyc.Service):
     '''Service on attached unit for accepting commands from the main unit.'''
     def on_disconnect(self, conn):
         print("Main unit disconnected. Shutting down...")
+        launcher.release_all()
         close_event.set()
 
     def exposed_accept(self, command):
         dg.print("Command received from main unit: {}".format(command))
+        try:
+            result = parse_entry(command)
+            Thread(target=launcher.call_action, args=[result]).start()
+        except CommandError as e:
+            dg.print(e)
+        return 'ACK'
 
 
 # general functions to be run on main unit

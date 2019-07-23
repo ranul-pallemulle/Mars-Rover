@@ -1,11 +1,32 @@
 # Responsible for controlling the state of various individual parts.
 # Provides an interface for the main execution to control specific features
 from interfaces.opmode import OpMode, OpModeError
-import coreutils.resource_manager as mgr
+from coreutils.diagnostics import Diagnostics as dg
+from coreutils.parser import CommandPrefixes
 
 class LauncherError(Exception):
     '''Exception class that will be raised by launch functions.'''
     pass
+
+def call_action(arg_list):
+    '''Based on command, do something.'''
+    try:
+        if arg_list[0] == CommandPrefixes.START: # start an operational mode
+            launch_opmode(arg_list[1], arg_list[2:])
+        elif arg_list[0] == CommandPrefixes.STOP: # stop an operational mode
+            kill_opmode(arg_list[1], arg_list[2:])
+        else:                   # command is to be passed to a specific mode
+            mode_name = arg_list[0]
+            mode = OpMode.get(mode_name) # get mode using its registered
+                                         # name. Throws OpModeError if mode_name
+                                         # is invalid.
+            if mode.is_running():
+                mode.submode_command(arg_list[1:]) # pass command to the mode
+            else:
+                dg.print("{} not active. Start {} before passing submode commands.".format(mode_name, mode_name))
+    except (LauncherError, OpModeError) as e: # error carrying out action
+        dg.print(str(e))
+        return                  # terminate thread - stop processing current command
 
 def release_all():
     '''Close all resources so that shutdown can be done.'''

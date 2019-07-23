@@ -125,33 +125,9 @@ def run(main_socket):
             elif result[0] == "OFFLOAD":
                 unit.send_command(result[1],result[2])
                 continue
-            action_thread = Thread(target=call_action,args=[result])
+            action_thread = Thread(target=launcher.call_action,args=[result])
             action_thread.start() # carry out action directed by the received
                                   # command, in a separate thread.
-
-
-def call_action(arg_list):
-    '''Based on command, do something.'''
-    try:
-        if arg_list[0] == CommandPrefixes.START: # start an operational mode
-            launcher.launch_opmode(arg_list[1], arg_list[2:])
-        elif arg_list[0] == CommandPrefixes.STOP: # stop an operational mode
-            launcher.kill_opmode(arg_list[1], arg_list[2:])
-        else:                   # command is to be passed to a specific mode
-            mode_name = arg_list[0]
-            mode = OpMode.get(mode_name) # get mode using its registered
-                                         # name. Throws OpModeError if mode_name
-                                         # is invalid.
-            if mode.is_running():
-                mode.submode_command(arg_list[1:]) # pass command to the mode
-            else:
-                dg.print("{} not active. Start {} before passing submode commands.".format(mode_name, mode_name))
-    except (LauncherError, OpModeError) as e: # error carrying out action
-        dg.print(str(e))
-        return                  # terminate thread - stop processing current command
-    except Exception as e:      # unhandled exception: something is really wrong
-        dg.print(str(e))
-        sys.exit(1)
 
 
 def cleanup():
@@ -184,6 +160,16 @@ await instructions from it.'''
         dg.print("Could not connect to main unit.\nExiting...")
         sys.exit(1)
     dg.print("Running as unit with name {}".format(unitname))
+    
+    try:
+        OpMode.opmodes_initialise() # check for available operational modes
+    except OpModeError as e:
+        dg.print(str(e) + "\nExiting...")
+        sys.exit(1) # exit with error code
+    if OpMode.get_all():        # list of registered modes is not empty
+        dg.print("Found operational modes: ")
+    for name in OpMode.get_all_names(): # print registered names of all modes
+        dg.print('  '+name)    
     
     try:
         mgr.global_resources.initialise()
