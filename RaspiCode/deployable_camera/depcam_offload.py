@@ -11,6 +11,7 @@ class DeployableCameraOffload(Receiver, OpMode):
         OpMode.__init__(self)
         self.register_name("DepCamera_OFFLOAD")
         self.attached_unit = None
+        self.attached_unit_ip = None
         self.clisock = None
         
     def store_received(self, recvd_list):
@@ -41,8 +42,9 @@ class DeployableCameraOffload(Receiver, OpMode):
             self.begin_receive()
         except ReceiverError as e:
             raise OpModeError(str(e))
+        self.attached_unit_ip = unit.MainService.unit_list[self.attached_unit][1]
         self.clisock = ClientSocket()
-        self.clisock.connect(unit.MainService.unit_list[self.attached_unit][1],int(port)+1)
+        self.clisock.connect(self.attached_unit_ip, int(port)+1)
         
     def stop(self, args):
         if self.connection_active():
