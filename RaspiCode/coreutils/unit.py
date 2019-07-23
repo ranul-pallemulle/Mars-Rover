@@ -52,7 +52,7 @@ class CommandService(rpyc.Service):
         close_event.set()
 
     def exposed_accept(self, command):
-        dg.print("Command received on command service: {}".format(command))
+        dg.print("Command received from main unit: {}".format(command))
 
 
 # general functions to be run on main unit
@@ -69,6 +69,7 @@ def deactivate_main_unit_services():
     dg.print("Stopped main unit services.")
     
 def send_command(unitname, command):
+    dg.print("Sending command '{}' to unit {}".format(command, unitname))
     comm = MainService.unit_list[unitname][2]
     comm.root.accept(command)
 

@@ -124,6 +124,7 @@ def run(main_socket):
                 return True
             elif result[0] == "OFFLOAD":
                 unit.send_command(result[1],result[2])
+                continue
             action_thread = Thread(target=call_action,args=[result])
             action_thread.start() # carry out action directed by the received
                                   # command, in a separate thread.
