@@ -62,7 +62,7 @@ def main(argv):
         sys.exit(1) # exit with error code
 
     dg.initialise() # start diagnostics
-    unit.activate_main_unit_services()
+    unit.activate_main_unit_services() # service connections from attached units
     
     # start operation
     while (True):
@@ -122,6 +122,8 @@ def run(main_socket):
                 continue # do nothing
             elif result[0] == "SHUTDOWN":
                 return True
+            elif result[0] == "OFFLOAD":
+                unit.send_command(result[1],result[2])
             action_thread = Thread(target=call_action,args=[result])
             action_thread.start() # carry out action directed by the received
                                   # command, in a separate thread.
@@ -157,6 +159,8 @@ def cleanup():
 
 
 def process_as_unit(argv):
+    '''Equivalent of main() for attached units. Connect to the main unit and 
+await instructions from it.'''
     if len(argv) != 3 and len(argv) !=4:
         dg.print(usage_str)
         sys.exit(1)

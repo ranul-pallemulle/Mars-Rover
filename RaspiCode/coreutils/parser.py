@@ -8,6 +8,7 @@ class CommandPrefixes(Enum):
     STOP = 2
     PING = 3
     SHUTDOWN = 4
+    OFFLOAD = 5
 
 class CommandError(Exception):
     pass
@@ -33,10 +34,17 @@ def parse_entry(command_string):
     if arg_list.count('') > 0:
         raise CommandError("Command has extra spaces or is empty")
     if is_prefix(arg_list[0]): # is a command
-        if arg_list[0] == "PING" or arg_list[0] == "SHUTDOWN": # the only one word command
+        if arg_list[0] == "PING" or arg_list[0] == "SHUTDOWN": # the only one word commands
             parsed_list.append(arg_list[0])
             return parsed_list
-        if len(arg_list) < 2:
+        if arg_list[0] == "OFFLOAD": # command is meant for another unit
+            parsed_list.append(arg_list[0])
+            parsed_list.append(arg_list[1]) # unit name
+            p1 = 'OFFLOAD '+arg_list[1]+' ' # first section of command string
+            p2 = command_string.split(p1)[1]
+            parsed_list.append(p2)
+            return parsed_list
+        if len(arg_list) < 2: # all other commands take mode as first argument
             raise CommandError("Invalid command (specify mode to run command on)")
         if is_opmode(arg_list[1]): # command acts on an operational mode
             parsed_list.append(get_prefix_enum_val(arg_list[0]))
