@@ -1,8 +1,11 @@
+import streamredirect as redirect
 import coreutils.unit as unit
+import coreutils.configure as cfg
 from coreutils.diagnostics import Diagnostics as dg
 from coreutils.client_socket import ClientSocket, ClientSocketError
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.opmode import OpMode, OpModeError
+import time
 
 class DeployableCameraOffload(Receiver, OpMode):
     
@@ -38,13 +41,17 @@ class DeployableCameraOffload(Receiver, OpMode):
         except (IndexError, TypeError):
             raise OpModeError("Invalid arguments to start depcam_offload or need a valid port number")
         unit.send_command(self.attached_unit, "START DepCamera {}".format(int(port)+1))
+        time.sleep(3)
         try:
             self.begin_receive()
         except ReceiverError as e:
             raise OpModeError(str(e))
+        self.ip = cfg.overall_config.get_connected_ip()
         self.attached_unit_ip = unit.MainService.unit_list[self.attached_unit][1]
         self.clisock = ClientSocket()
         self.clisock.connect(self.attached_unit_ip, int(port)+1)
+        time.sleep(5)
+        redirect.start(self.attached_unit_ip, 5520, self.ip, 5520)
         
     def stop(self, args):
         if self.connection_active():
@@ -52,6 +59,7 @@ class DeployableCameraOffload(Receiver, OpMode):
                 self.disconnect()
             except ReceiverError as e:
                 raise OpModeError(str(e))
+        redirect.stop()
         unit.send_command(self.attached_unit, "STOP DepCamera")
         self.clisock.close()
         

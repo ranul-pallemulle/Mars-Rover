@@ -98,6 +98,8 @@ def register_unit(unitname):
     except ConnectionRefusedError as e:
         dg.print(str(e))
         return False
+    unit_ip = client_conn._config['endpoints'][0]
+    cfg.overall_config.set_ip(unit_ip)
     dg.print("Found main unit '{}'".format(client_conn.root.get_service_name()))
     client_conn.root.register_unit_name(unitname)
     command_server = ThreadedServer(CommandService, port=18869)
