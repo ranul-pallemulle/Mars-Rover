@@ -2,6 +2,7 @@ from coreutils.diagnostics import Diagnostics as dg
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.actuator import Actuator, ActuatorError
 from interfaces.opmode import OpMode, OpModeError
+import coreutils.resource_manager as mgr
 
 class DeployableCamera(Receiver, Actuator, OpMode):
     
@@ -60,9 +61,11 @@ class DeployableCamera(Receiver, Actuator, OpMode):
         else:
             self.stop(None)
             raise OpModeError('Could not get access to deployable camera motors.')
-
+        mgr.global_resources.get_shared("IPCamera")
+        
 
     def stop(self, args):
+        mgr.global_resources.release("IPCamera")
         if self.have_acquired("DeployableCamera"):
             self.release_motors("DeployableCamera")
         if self.connection_active():

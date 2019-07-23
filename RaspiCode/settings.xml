@@ -88,6 +88,7 @@
     resources/camera.py,
     resources/motors.py,
     resources/depcam_motors.py,
+    resources/depcam_ipcamera.py,
     resources/ultrasound_sensor.py
   </RESOURCES_DIRECTORIES>
 

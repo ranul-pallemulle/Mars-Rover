@@ -16,4 +16,4 @@ class IPCamera(Resource):
         icam.start_stream()
         
     def shared_deinit(self):
-        icam.stop_stream()
+        icam.cleanup()
