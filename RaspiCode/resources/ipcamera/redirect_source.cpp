@@ -1,5 +1,6 @@
 #include <gst/gst.h>
 #include <string>
+#include <iostream>
 #include "redirect_source.h"
 
 static gboolean bus_callback(GstBus* bus, GstMessage* message, gpointer data);
@@ -13,6 +14,7 @@ int start_redirect(std::string source_ip, int source_port,
     std::string p4(" port=");
     std::string p5(" sync=false");
     std::string descr = p1 + source_ip + p2 + std::to_string(source_port) + p3 + dest_ip + p4 + std::to_string(dest_port) + p5;
+    std::cout << "Redirection pipeline:\n    " << descr << std::endl;
     
     GError* error = NULL;
     pipeline = gst_parse_launch(descr.c_str(), &error);

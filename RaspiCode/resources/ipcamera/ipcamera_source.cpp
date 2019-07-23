@@ -1,5 +1,6 @@
 #include <gst/gst.h>
 #include <string>
+#include <iostream>
 #include "ipcamera_source.h"
 
 static gboolean bus_callback(GstBus* bus, GstMessage* message, gpointer data);
@@ -12,6 +13,7 @@ int initialise(std::string ip, int port) {
     std::string p2(" port=");
     std::string p3(" sync=false");
     std::string descr = p1 + ip + p2 + port_str + p3;
+    std::cout << "IP camera pipeline:\n    " << descr << std::endl;
     
     GError* error = NULL;
     pipeline = gst_parse_launch(descr.c_str(), &error);
