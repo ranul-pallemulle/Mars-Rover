@@ -11,7 +11,7 @@ class DeployableCameraOffload(Receiver, OpMode):
         OpMode.__init__(self)
         self.register_name("DepCamera_OFFLOAD")
         self.attached_unit = None
-        self.clisock = ClientSocket()
+        self.clisock = None
         
     def store_received(self, recvd_list):
         if len(recvd_list) != 3:
@@ -41,6 +41,7 @@ class DeployableCameraOffload(Receiver, OpMode):
             self.begin_receive()
         except ReceiverError as e:
             raise OpModeError(str(e))
+        self.clisock = ClientSocket()
         self.clisock.connect(unit.MainService.unit_list[self.attached_unit][1],int(port)+1)
         
     def stop(self, args):
@@ -49,8 +50,8 @@ class DeployableCameraOffload(Receiver, OpMode):
                 self.disconnect()
             except ReceiverError as e:
                 raise OpModeError(str(e))
-            
         unit.send_command(self.attached_unit, "STOP DepCamera")
+        self.clisock.close()
         
     def submode_command(self, args):
         dg.print('DepCamera_OFFLOAD mode does not take submode commands.')

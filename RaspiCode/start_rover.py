@@ -1,4 +1,5 @@
 import sys
+import time
 from coreutils.diagnostics import Diagnostics as dg
 import coreutils.resource_manager as mgr
 import coreutils.configure as cfg
@@ -155,10 +156,14 @@ await instructions from it.'''
         
     cfg.overall_config.running_as_unit = True
     
-    success = unit.register_unit(unitname)
-    if not success:
-        dg.print("Could not connect to main unit.\nExiting...")
-        sys.exit(1)
+    success = False
+    dg.print("Attempting to connect to main unit...")
+    while not success:
+        success = unit.register_unit(unitname)
+        if not success:
+            dg.print("Could not connect to main unit. Retrying...")
+        time.sleep(1)
+
     dg.print("Running as unit with name {}".format(unitname))
     
     try:
