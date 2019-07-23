@@ -60,19 +60,19 @@
 
   <MOTORS NAME="DeployableCamera">
     <MOTOR NAME="Servo1">
-      <PIN TYPE="Other"> </PIN> <!--top-->
-      <LIMIT NAME="Upper"> </LIMIT>
-      <LIMIT NAME="Lower"> </LIMIT>
+      <PIN TYPE="Other"> 1 </PIN> <!--top-->
+      <LIMIT NAME="Upper"> 90 </LIMIT>
+      <LIMIT NAME="Lower"> -90 </LIMIT>
     </MOTOR>
     <MOTOR NAME="Servo2">
-      <PIN TYPE="Other"> </PIN> <!--middle-->
-      <LIMIT NAME="Upper"> </LIMIT>
-      <LIMIT NAME="Lower"> </LIMIT>      
+      <PIN TYPE="Other"> 2 </PIN> <!--middle-->
+      <LIMIT NAME="Upper"> 90 </LIMIT>
+      <LIMIT NAME="Lower"> -90 </LIMIT>      
     </MOTOR>
     <MOTOR NAME="Servo3">
-      <PIN TYPE="Other"> </PIN>	<!--bottom-->
-      <LIMIT NAME="Upper"> </LIMIT>
-      <LIMIT NAME="Lower"> </LIMIT>      
+      <PIN TYPE="Other"> 3 </PIN>	<!--bottom-->
+      <LIMIT NAME="Upper"> 90 </LIMIT>
+      <LIMIT NAME="Lower"> -90 </LIMIT>      
     </MOTOR>
   </MOTORS>
 
@@ -86,8 +86,8 @@
 
   <RESOURCES_DIRECTORIES>
     resources/camera.py,
-    resources/motors.py,
-    resources/depcam_motors.py,
+    resources/mock_motors.py,
+    <!-- resources/depcam_motors.py, -->
     resources/depcam_ipcamera.py,
     resources/ultrasound_sensor.py
   </RESOURCES_DIRECTORIES>
