@@ -1,6 +1,7 @@
 <SETTINGS>
 
-  <MAIN_HOSTNAME> raspberrypi.local </MAIN_HOSTNAME>
+  <!-- <MAIN_HOSTNAME> raspberrypi.local </MAIN_HOSTNAME> -->
+  <MAIN_HOSTNAME> Macaroni.local </MAIN_HOSTNAME>
 
   <DIAGNOSTICS>
     <STATE> Enabled </STATE>
