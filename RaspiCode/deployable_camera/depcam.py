@@ -46,14 +46,6 @@ class DeployableCamera(Receiver, Actuator, OpMode):
 
     def start(self, args):
         try:
-            port = args[0]
-            self.connect(port)
-            self.begin_receive()
-        except (IndexError, TypeError):
-            raise OpModeError("Need a valid port number.")
-        except ReceiverError as e:
-            raise OpModeError(str(e))
-        try:
             self.acquire_motors("DeployableCamera")
         except ActuatorError as e:
             self.stop(None)
@@ -67,6 +59,14 @@ class DeployableCamera(Receiver, Actuator, OpMode):
         if cfg.overall_config.running_as_unit:
             with unit.cli_wait:
                 unit.cli_wait.notify()
+        try:
+            port = args[0]
+            self.connect(port)
+            self.begin_receive()
+        except (IndexError, TypeError):
+            raise OpModeError("Need a valid port number.")
+        except ReceiverError as e:
+            raise OpModeError(str(e))                
         
 
     def stop(self, args):
