@@ -8,6 +8,7 @@ static GstElement* pipeline;
 
 int start_redirect(std::string source_ip, int source_port, 
 		   std::string dest_ip, int dest_port) {
+    gst_init(NULL,NULL);
     std::string p1("tcpclientsrc host=");
     std::string p2(" port=");
     std::string p3(" ! gdpdepay ! rtph264depay ! rtph264pay ! gdppay ! tcpserversink host=");
