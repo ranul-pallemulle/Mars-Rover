@@ -5,6 +5,7 @@ from coreutils.diagnostics import Diagnostics as dg
 from coreutils.client_socket import ClientSocket, ClientSocketError
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.opmode import OpMode, OpModeError
+from threading import Thread
 import time
 
 class DeployableCameraOffload(Receiver, OpMode):
@@ -41,23 +42,27 @@ class DeployableCameraOffload(Receiver, OpMode):
         except (IndexError, TypeError):
             raise OpModeError("Invalid arguments to start depcam_offload or need a valid port number")
         try:
+            self.attached_unit_ip = unit.MainService.unit_list[self.attached_unit][1]
+        except KeyError as e:
+            raise OpModeError("Could not start depcam_offload: unit probably detached.")        
+        self.clisock = ClientSocket()
+        try: # start attempting connection (poll) to attached unit's Receiver for values
+            Thread(target=self.clisock.connect_polled, args=[self.attached_unit_ip, int(port)+1]).start()
+        except ClientSocketError as e:
+            raise OpModeError(str(e))
+        try: # blocking call to start unit's depcamera mode
             unit.send_command(self.attached_unit, "START DepCamera {}".format(int(port)+1))
         except unit.UnitError as e:
             raise OpModeError(str(e))
+        # if self.clisock.check_poll_success() == False: # clisock.connect_polled failed
+            raise OpModeError("Could not connect to unit's Receiver.")
         try:
             self.begin_receive()
         except ReceiverError as e:
             raise OpModeError(str(e))
         self.ip = cfg.overall_config.get_connected_ip()
-        try:
-            self.attached_unit_ip = unit.MainService.unit_list[self.attached_unit][1]
-        except KeyError as e:
-            raise OpModeError("Could not start depcam_offload: unit probably detached.")
-        self.clisock = ClientSocket()
-        try:
-            self.clisock.connect(self.attached_unit_ip, int(port)+1)
-        except ClientSocketError as e:
-            raise OpModeError(str(e))
+
+
         # time.sleep(5)
         redirect.start(self.attached_unit_ip, 5520, self.ip, 5520)
         
