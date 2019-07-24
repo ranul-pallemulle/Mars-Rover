@@ -351,7 +351,7 @@ public class MainFxmlController implements Initializable {
                 
                 diagnostics.getConnection().open(ipAddressManager.getCurrentIP(), 5570, 10, false); // no read timeout
                 diagnostics.begin();
-            } catch (IOException ex) {
+            } catch (IOException | IllegalArgumentException ex) {
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
                 alert.initOwner(Remote.getStage());
                 alert.setHeaderText("Cannot Enable Diagnostics.");
