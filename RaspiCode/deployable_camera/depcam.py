@@ -1,8 +1,10 @@
+import coreutils.configure as cfg
+import coreutils.unit as unit
+import coreutils.resource_manager as mgr
 from coreutils.diagnostics import Diagnostics as dg
 from interfaces.receiver import Receiver, ReceiverError
 from interfaces.actuator import Actuator, ActuatorError
 from interfaces.opmode import OpMode, OpModeError
-import coreutils.resource_manager as mgr
 
 class DeployableCamera(Receiver, Actuator, OpMode):
     
@@ -62,6 +64,9 @@ class DeployableCamera(Receiver, Actuator, OpMode):
             self.stop(None)
             raise OpModeError('Could not get access to deployable camera motors.')
         mgr.global_resources.get_shared("IPCamera")
+        if cfg.overall_config.running_as_unit:
+            with unit.cli_wait:
+                unit.cli_wait.notify()
         
 
     def stop(self, args):
@@ -73,10 +78,16 @@ class DeployableCamera(Receiver, Actuator, OpMode):
                 self.disconnect()
             except ReceiverError as e:
                 raise OpModeError(str(e))
+        if cfg.overall_config.running_as_unit:
+            with unit.cli_wait:
+                unit.cli_wait.notify()
 
 
     def submode_command(self, args):
         dg.print('DeployableCamera mode does not take submode commands.')
+        if cfg.overall_config.running_as_unit:
+            with unit.cli_wait:
+                unit.cli_wait.notify()
 
 
     def run_on_connection_interrupted(self):

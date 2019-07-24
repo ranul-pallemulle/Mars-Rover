@@ -32,7 +32,11 @@ class ClientSocket:
             self.close()
             raise ClientSocketError(str(e))
         if self.sock is not None:
-            self.sock.connect((ip_addr, port))
+            try:
+                self.sock.connect((ip_addr, port))
+            except ConnectionRefusedError as e:
+                self.close()
+                raise ClientSocketError(str(e))
         else:
             self.close()
             raise ClientSocketError('Socket is uninitialised.')

@@ -1,16 +1,22 @@
 import rpyc
 import socket
-from threading import Thread, Event
+from threading import Thread, Event, Condition
 from rpyc.utils.server import ThreadedServer
 from coreutils.diagnostics import Diagnostics as dg
 import coreutils.configure as cfg
 import coreutils.launcher as launcher
 from coreutils.parser import parse_entry, CommandError
 
+class UnitError(Exception):
+    pass
+
 main_conn = None # global instance of MainService on main unit
 main_server = None # global instance of ThreadedServer using main_conn
 client_conn = None # global instance of connection to main unit on attached unit
 close_event = Event()
+
+# main_wait = None # (main unit) wait for notification from attached unit that command has been processed
+cli_wait = Condition() # (attached unit) wait for notification from a separate thread that an action has been completed
 
 class MainService(rpyc.Service):
     '''Services offered by main unit through remote procedure calls by attached 
@@ -59,6 +65,8 @@ class CommandService(rpyc.Service):
         try:
             result = parse_entry(command)
             Thread(target=launcher.call_action, args=[result]).start()
+            with cli_wait:
+                cli_wait.wait() # wait for notification from mode
         except CommandError as e:
             dg.print(e)
         return 'ACK'
@@ -79,8 +87,15 @@ def deactivate_main_unit_services():
     
 def send_command(unitname, command):
     dg.print("Sending command '{}' to unit {}".format(command, unitname))
-    comm = MainService.unit_list[unitname][2]
-    comm.root.accept(command)
+    try:
+        comm = MainService.unit_list[unitname][2]
+    except KeyError:
+        raise UnitError("Unit '{}' not found.".format(unitname))
+    try:
+        comm.root.accept(command)
+    except Exception as e: # probably some communication error
+        raise UnitError("Could not send command to unit {}: ".format(unitname) +
+                        str(e))
 
 # general functions to be run on attached unit
 def register_unit(unitname):

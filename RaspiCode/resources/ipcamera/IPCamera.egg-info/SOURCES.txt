@@ -1,0 +1,9 @@
+ipcamera_pymodule.cpp
+ipcamera_source.cpp
+redirect_pymodule.cpp
+redirect_source.cpp
+setup.py
+IPCamera.egg-info/PKG-INFO
+IPCamera.egg-info/SOURCES.txt
+IPCamera.egg-info/dependency_links.txt
+IPCamera.egg-info/top_level.txt
