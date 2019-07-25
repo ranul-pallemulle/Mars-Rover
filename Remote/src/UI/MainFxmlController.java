@@ -84,6 +84,7 @@ public class MainFxmlController implements Initializable {
     @FXML private ComboBox<String> autoGoalSelector;
     @FXML private ToggleButton autoGoalEnableButton;
     @FXML private Button autoGoalDisableAllButton;
+    @FXML private ToggleButton depCameraEnableButton;
     @FXML private ToggleButton limitsButton;
     @FXML private ToggleButton sumLimitsButton;
     @FXML private Button gripperButton;
@@ -104,6 +105,7 @@ public class MainFxmlController implements Initializable {
     private Diagnostics diagnostics; // receive diagnostic messages
     private IPAddressManager ipAddressManager; // hold IP addresses and names
     private AutoModeManager autoModeManager; // hold auto goal on/off statuses
+    private Pipeline pipe; // gstreamer pipeline for streaming
     
     
     /**
@@ -166,6 +168,9 @@ public class MainFxmlController implements Initializable {
         vidConnectButton.setDisable(true); // cannot activate until connected
         createEmptyVideoScreen(videoScreen);
         
+        // initialise deployable camera button
+        depCameraEnableButton.setDisable(true);
+ 
         // initialise joystick controller
         double max_rad = joyBackCircle.getRadius() - joyFrontCircle.getRadius();
         joyController = new JoystickController(max_rad);
@@ -425,6 +430,9 @@ public class MainFxmlController implements Initializable {
         }
         else {
             connection.sendWithDelay("STOP STREAM", 1);
+            if (pipe != null) {
+                pipe.dispose();
+            }
             createEmptyVideoScreen(videoScreen);
         }
     }
@@ -468,6 +476,20 @@ public class MainFxmlController implements Initializable {
         else { // probably null - not allowed
             Logger.getLogger(MainFxmlController.class.getName()).log(
                     Level.SEVERE, "Unexpected value present in autoGoalSelector");
+        }
+    }
+    
+    
+    /**
+     * Event handler for when depCameraEnableButton is pressed
+     */
+    public void depCameraEnableButtonPressed () {
+        if (depCameraEnableButton.isSelected()) {
+            connection.sendWithDelay("START DepCamera_OFFLOAD pizero 5581",1);
+            Remote.getDepCamStage().show(); // trigger onDepCamStageShowing()
+        }
+        else {
+            Remote.getDepCamStage().close(); // trigger onDepCamCloseRequested()
         }
     }
     
@@ -851,6 +873,21 @@ public class MainFxmlController implements Initializable {
         return connection;
     }
     
+    /**
+     * This method is run when the deployable camera stage is showing.
+     */
+    public void onDepCamStageShowing() {
+        
+    }
+    
+    /**
+     * This method is run when the deployable camera stage is closing.
+     */
+    public void onDepCamStageHiding() {
+        depCameraEnableButton.setSelected(false);
+        connection.sendWithDelay("STOP DepCamera_OFFLOAD", 1);
+    }
+    
     
     /// private methods ///
     
@@ -954,6 +991,7 @@ public class MainFxmlController implements Initializable {
         joyConnectButton.setDisable(false);
         armConnectButton.setDisable(false);
         vidConnectButton.setDisable(false);
+        depCameraEnableButton.setDisable(false);
         autoGoalEnableButton.setDisable(false);
         autoGoalDisableAllButton.setDisable(false);
         autoGoalSelector.setDisable(false);
@@ -972,6 +1010,8 @@ public class MainFxmlController implements Initializable {
         armConnectButton.setSelected(false);
         vidConnectButton.setDisable(true);
         vidConnectButton.setSelected(false);
+        depCameraEnableButton.setDisable(true);
+        depCameraEnableButton.setSelected(false);
         autoGoalEnableButton.setDisable(true);
         autoGoalEnableButton.setSelected(false);
         autoGoalDisableAllButton.setDisable(true);
@@ -1013,33 +1053,6 @@ public class MainFxmlController implements Initializable {
     }
     
     
-    /**
-     * Initialize video screen using a GStreamer pipeline and set its 
-     * dimensions.
-     * @param swingNode - container to display video on
-     */
-//    private void createVideoScreen(final SwingNode swingNode) {
-//        String gstPipeline;
-//        gstPipeline = "tcpclientsrc host=192.168.4.1 port=5564 ! gdpdepay ! "
-//                + "rtph264depay ! avdec_h264 ! videoconvert ! capsfilter "
-//                + "caps=video/x-raw,width=640,height=400";
-//        SimpleVideoComponent vc = new SimpleVideoComponent();
-//        vc.getElement().set("sync",false);
-//        Bin bin = Gst.parseBinFromDescription(gstPipeline, true);
-//        Pipeline pipe = new Pipeline();
-//        pipe.addMany(bin, vc.getElement());
-//        Pipeline.linkMany(bin,vc.getElement());
-//        SwingUtilities.invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                swingNode.setContent(vc);
-//            }
-//        });
-//        
-//        vc.setPreferredSize(new Dimension(640,400));
-//        vc.setKeepAspect(true);
-//    }
-    
     private void createEmptyVideoScreen(final SwingNode swingNode) {
         SimpleVideoComponent vc = new SimpleVideoComponent();
         SwingUtilities.invokeLater(()->{
@@ -1048,7 +1061,9 @@ public class MainFxmlController implements Initializable {
         vc.setKeepAspect(true);
     }
     
+    
     private void startVideo(final SwingNode swingNode) {
+        pipe = new Pipeline();
         String ip = ipAddressManager.getCurrentIP();
         if (ip == null) {
             return;
@@ -1059,7 +1074,6 @@ public class MainFxmlController implements Initializable {
         SimpleVideoComponent vc = new SimpleVideoComponent();
         vc.getElement().set("sync", false);
         Bin bin = Gst.parseBinFromDescription(gst_str, true);
-        Pipeline pipe = new Pipeline();
         pipe.addMany(bin, vc.getElement());
         Pipeline.linkMany(bin,vc.getElement());
         SwingUtilities.invokeLater(() -> {

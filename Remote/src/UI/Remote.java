@@ -21,7 +21,8 @@ import org.freedesktop.gstreamer.Gst;
  */
 public class Remote extends Application{
     
-    private static Stage stage;
+    private static Stage stage; // main stage
+    private static Stage depCamStage; // stage for deployable camera
     
     public static void main(String[] args) {
         Gst.init("Remote",args);
@@ -31,9 +32,14 @@ public class Remote extends Application{
     public static Stage getStage() {
         return stage;
     }
+    
+    public static Stage getDepCamStage() {
+        return depCamStage;
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // initialise main stage
         stage = primaryStage;
         final FXMLLoader loader = new FXMLLoader(getClass().getResource("MainFxml.fxml"));
         final Parent root = (Parent) loader.load();
@@ -47,13 +53,34 @@ public class Remote extends Application{
         stage.setOnCloseRequest(e->handleExit(controller));
         
         stage.setFullScreen(true);
-        stage.setOnShown(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                controller.runAfterInit();
-            }
+        stage.setOnShown((e) -> {
+            controller.runAfterInit();
         });
         
+        // initialise deployable camera stage
+        depCamStage = new Stage();
+        final FXMLLoader depcam_loader = new FXMLLoader(getClass().getResource("DepCamFxml.fxml"));
+        final Parent depcam_root = (Parent) depcam_loader.load();
+        final DepCamFxmlController depcam_controller = depcam_loader.<DepCamFxmlController>getController();
+        
+        Scene depcam_scene = new Scene(depcam_root);
+        depCamStage.setTitle("Deployable Camera");
+        depCamStage.setScene(depcam_scene);
+        depCamStage.setResizable(true);
+        depCamStage.setFullScreen(true);
+        
+        depCamStage.setOnShowing((e) -> { // opening
+            controller.onDepCamStageShowing();
+            depcam_controller.onStageShowing();
+        });
+        
+        
+        depCamStage.setOnHiding((e) -> { // closing
+            controller.onDepCamStageHiding();
+            depcam_controller.onStageHiding();
+        });
+        
+        // show main stage
         stage.show();
     }
     

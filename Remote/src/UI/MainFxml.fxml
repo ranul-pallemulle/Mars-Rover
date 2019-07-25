@@ -86,10 +86,10 @@
                 </HBox>
             </VBox>
             <SwingNode fx:id="videoScreen" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <VBox alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="2">
+            <VBox alignment="center" spacing="30" GridPane.columnIndex="0" GridPane.rowIndex="2">
                 <ToggleButton fx:id="vidConnectButton" onAction="#vidConnectButtonPressed" selected="false" text="Enable Video Feed" styleClass="button"/>
+                <ToggleButton fx:id="depCameraEnableButton" onAction="#depCameraEnableButtonPressed" text="Deployable Camera" styleClass="button"/>
             </VBox>
-            
         </GridPane>
         
         <VBox alignment="center" spacing="10" GridPane.columnIndex="2" GridPane.rowIndex="0">

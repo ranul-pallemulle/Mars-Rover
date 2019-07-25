@@ -16,7 +16,7 @@ import java.util.HashMap;
  */
 public class IPAddressManager {
     private HashMap<String,String> ip_addresses;
-    private String currentIP;
+    private static String currentIP;
     public IPAddressManager() {
         ip_addresses = new HashMap<>();
         ip_addresses.put("WiFi", "192.168.4.1");
@@ -47,11 +47,11 @@ public class IPAddressManager {
         return ip_addresses.get(name);
     }
     
-    public void setCurrentIP(String ip) {
+    public static void setCurrentIP(String ip) {
         currentIP = ip;
     }
     
-    public String getCurrentIP() {
+    public static String getCurrentIP() {
         return currentIP;
     }
 }
