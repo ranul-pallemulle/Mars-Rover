@@ -34,7 +34,10 @@ def release_all():
     for name in mode_names:
         mode = OpMode.get(name)
         if not mode.is_stopped():
-            kill_opmode(name)
+            try:
+                kill_opmode(name)
+            except LauncherError as e: # might be a repeated stop command 
+                dg.print("Warning: "+str(e))
 
 def launch_opmode(name, arg_list=[]):
     mode = OpMode.get(name)
