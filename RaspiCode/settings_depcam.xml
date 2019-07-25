@@ -26,7 +26,7 @@
   </MOTORS>
 
   <OPMODES_DIRECTORIES>
-    deployable_camera
+    deployable_camera/depcam.py
   </OPMODES_DIRECTORIES>
 
   <RESOURCES_DIRECTORIES>
