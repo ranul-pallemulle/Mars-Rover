@@ -286,6 +286,10 @@ public class MainFxmlController implements Initializable {
                     connection.close();
                 }
             });
+            if (connection.isActive() && !diagnosticsConnectButton.isSelected()) {
+                diagnosticsConnectButton.setSelected(true);
+                diagnosticsConnectButtonPressed(); // simulate press
+            }
         }
         else { // connectRoverButton deselected
             Alert alert = new Alert(AlertType.INFORMATION,
