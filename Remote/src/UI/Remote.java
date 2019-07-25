@@ -67,7 +67,7 @@ public class Remote extends Application{
         depCamStage.setTitle("Deployable Camera");
         depCamStage.setScene(depcam_scene);
         depCamStage.setResizable(true);
-        depCamStage.setFullScreen(true);
+        // depCamStage.setFullScreen(true);
         
         depCamStage.setOnShowing((e) -> { // opening
             controller.onDepCamStageShowing();
@@ -76,8 +76,8 @@ public class Remote extends Application{
         
         
         depCamStage.setOnHiding((e) -> { // closing
-            controller.onDepCamStageHiding();
             depcam_controller.onStageHiding();
+            controller.onDepCamStageHiding();
         });
         
         // show main stage

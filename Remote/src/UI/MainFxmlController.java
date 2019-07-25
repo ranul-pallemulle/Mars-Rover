@@ -485,10 +485,18 @@ public class MainFxmlController implements Initializable {
      */
     public void depCameraEnableButtonPressed () {
         if (depCameraEnableButton.isSelected()) {
+            if (Remote.getDepCamStage().isShowing()) { // button selected while depcam on the way to closing
+                depCameraEnableButton.setSelected(false);
+                return;
+            }
             connection.sendWithDelay("START DepCamera_OFFLOAD pizero 5581",1);
             Remote.getDepCamStage().show(); // trigger onDepCamStageShowing()
         }
         else {
+            if (!Remote.getDepCamStage().isShowing()) { // button deselected while depcam on the way to showing
+                depCameraEnableButton.setSelected(true);
+                return;
+            }
             Remote.getDepCamStage().close(); // trigger onDepCamCloseRequested()
         }
     }
