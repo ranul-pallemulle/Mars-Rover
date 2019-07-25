@@ -503,14 +503,18 @@ public class MainFxmlController implements Initializable {
                 return;
             }
             connection.sendWithDelay("START DepCamera_OFFLOAD pizero 5581",1);
-            Remote.getDepCamStage().show(); // trigger onDepCamStageShowing()
+            Platform.runLater(() -> {
+                Remote.getDepCamStage().show(); // trigger onDepCamStageShowing()
+            });
         }
         else {
             if (!Remote.getDepCamStage().isShowing()) { // button deselected while depcam on the way to showing
                 depCameraEnableButton.setSelected(true);
                 return;
             }
-            Remote.getDepCamStage().close(); // trigger onDepCamCloseRequested()
+            Platform.runLater(() -> {
+                Remote.getDepCamStage().hide(); // trigger onDepCamCloseRequested()
+            });
         }
     }
     

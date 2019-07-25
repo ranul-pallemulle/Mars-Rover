@@ -80,6 +80,13 @@ public class Remote extends Application{
             controller.onDepCamStageHiding();
         });
         
+//        depCamStage.setOnCloseRequest((e) -> {
+//            Platform.runLater(() -> {
+//                depCamStage.hide();
+//                e.consume(); // don't close
+//            });
+//        });
+        
         // show main stage
         stage.show();
     }
