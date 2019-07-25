@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
+import org.freedesktop.gstreamer.State;
 
 /**
  * FXML Controller class
@@ -109,6 +110,7 @@ public class DepCamFxmlController implements Initializable {
     public void onStageHiding() {
         // System.out.println("CLOSING");
         if (pipe != null) {
+            pipe.setState(State.NULL);
             pipe.dispose();
         }
     }

@@ -55,6 +55,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import org.freedesktop.gstreamer.Bin;
 import org.freedesktop.gstreamer.Gst;
 import org.freedesktop.gstreamer.Pipeline;
+import org.freedesktop.gstreamer.State;
 
 /**
  * FXML Controller class
@@ -297,7 +298,14 @@ public class MainFxmlController implements Initializable {
             alert.initOwner(Remote.getStage());
             alert.setHeaderText("Disconnecting...");
             new Thread(()->{
-                connection.close();
+                Platform.runLater(()->{
+                    if (vidConnectButton.isSelected()) {
+                        vidConnectButton.setSelected(false);
+                        vidConnectButtonPressed(); // simulate press
+                    }
+                    connection.close(); // run in application thread to guarantee order
+                });
+                
                 Platform.runLater(()->{
                     if (alert.isShowing()) {
                         alert.close();
@@ -429,12 +437,13 @@ public class MainFxmlController implements Initializable {
      */
     public void vidConnectButtonPressed () {
         if (vidConnectButton.isSelected()) {
-            connection.sendWithDelay("START STREAM", 1);
+            connection.sendWithDelay("START STREAM", 2);
             startVideo(videoScreen);
         }
         else {
             connection.sendWithDelay("STOP STREAM", 1);
             if (pipe != null) {
+                pipe.setState(State.NULL);
                 pipe.dispose();
             }
             createEmptyVideoScreen(videoScreen);
@@ -898,6 +907,15 @@ public class MainFxmlController implements Initializable {
     public void onDepCamStageHiding() {
         depCameraEnableButton.setSelected(false);
         connection.sendWithDelay("STOP DepCamera_OFFLOAD", 1);
+    }
+    
+    public void handleExit() {
+        Platform.runLater(()->{
+            if (connection.isActive()) {
+                connectRoverButton.setSelected(false);
+                connectRoverButtonPressed(); // simulate press
+            }
+        });
     }
     
     
