@@ -29,6 +29,7 @@ class DeployableCamera(Receiver, Actuator, OpMode):
             thet_3 = int(recvd_list[2])
         except (ValueError, IndexError) as e:
             dg.print(str(e))
+            dg.print("Bad values: {},{},{}".format(recvd_list[0],recvd_list[1],recvd_list[2]))
             return None
         else:
             with self.condition:
