@@ -7,12 +7,10 @@ package UI;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.freedesktop.gstreamer.Gst;
 
 /**
@@ -22,7 +20,6 @@ import org.freedesktop.gstreamer.Gst;
 public class Remote extends Application{
     
     private static Stage stage; // main stage
-    private static Stage depCamStage; // stage for deployable camera
     
     public static void main(String[] args) {
         Gst.init("Remote",args);
@@ -31,10 +28,6 @@ public class Remote extends Application{
     
     public static Stage getStage() {
         return stage;
-    }
-    
-    public static Stage getDepCamStage() {
-        return depCamStage;
     }
 
     @Override
@@ -56,36 +49,6 @@ public class Remote extends Application{
         stage.setOnShown((e) -> {
             controller.runAfterInit();
         });
-        
-        // initialise deployable camera stage
-        depCamStage = new Stage();
-        final FXMLLoader depcam_loader = new FXMLLoader(getClass().getResource("DepCamFxml.fxml"));
-        final Parent depcam_root = (Parent) depcam_loader.load();
-        final DepCamFxmlController depcam_controller = depcam_loader.<DepCamFxmlController>getController();
-        
-        Scene depcam_scene = new Scene(depcam_root);
-        depCamStage.setTitle("Deployable Camera");
-        depCamStage.setScene(depcam_scene);
-        depCamStage.setResizable(true);
-        // depCamStage.setFullScreen(true);
-        
-        depCamStage.setOnShowing((e) -> { // opening
-            controller.onDepCamStageShowing();
-            depcam_controller.onStageShowing();
-        });
-        
-        
-        depCamStage.setOnHiding((e) -> { // closing
-            depcam_controller.onStageHiding();
-            controller.onDepCamStageHiding();
-        });
-        
-//        depCamStage.setOnCloseRequest((e) -> {
-//            Platform.runLater(() -> {
-//                depCamStage.hide();
-//                e.consume(); // don't close
-//            });
-//        });
         
         // show main stage
         stage.show();

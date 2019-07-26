@@ -11,6 +11,7 @@
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<!--<?import javafx.scene.layout.StackPane?>-->
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
@@ -29,51 +30,17 @@
     </stylesheets>
     
     <columnConstraints>
-        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="25" />
-        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="35" />
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="30" />
+        <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="30" />
         <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" percentWidth="40" />
     </columnConstraints>
     <rowConstraints>
         <RowConstraints minHeight="300.0" prefHeight="600.0" vgrow="SOMETIMES" />
     </rowConstraints>
     <children>
-        <VBox alignment="center" GridPane.columnIndex="0" GridPane.rowIndex="0">
-            <padding><Insets left="5" right="10" /></padding>
-            <HBox alignment="center">
-                <Text id="DispJoyLabel1" text="X:" styleClass="text-id"/>
-                <Text fx:id="dispJoyX" text="0.0" styleClass="text-id"/>
-            </HBox>
-            <HBox alignment="center">
-                <Text id="DispJoyLabel2" text="Y:" styleClass="text-id"/>
-                <Text fx:id="dispJoyY" text="0.0" styleClass="text-id"/>
-            </HBox>
-            <Group>
-                <Circle fx:id="joyBackCircle" radius="150" />
-                <Circle fx:id="joyFrontCircle" onMouseDragged="#updateJoystick" onMousePressed="#pressCoordsJoystick" onMouseReleased="#snapBackJoystick" radius="50" />
-            </Group>
-            <VBox alignment="center">
-                <VBox.margin><Insets bottom="20" top="30" /></VBox.margin>
-                <ToggleButton fx:id="joyConnectButton" onAction="#joyConnectButtonPressed" selected="false" text="Enable Joystick" styleClass="button"/>
-            </VBox>
-            <VBox alignment="center">
-                <VBox.margin><Insets bottom="20" left="5" right="5" top="30" /></VBox.margin>
-                <Text styleClass="text-id">Output from rover</Text>
-                <TextArea fx:id="diagnosticsTextArea" editable="false" prefHeight="250" prefWidth="500" />
-            </VBox>
-            <ToggleButton fx:id="diagnosticsConnectButton" onAction="#diagnosticsConnectButtonPressed" selected="false" text="Enable Messages" styleClass="button"/>
-        </VBox>
-
-        <GridPane alignment="center" GridPane.columnIndex="1" GridPane.rowIndex="0">
-            <padding><Insets left="10" right="10" /></padding>
-            <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" percentWidth="100" />
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints percentHeight="25" vgrow="SOMETIMES" />
-                <RowConstraints percentHeight="50" vgrow="SOMETIMES" />
-                <RowConstraints percentHeight="25" vgrow="SOMETIMES" />
-            </rowConstraints>
-            <VBox alignment="center" spacing="50" GridPane.columnIndex="0" GridPane.rowIndex="0">
+        <VBox alignment="center" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0"> <!--Left-most column-->
+            <padding><Insets left="5" right="5" /></padding>
+            <VBox alignment="center" spacing="10"> <!-- Connect Rover and Auto Mode stuff-->
                 <HBox alignment="center" spacing="5">
                     <ComboBox fx:id="ipSelector" promptText="Connection Method" />
                     <ToggleButton fx:id="connectRoverButton" onAction="#connectRoverButtonPressed" selected="false" text="Connect to Rover" styleClass="button"/>
@@ -85,15 +52,78 @@
                     <Button fx:id="autoGoalDisableAllButton" onAction="#autoGoalDisableAllButtonPressed" text="Disable All" />
                 </HBox>
             </VBox>
-            <SwingNode fx:id="videoScreen" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <VBox alignment="center" spacing="30" GridPane.columnIndex="0" GridPane.rowIndex="2">
+            <VBox alignment="center" spacing="3"> <!--Joystick and joystick button-->
+                <VBox alignment="center">
+                    <HBox alignment="center">
+                        <Text id="DispJoyLabel1" text="X:" styleClass="text-id"/>
+                        <Text fx:id="dispJoyX" text="0.0" styleClass="text-id"/>
+                    </HBox>
+                    <HBox alignment="center">
+                        <Text id="DispJoyLabel2" text="Y:" styleClass="text-id"/>
+                        <Text fx:id="dispJoyY" text="0.0" styleClass="text-id"/>
+                    </HBox>
+                </VBox>
+                <Group>
+                    <Circle fx:id="joyBackCircle" radius="150" />
+                    <Circle fx:id="joyFrontCircle" onMouseDragged="#updateJoystick" onMousePressed="#pressCoordsJoystick" onMouseReleased="#snapBackJoystick" radius="50" />
+                </Group>
+                <ToggleButton fx:id="joyConnectButton" onAction="#joyConnectButtonPressed" selected="false" text="Enable Joystick" styleClass="button"/>
+            </VBox>
+            <VBox alignment="center" spacing="5"> <!--Messages area-->
+                <Text styleClass="text-id">Output from rover</Text>
+                <TextArea fx:id="diagnosticsTextArea" editable="false" prefHeight="150" prefWidth="300" />
+                <ToggleButton fx:id="diagnosticsConnectButton" onAction="#diagnosticsConnectButtonPressed" selected="false" text="Enable Messages" styleClass="button"/>
+            </VBox>
+            <VBox alignment="center"> <!--Deployable Camera Controls-->
+                <Text styleClass="text-id">Deployable Camera Settings</Text>
+                <HBox alignment="center" spacing="5">
+                    <VBox alignment="center" spacing="5">
+                        <ComboBox fx:id="depPositionEditor" editable="true"/>
+                        <HBox alignment="center" spacing="5">
+                            <Button fx:id="depPositionSaveButton" text="Save" />
+                            <Button fx:id="depPositionRemoveButton" text="Remove" />
+                        </HBox>
+                        <HBox alignment="center" spacing="5">
+                            <ComboBox fx:id="depPositionSelector" promptText="Select Position" />
+                            <Button fx:id="depPositionSetButton" text="Set" />
+                        </HBox>
+                    </VBox>
+                    <Group>
+                        <Line fx:id="depTopLine" endX="300" endY="50" startX="200" startY="50" strokeWidth="5" />
+                        <Circle fx:id="depTopBall" centerX="250.0" centerY="50.0" radius="10" onMouseDragged="#depTopBallDragged"/>
+                        <Line fx:id="depMiddleLine" endX="300" endY="80" startX="200" startY="80" strokeWidth="5" />
+                        <Circle fx:id="depMiddleBall" centerX="250.0" centerY="80.0" radius="10" onMouseDragged="#depMiddleBallDragged"/>
+                        <Line fx:id="depBottomLine" endX="300" endY="110" startX="200" startY="110" strokeWidth="5" />
+                        <Circle fx:id="depBottomBall" centerX="250.0" centerY="110.0" radius="10" onMouseDragged="#depBottomBallDragged"/>
+                    </Group>
+                    <Group>
+                        <Text styleClass="text-id-italic" layoutY="50">Top</Text>
+                        <Text styleClass="text-id-italic" layoutY="80">Middle</Text>
+                        <Text styleClass="text-id-italic" layoutY="110">Bottom</Text>
+                    </Group>
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <GridPane alignment="center" GridPane.columnIndex="1" GridPane.rowIndex="0"> <!--Middle column-->
+            <!--<padding><Insets left="10" right="10" /></padding>-->
+            <padding><Insets top="10" bottom="10" /></padding>
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" percentWidth="100" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="100" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <VBox alignment="center" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <SwingNode fx:id="videoScreen" />
                 <ToggleButton fx:id="vidConnectButton" onAction="#vidConnectButtonPressed" selected="false" text="Enable Video Feed" styleClass="button"/>
+                <SwingNode fx:id="depCamVideoScreen" />
                 <ToggleButton fx:id="depCameraEnableButton" onAction="#depCameraEnableButtonPressed" text="Deployable Camera" styleClass="button"/>
             </VBox>
         </GridPane>
         
-        <VBox alignment="center" spacing="10" GridPane.columnIndex="2" GridPane.rowIndex="0">
-            <padding><Insets left="10" right="10" /></padding>
+        <VBox alignment="center" spacing="10" GridPane.columnIndex="2" GridPane.rowIndex="0"> <!--Right-most column-->
+            <!--<padding><Insets left="10" right="10" /></padding>-->
             <HBox alignment="center" spacing="5">
                 <TextField fx:id="dataFileTextField" />
                 <Button fx:id="dataFileOpenButton" onAction="#dataFileOpenButtonPressed" text="Open Data File" />
@@ -107,8 +137,8 @@
             </HBox>
             <HBox alignment="center" spacing="5">
                 <ComboBox fx:id="positionEditor" editable="true"/>
-                <Button fx:id="positionSaveButton" onAction="#positionSaveButtonPressed" text="Save Position" />
-                <Button fx:id="positionRemoveButton" onAction="#positionRemoveButtonPressed" text="Remove Position" />
+                <Button fx:id="positionSaveButton" onAction="#positionSaveButtonPressed" text="Save" />
+                <Button fx:id="positionRemoveButton" onAction="#positionRemoveButtonPressed" text="Remove" />
             </HBox>
             <HBox alignment="center" spacing="5">
                 <ComboBox fx:id="positionSelector" promptText="Select Position" />

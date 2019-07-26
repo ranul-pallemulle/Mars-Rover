@@ -164,6 +164,27 @@ public class Connection {
         return false;
     }
     
+    public boolean sendWithDelayMicroseconds(String data, int timeout) {
+        try {
+            mutex.acquire();
+            byte[] bytes = data.getBytes();
+            output.write(bytes);
+            input.readLine();
+            TimeUnit.MICROSECONDS.sleep(timeout);
+            return true;
+        }
+        catch (IOException e) {
+            active = false;
+            onConnectionLoss.accept(e);
+        } 
+        catch (InterruptedException ex) {
+            Logger.getLogger(Connection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        finally {
+            mutex.release();
+        }
+        return false;
+    }
     
     /**
      * Continuously write the string "PING" and expect a reply. A delay of 1 

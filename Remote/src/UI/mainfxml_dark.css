@@ -39,6 +39,11 @@
     -fx-fill: #bdbabf;
 }
 
+.text-id-italic {
+    -fx-font-style: italic;
+    -fx-fill: #bdbabf;
+}
+
 .text-field {
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;

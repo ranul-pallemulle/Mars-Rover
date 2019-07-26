@@ -9,6 +9,7 @@ import Backend.JoystickController;
 import Backend.ArmDataController;
 import Backend.AutoModeManager;
 import Backend.Connection;
+import Backend.DepCameraController;
 import Backend.Diagnostics;
 import Backend.IPAddressManager;
 import Backend.RoboticArmController;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,10 +66,16 @@ import org.freedesktop.gstreamer.State;
  */
 public class MainFxmlController implements Initializable {
     
+    // Main Connection
+    @FXML private ToggleButton connectRoverButton;
+    @FXML private ComboBox<String> ipSelector;
+    // Joystick
     @FXML private Circle joyBackCircle;
     @FXML private Circle joyFrontCircle;
     @FXML private Text dispJoyX;
     @FXML private Text dispJoyY;
+    @FXML private ToggleButton joyConnectButton;
+    // Robotic Arm
     @FXML private Circle armJoint1;
     @FXML private Circle armJoint2;
     @FXML private Circle armJoint3;
@@ -76,16 +84,9 @@ public class MainFxmlController implements Initializable {
     @FXML private Line lineSeg3;
     @FXML private Circle sliderBall;
     @FXML private Line sliderLine;
-    @FXML private ComboBox<String> ipSelector;
-    @FXML private SwingNode videoScreen;
-    @FXML private ToggleButton connectRoverButton;
-    @FXML private ToggleButton joyConnectButton;
-    @FXML private ToggleButton armConnectButton;
-    @FXML private ToggleButton vidConnectButton;
     @FXML private ComboBox<String> autoGoalSelector;
     @FXML private ToggleButton autoGoalEnableButton;
     @FXML private Button autoGoalDisableAllButton;
-    @FXML private ToggleButton depCameraEnableButton;
     @FXML private ToggleButton limitsButton;
     @FXML private ToggleButton sumLimitsButton;
     @FXML private Button gripperButton;
@@ -95,8 +96,24 @@ public class MainFxmlController implements Initializable {
     @FXML private ToggleButton seg3DownButton;
     @FXML private Spinner<Integer> seg3DownOffsetPicker;
     @FXML private ToggleButton freeArmButton;
+    @FXML private ToggleButton armConnectButton;
+    // Messages
     @FXML private TextArea diagnosticsTextArea;
     @FXML private ToggleButton diagnosticsConnectButton;
+    // Video Feed
+    @FXML private SwingNode videoScreen;
+    @FXML private ToggleButton vidConnectButton;
+    // Deployable Camera
+    @FXML private SwingNode depCamVideoScreen;
+    @FXML private ComboBox<String> depPositionEditor;
+    @FXML private ComboBox<String> depPositionSelector;
+    @FXML private Circle depTopBall;
+    @FXML private Line depTopLine;
+    @FXML private Circle depMiddleBall;
+    @FXML private Line depMiddleLine;
+    @FXML private Circle depBottomBall;
+    @FXML private Line depBottomLine;
+    @FXML private ToggleButton depCameraEnableButton;
     
     private JoystickController joyController; // logic for joystick
     private RoboticArmController armController; // logic for robotic arm
@@ -106,8 +123,9 @@ public class MainFxmlController implements Initializable {
     private Diagnostics diagnostics; // receive diagnostic messages
     private IPAddressManager ipAddressManager; // hold IP addresses and names
     private AutoModeManager autoModeManager; // hold auto goal on/off statuses
-    private Pipeline pipe; // gstreamer pipeline for streaming
-    
+    private Pipeline pipe; // gstreamer pipeline for camera feed
+    private Pipeline depCamPipe; // gstreamer pipeline for deployable camera feed
+    private DepCameraController depCameraController; // logic for deployable camera
     
     /**
      * Initializes the controller class.
@@ -168,9 +186,19 @@ public class MainFxmlController implements Initializable {
         // initialise video connect button and screen
         vidConnectButton.setDisable(true); // cannot activate until connected
         createEmptyVideoScreen(videoScreen);
+        createEmptyVideoScreen(depCamVideoScreen);
         
-        // initialise deployable camera button
+        // initialise deployable camera button and selectors
         depCameraEnableButton.setDisable(true);
+        depPositionEditor.getEditor().setText(":0.0,0.0,0.0");
+        
+        // initialise deployable camera controller
+        depCameraController = new DepCameraController();
+        depCameraController.initialiseConnection((Consumer<Exception>)(e)->{
+            Platform.runLater(()->{
+                onDepCameraDisconnected(e);
+            });
+        });
  
         // initialise joystick controller
         double max_rad = joyBackCircle.getRadius() - joyFrontCircle.getRadius();
@@ -302,6 +330,10 @@ public class MainFxmlController implements Initializable {
                     if (vidConnectButton.isSelected()) {
                         vidConnectButton.setSelected(false);
                         vidConnectButtonPressed(); // simulate press
+                    }
+                    if (depCameraEnableButton.isSelected()) {
+                        depCameraEnableButton.setSelected(false);
+                        depCameraEnableButtonPressed(); // simulate press
                     }
                     connection.close(); // run in application thread to guarantee order
                 });
@@ -437,7 +469,7 @@ public class MainFxmlController implements Initializable {
      */
     public void vidConnectButtonPressed () {
         if (vidConnectButton.isSelected()) {
-            connection.sendWithDelay("START STREAM", 2);
+            connection.sendWithDelay("START STREAM", 1);
             startVideo(videoScreen);
         }
         else {
@@ -476,6 +508,40 @@ public class MainFxmlController implements Initializable {
     
     
     /**
+     * Event handler for when depCameraEnableButton is pressed
+     */
+    public void depCameraEnableButtonPressed () {
+        if (depCameraEnableButton.isSelected()) {
+            connection.sendWithDelay("START DepCamera_OFFLOAD pizero 5581", 1);
+            try {
+                depCameraController.getConnection().open(IPAddressManager.getCurrentIP(), 5581, 10, true);
+//                TimeUnit.SECONDS.sleep(3);
+                startVideoDepCam(depCamVideoScreen);
+            } catch (IOException ex) {
+                connection.sendWithDelay("STOP DepCamera_OFFLOAD", 1);
+                Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.initOwner(Remote.getStage());
+                alert.setHeaderText("Cannot Enable Deployable Camera.");
+                alert.show();
+                depCameraEnableButton.setSelected(false);
+            }
+//             catch (InterruptedException ex) {
+//                Logger.getLogger(MainFxmlController.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+        }
+        else {
+            connection.sendWithDelay("STOP DepCamera_OFFLOAD", 1);
+            if (depCamPipe != null) {
+                depCamPipe.setState(State.NULL);
+                depCamPipe.dispose();
+            }
+            createEmptyVideoScreen(depCamVideoScreen);
+            // depCameraController.getConnection().close(); // already closed
+        }
+    }
+    
+    
+    /**
      * Event handler for when autoGoalSelector's value is changed
      */
     public void autoGoalSelectorSelectionChanged () {
@@ -489,32 +555,6 @@ public class MainFxmlController implements Initializable {
         else { // probably null - not allowed
             Logger.getLogger(MainFxmlController.class.getName()).log(
                     Level.SEVERE, "Unexpected value present in autoGoalSelector");
-        }
-    }
-    
-    
-    /**
-     * Event handler for when depCameraEnableButton is pressed
-     */
-    public void depCameraEnableButtonPressed () {
-        if (depCameraEnableButton.isSelected()) {
-            if (Remote.getDepCamStage().isShowing()) { // button selected while depcam on the way to closing
-                depCameraEnableButton.setSelected(false);
-                return;
-            }
-            connection.sendWithDelay("START DepCamera_OFFLOAD pizero 5581",1);
-            Platform.runLater(() -> {
-                Remote.getDepCamStage().show(); // trigger onDepCamStageShowing()
-            });
-        }
-        else {
-            if (!Remote.getDepCamStage().isShowing()) { // button deselected while depcam on the way to showing
-                depCameraEnableButton.setSelected(true);
-                return;
-            }
-            Platform.runLater(() -> {
-                Remote.getDepCamStage().hide(); // trigger onDepCamCloseRequested()
-            });
         }
     }
     
@@ -882,6 +922,82 @@ public class MainFxmlController implements Initializable {
         }
     }
     
+    /**
+     * Event handler for when the depcam top slider is dragged.
+     * @param e 
+     */
+    public void depTopBallDragged (MouseEvent e) {
+        double sliderX = e.getX();
+        double startX = depTopLine.getStartX() + depTopBall.getRadius();
+        double endX = depTopLine.getEndX() - depTopBall.getRadius();
+        if (sliderX >= endX) {
+            sliderX = endX;
+        }
+        else if (sliderX <= startX) {
+            sliderX = startX;
+        }
+        double new_pos = 180*(sliderX-startX)/(endX-startX) - 90;
+        depCameraController.moveTop(new_pos);
+        depTopBall.setCenterX(sliderX);
+        
+        String top = String.format("%.1f", depCameraController.getTopAngle());
+        String middle = String.format("%.1f", depCameraController.getMiddleAngle());
+        String bottom = String.format("%.1f", depCameraController.getBottomAngle());
+        depPositionEditor.getEditor().setText(":"+top+","+middle+","
+                                                 +bottom);
+    }
+    
+    /**
+     * Event handler for when the depcam middle slider is dragged.
+     * @param e 
+     */
+    public void depMiddleBallDragged (MouseEvent e) {
+        double sliderX = e.getX();
+        double startX = depMiddleLine.getStartX() + depMiddleBall.getRadius();;
+        double endX = depMiddleLine.getEndX() - depMiddleBall.getRadius();;
+        if (sliderX >= endX) {
+            sliderX = endX;
+        }
+        else if (sliderX <= startX) {
+            sliderX = startX;
+        }
+        double new_pos = 180*(sliderX-startX)/(endX-startX) - 90;
+        depCameraController.moveMiddle(new_pos);
+        depMiddleBall.setCenterX(sliderX);
+        
+        String top = String.format("%.1f", depCameraController.getTopAngle());
+        String middle = String.format("%.1f", depCameraController.getMiddleAngle());
+        String bottom = String.format("%.1f", depCameraController.getBottomAngle());
+        depPositionEditor.getEditor().setText(":"+top+","+middle+","
+                                                 +bottom);
+    }
+    
+    /**
+     * Event handler for when the depcam bottom slider is dragged.
+     * @param e 
+     */
+    public void depBottomBallDragged (MouseEvent e) {
+        double sliderX = e.getX();
+        double startX = depBottomLine.getStartX() + depBottomBall.getRadius();;
+        double endX = depBottomLine.getEndX() - depBottomBall.getRadius();;
+        if (sliderX >= endX) {
+            sliderX = endX;
+        }
+        else if (sliderX <= startX) {
+            sliderX = startX;
+        }
+        double new_pos = 180*(sliderX-startX)/(endX-startX) - 90;
+        depCameraController.moveBottom(new_pos);
+        depBottomBall.setCenterX(sliderX);
+        
+        String top = String.format("%.1f", depCameraController.getTopAngle());
+        String middle = String.format("%.1f", depCameraController.getMiddleAngle());
+        String bottom = String.format("%.1f", depCameraController.getBottomAngle());
+        depPositionEditor.getEditor().setText(":"+top+","+middle+","
+                                                 +bottom);
+    }
+    
+    
     /// public methods ///
     
     /**
@@ -896,21 +1012,6 @@ public class MainFxmlController implements Initializable {
     
     public Connection getConnection() {
         return connection;
-    }
-    
-    /**
-     * This method is run when the deployable camera stage is showing.
-     */
-    public void onDepCamStageShowing() {
-        
-    }
-    
-    /**
-     * This method is run when the deployable camera stage is closing.
-     */
-    public void onDepCamStageHiding() {
-        depCameraEnableButton.setSelected(false);
-        connection.sendWithDelay("STOP DepCamera_OFFLOAD", 1);
     }
     
     public void handleExit() {
@@ -1075,6 +1176,10 @@ public class MainFxmlController implements Initializable {
     
     }
     
+    private void onDepCameraDisconnected(Exception e) {
+        
+    }
+    
     private void onDiagnosticMessageReceived(Queue<String> q) {
         diagnosticsTextArea.setText("");
         try {
@@ -1084,6 +1189,7 @@ public class MainFxmlController implements Initializable {
         } catch (NoSuchElementException e) {
             // ignore
         }
+        diagnosticsTextArea.setScrollTop(Double.MAX_VALUE);
     }
     
     
@@ -1092,6 +1198,8 @@ public class MainFxmlController implements Initializable {
         SwingUtilities.invokeLater(()->{
             swingNode.setContent(vc);
         });
+        vc.setPreferredSize(new Dimension(640,400));
+//        swingNode.setVisible(true);
         vc.setKeepAspect(true);
     }
     
@@ -1102,6 +1210,7 @@ public class MainFxmlController implements Initializable {
         if (ip == null) {
             return;
         }
+        // ! videoflip video-direction=2 !
         String gst_str = "tcpclientsrc host="+ip+" port=5564 ! gdpdepay ! "
                 + "rtph264depay ! avdec_h264 ! videoconvert ! capsfilter "
                 + "caps=video/x-raw,width=640,height=400";
@@ -1114,8 +1223,38 @@ public class MainFxmlController implements Initializable {
             swingNode.setContent(vc);
         });
         vc.setPreferredSize(new Dimension(640,400));
-        vc.setKeepAspect(true);
-        pipe.play();
+//        vc.setKeepAspect(true);
+        State old = State.NULL;
+        while (old != State.PLAYING) {
+            pipe.play();
+            old = pipe.getState();
+        }
+        swingNode.setVisible(true);
+    }
+    
+    private void startVideoDepCam(final SwingNode swingNode) {
+        depCamPipe = new Pipeline();
+        String ip = ipAddressManager.getCurrentIP();
+        if (ip == null) {
+            return;
+        }
+        String gst_str = "tcpclientsrc host="+ip+" port=5520 ! gdpdepay ! "
+                + "rtph264depay ! avdec_h264 ! videoconvert ! "
+                + "videoflip video-direction=2";
+        SimpleVideoComponent vc = new SimpleVideoComponent();
+        vc.getElement().set("sync", false);
+        Bin bin = Gst.parseBinFromDescription(gst_str, true);
+        depCamPipe.addMany(bin, vc.getElement());
+        Pipeline.linkMany(bin, vc.getElement());
+        SwingUtilities.invokeLater(() -> {
+            swingNode.setContent(vc);
+        });
+        vc.setPreferredSize(new Dimension(640,400));
+        State old = State.NULL;
+        while (old != State.PLAYING) {
+            depCamPipe.play();
+            old = depCamPipe.getState();
+        }
         swingNode.setVisible(true);
     }
     
