@@ -20,6 +20,7 @@ class DeployableCameraOffload(Receiver, OpMode):
         
     def store_received(self, recvd_list):
         if len(recvd_list) != 3:
+            dg.print("Wrong length of recvd list: actual is {}".format(len(recvd_list)))
             return None
         try:
             thet_1 = int(recvd_list[0])
@@ -29,8 +30,17 @@ class DeployableCameraOffload(Receiver, OpMode):
             dg.print(str(e))
             return None
         else:
-            self.clisock.write("{},{},{}".format(thet_1,thet_2,thet_3))
-            return 'ACK'
+            try:
+                self.clisock.write("{},{},{}".format(thet_1,thet_2,thet_3))
+                self.clisock.read() # perform the read to stay in sync
+                time.sleep(0.02) # strange error without this
+                return 'ACK'
+            except ClientSocketError as e:
+                # self.run_on_connection_interrupted()
+                dg.print("ERROR: "+str(e))
+                dg.print("Bad values: {},{},{}".format(recvd_list[0],recvd_list[1],recvd_list[2]))
+                return None
+
         
     def start(self, args):
         '''port=args[1] will be used as local port. Attached unit will use
@@ -53,18 +63,20 @@ class DeployableCameraOffload(Receiver, OpMode):
         except unit.UnitError as e:
             raise OpModeError(str(e))
         # If this point is reached depcamera mode on unit has started successfully
-        while self.clisock.is_open() and (self.clisock.check_poll_succes() == False):
-            pass # wait for connection to unit's Receiver or for clisock to fail
-        if not self.clisock.is_open():
-            raise OpModeError('Poll socket was closed.')
-        Thread(target=self.check_alive, args=[]).start() # periodically check for close
+        # while self.clisock.is_open() and (self.clisock.check_poll_success() == False):
+        #     pass
+        # if not self.clisock.is_open():
+        #     raise OpModeError('Poll socket was closed.')
+        # Thread(target=self.check_alive, args=[]).start() # periodically check for close
         try:
             self.begin_receive()
         except ReceiverError as e:
             raise OpModeError(str(e))
         self.ip = cfg.overall_config.get_connected_ip()
         # time.sleep(5)
+        dg.print("Starting stream redirection...")
         redirect.start(self.attached_unit_ip, 5520, self.ip, 5520)
+        dg.print("Stream redirection started.")
         
     def stop(self, args):
         if self.connection_active():
@@ -74,10 +86,12 @@ class DeployableCameraOffload(Receiver, OpMode):
                 raise OpModeError(str(e))
         redirect.stop()
         try:
-            unit.send_command(self.attached_unit, "STOP DepCamera")
+            if self.clisock.is_open(): # only way to check if unit is reachable
+                unit.send_command(self.attached_unit, "STOP DepCamera")
+                self.clisock.close()
         except unit.UnitError as e:
             dg.print("Warning: sending command 'STOP DepCamera' to unit {} failed.".format(self.attached_unit))
-        self.clisock.close()
+
         
     def submode_command(self, args):
         dg.print('DepCamera_OFFLOAD mode does not take submode commands.')
@@ -86,9 +100,10 @@ class DeployableCameraOffload(Receiver, OpMode):
         if self.is_running():
             self.stop(None)
             
-    def check_alive(self):
-        while True:
-            if not self.clisock.is_open():
-                dg.print("Poll socket closed by unit")
-                self.stop(None)
-            time.sleep(2)
+    # def check_alive(self):
+    #     while self.is_running():
+    #         if not self.clisock.is_open():
+    #             dg.print("Poll socket closed by unit")
+    #             self.run_on_connection_interrupted()
+    #             break
+    #         time.sleep(2)

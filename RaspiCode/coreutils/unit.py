@@ -95,6 +95,7 @@ def send_command(unitname, command):
         raise UnitError("Unit '{}' not found.".format(unitname))
     try:
         res = comm.root.accept(command)
+        dg.print("{} returned '{}' in response to {}".format(unitname,res,command))
     except Exception as e: # probably some communication error
         raise UnitError("Could not send command to unit {}: ".format(unitname) +
                         str(e))
