@@ -10,18 +10,18 @@
   <MOTORS NAME="DeployableCamera">
     <MOTOR NAME="Servo1">
       <PIN TYPE="Other"> 13 </PIN> <!--top-->
-      <LIMIT NAME="Upper"> 90 </LIMIT>
-      <LIMIT NAME="Lower"> -90 </LIMIT>
+      <LIMIT NAME="Upper"> 120 </LIMIT>
+      <LIMIT NAME="Lower"> -120 </LIMIT>
     </MOTOR>
     <MOTOR NAME="Servo2">
       <PIN TYPE="Other"> 14 </PIN> <!--middle-->
-      <LIMIT NAME="Upper"> 90 </LIMIT>
-      <LIMIT NAME="Lower"> -90 </LIMIT>
+      <LIMIT NAME="Upper"> 120 </LIMIT>
+      <LIMIT NAME="Lower"> -120 </LIMIT>
     </MOTOR>
     <MOTOR NAME="Servo3">
       <PIN TYPE="Other"> 15 </PIN>	<!--bottom-->
-      <LIMIT NAME="Upper"> 90 </LIMIT>
-      <LIMIT NAME="Lower"> -90 </LIMIT>
+      <LIMIT NAME="Upper"> 120 </LIMIT>
+      <LIMIT NAME="Lower"> -120 </LIMIT>
     </MOTOR>
   </MOTORS>
 
