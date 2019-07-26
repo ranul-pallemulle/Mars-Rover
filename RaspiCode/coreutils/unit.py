@@ -63,13 +63,15 @@ class CommandService(rpyc.Service):
     def exposed_accept(self, command):
         dg.print("Command received from main unit: {}".format(command))
         try:
-            result = parse_entry(command)
-            Thread(target=launcher.call_action, args=[result]).start()
+            parsed_args = parse_entry(command)
+            Thread(target=launcher.call_action, args=[parsed_args]).start()
             with cli_wait:
-                cli_wait.wait() # wait for notification from mode
+                res = cli_wait.wait(10) # wait for notification from mode.
+                if not res:
+                    return 'ERR'
+            return 'ACK'
         except CommandError as e:
             dg.print(e)
-        return 'ACK'
 
 
 # general functions to be run on main unit
@@ -92,10 +94,12 @@ def send_command(unitname, command):
     except KeyError:
         raise UnitError("Unit '{}' not found.".format(unitname))
     try:
-        comm.root.accept(command)
+        res = comm.root.accept(command)
     except Exception as e: # probably some communication error
         raise UnitError("Could not send command to unit {}: ".format(unitname) +
                         str(e))
+    if res == 'ERR':
+        raise UnitError("Error during {}'s processing of command '{}'".format(unitname,command))
 
 # general functions to be run on attached unit
 def register_unit(unitname):

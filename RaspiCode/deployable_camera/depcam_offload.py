@@ -46,23 +46,19 @@ class DeployableCameraOffload(Receiver, OpMode):
         except KeyError as e:
             raise OpModeError("Could not start depcam_offload: unit probably detached.")        
         self.clisock = ClientSocket()
-        try: # start attempting connection (poll) to attached unit's Receiver for values
-            Thread(target=self.clisock.connect_polled, args=[self.attached_unit_ip, int(port)+1]).start()
-        except ClientSocketError as e:
-            raise OpModeError(str(e))
+        # start attempting connection (poll) to attached unit's Receiver for values
+        Thread(target=self.clisock.connect_polled, args=[self.attached_unit_ip, int(port)+1]).start()
         try: # blocking call to start unit's depcamera mode
             unit.send_command(self.attached_unit, "START DepCamera {}".format(int(port)+1))
         except unit.UnitError as e:
             raise OpModeError(str(e))
         # if self.clisock.check_poll_success() == False: # clisock.connect_polled failed
-            raise OpModeError("Could not connect to unit's Receiver.")
+        #     raise OpModeError("Could not connect to unit's Receiver.")
         try:
             self.begin_receive()
         except ReceiverError as e:
             raise OpModeError(str(e))
         self.ip = cfg.overall_config.get_connected_ip()
-
-
         # time.sleep(5)
         redirect.start(self.attached_unit_ip, 5520, self.ip, 5520)
         

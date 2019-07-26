@@ -2,6 +2,7 @@ import coreutils.configure as cfg
 from resources.resource import Resource, Policy
 import board
 import busio
+import time
 from resources.adafruit_servokit import ServoKit
 import adafruit_pca9685
 
