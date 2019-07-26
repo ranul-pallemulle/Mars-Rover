@@ -936,7 +936,7 @@ public class MainFxmlController implements Initializable {
         else if (sliderX <= startX) {
             sliderX = startX;
         }
-        double new_pos = 180*(sliderX-startX)/(endX-startX) - 90;
+        double new_pos = 240*(sliderX-startX)/(endX-startX) - 120;
         depCameraController.moveTop(new_pos);
         depTopBall.setCenterX(sliderX);
         
@@ -961,7 +961,7 @@ public class MainFxmlController implements Initializable {
         else if (sliderX <= startX) {
             sliderX = startX;
         }
-        double new_pos = 180*(sliderX-startX)/(endX-startX) - 90;
+        double new_pos = 240*(sliderX-startX)/(endX-startX) - 120;
         depCameraController.moveMiddle(new_pos);
         depMiddleBall.setCenterX(sliderX);
         
@@ -986,7 +986,7 @@ public class MainFxmlController implements Initializable {
         else if (sliderX <= startX) {
             sliderX = startX;
         }
-        double new_pos = 180*(sliderX-startX)/(endX-startX) - 90;
+        double new_pos = 240*(sliderX-startX)/(endX-startX) - 120;
         depCameraController.moveBottom(new_pos);
         depBottomBall.setCenterX(sliderX);
         
