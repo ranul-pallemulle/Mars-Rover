@@ -155,6 +155,9 @@ class ClientSocket:
     def unblock(self):
         '''Force read() to return with None to indicate broken connection. Should not raise exceptions.'''
         self.disconn_sender.sendall(str.encode('d'))
+        
+    def is_open(self):
+        return (self.sock is not None)
 
     def set_max_recv_bytes(self, numbytes):
         '''Set maximum number of bytes to receive.'''

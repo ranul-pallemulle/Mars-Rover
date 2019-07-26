@@ -52,8 +52,12 @@ class DeployableCameraOffload(Receiver, OpMode):
             unit.send_command(self.attached_unit, "START DepCamera {}".format(int(port)+1))
         except unit.UnitError as e:
             raise OpModeError(str(e))
-        # if self.clisock.check_poll_success() == False: # clisock.connect_polled failed
-        #     raise OpModeError("Could not connect to unit's Receiver.")
+        # If this point is reached depcamera mode on unit has started successfully
+        while self.clisock.is_open() and (self.clisock.check_poll_succes() == False):
+            pass # wait for connection to unit's Receiver or for clisock to fail
+        if not self.clisock.is_open():
+            raise OpModeError('Poll socket was closed.')
+        Thread(target=self.check_alive, args=[]).start() # periodically check for close
         try:
             self.begin_receive()
         except ReceiverError as e:
@@ -81,3 +85,10 @@ class DeployableCameraOffload(Receiver, OpMode):
     def run_on_connection_interrupted(self):
         if self.is_running():
             self.stop(None)
+            
+    def check_alive(self):
+        while True:
+            if not self.clisock.is_open():
+                dg.print("Poll socket closed by unit")
+                self.stop(None)
+            time.sleep(2)
