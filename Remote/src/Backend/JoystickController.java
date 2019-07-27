@@ -78,6 +78,17 @@ public class JoystickController {
         if (connection.isActive()) {
             String data = String.format("%d,%d", (int)joy_x, (int)joy_y);
             connection.send(data);
+            connection.send(data);
+            connection.send(data);
+            connection.send(data);
+            connection.send(data);
+            connection.send(data);
+            connection.send(data);
+            connection.send(data);
+            connection.send(data);
+            connection.send(data);
+            connection.send(data);
+            connection.send(data);
         }
     }
     
