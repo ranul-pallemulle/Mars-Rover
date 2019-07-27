@@ -38,7 +38,7 @@ public class DepCameraController {
         angle_top = value;
         if (connection.isActive()) {
             String data = String.format("%d,%d,%d", (int)angle_top,
-                                        (int)angle_middle,(int)angle_bottom);
+                                        -(int)angle_middle,-(int)angle_bottom);
             boolean res = connection.send(data);
 //            System.out.println(res);
         }
@@ -48,7 +48,7 @@ public class DepCameraController {
         angle_middle = value;
         if (connection.isActive()) {
             String data = String.format("%d,%d,%d", (int)angle_top,
-                                        (int)angle_middle,(int)angle_bottom);
+                                        -(int)angle_middle,-(int)angle_bottom);
             connection.send(data);
         }
     }
@@ -57,7 +57,7 @@ public class DepCameraController {
         angle_bottom = value;
         if (connection.isActive()) {
             String data = String.format("%d,%d,%d", (int)angle_top,
-                                        (int)angle_middle,(int)angle_bottom);
+                                        -(int)angle_middle,-(int)angle_bottom);
             connection.send(data);
         }
     }
