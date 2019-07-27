@@ -33,9 +33,11 @@ public class ArmDataController {
     private BufferedReader bReader;
     private BufferedWriter bWriter;
     private List<String> lines; // named angle settings read from data file
+    private int num_angles;
     
-    public ArmDataController () {
+    public ArmDataController (int _num_angles) {
         lines = new ArrayList<>();
+        num_angles = _num_angles;
     }
     
     /**
@@ -68,12 +70,24 @@ public class ArmDataController {
             closeFile();
             throw new FormatException (error);
         }
+        
+    }
+    
+    public void checkRoboticArmDefaultData() throws FormatException {
         // Check that the new data contains settings for DROP1, DROP2, WATCH and PICK
         if (!containsData(lines,"DROP1") || !containsData(lines,"DROP2") ||
             !containsData(lines,"WATCH") || !containsData(lines,"PICK")) {
             closeFile();
             throw new FormatException("Data file does not contain required "
                     + "settings for DROP1,DROP2,WATCH and PICK.");
+        }
+    }
+    
+    public void checkDeployableArmDefaultData() throws FormatException {
+        if (!containsData(lines,"DEFAULT")) {
+            closeFile();
+            throw new FormatException("Data file does not contain required "
+                    + "settings for DEFAULT.");
         }
     }
     
@@ -193,11 +207,24 @@ public class ArmDataController {
         }
         String angleData = findAngleString(data);
         String[] angleStringList = angleData.split(","); // list of angles
-        double[] angles = new double[4];
-        for (int i = 0; i < 3; ++i) {
+        double[] angles = new double[num_angles];
+        for (int i = 0; i < num_angles-1; ++i) {
             angles[i] = -Double.parseDouble(angleStringList[i])*PI/180;
         }
-        angles[3] = Double.parseDouble(angleStringList[3]); // gripper
+        angles[num_angles-1] = Double.parseDouble(angleStringList[num_angles-1]); // gripper
+        return angles;
+    }
+    
+    public double[] parseDataDegrees(String data) throws FormatException {
+        if (!isValidDataString(data)) {
+            throw new FormatException("Invalid data format.");
+        }
+        String angleData = findAngleString(data);
+        String[] angleStringList = angleData.split(","); // list of angles
+        double[] angles = new double[num_angles];
+        for (int i = 0; i < num_angles; ++i) {
+            angles[i] = -Double.parseDouble(angleStringList[i]);
+        }
         return angles;
     }
     
@@ -318,7 +345,7 @@ public class ArmDataController {
         if (data == null) {
             return false;
         }
-        String regex = "\\w+:(-?[0-9]{1,3}(\\.[0-9])?,){3}-?[0-9]{1,3}(\\.[0-9])?"; 
+        String regex = "\\w+:(-?[0-9]{1,3}(\\.[0-9])?,){"+(num_angles-1)+"}-?[0-9]{1,3}(\\.[0-9])?"; 
         Pattern pattern = Pattern.compile(regex);
         Matcher m = pattern.matcher(data);
         return m.matches();

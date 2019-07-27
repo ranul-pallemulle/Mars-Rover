@@ -62,6 +62,27 @@ public class DepCameraController {
         }
     }
     
+    public boolean moveByServoAngles(double _angle_top, double _angle_middle, double _angle_bottom) {
+        if (_angle_top < -120 || _angle_top > 120) {
+            return false;
+        }
+        if (_angle_middle < -120 || _angle_middle > 120) {
+            return false;
+        }
+        if (_angle_bottom < -120 || _angle_bottom > 120) {
+            return false;
+        }
+        angle_top = -_angle_top;
+        angle_middle = -_angle_middle;
+        angle_bottom = -_angle_bottom;
+        if (connection.isActive()) {
+            String data = String.format("%d,%d,%d", (int)angle_top,
+                                        -(int)angle_middle,-(int)angle_bottom);
+            connection.send(data);
+        }
+        return true;
+    }
+    
     public double getTopAngle() {
         return angle_top;
     }

@@ -126,6 +126,10 @@ public class MainFxmlController implements Initializable {
     private Pipeline pipe; // gstreamer pipeline for camera feed
     private Pipeline depCamPipe; // gstreamer pipeline for deployable camera feed
     private DepCameraController depCameraController; // logic for deployable camera
+    private ArmDataController depArmDataController; // logic for data file handling
+
+    public MainFxmlController() {
+    }
     
     /**
      * Initializes the controller class.
@@ -157,7 +161,8 @@ public class MainFxmlController implements Initializable {
         positionEditor.getEditor().setText(":0.0,0.0,0.0,0.0");
         
         // initialise arm data controller and try to open the default file
-        armDataController = new ArmDataController();
+        armDataController = new ArmDataController(4);
+        depArmDataController = new ArmDataController(3);
         String default_file = "example_data.dat";
         try {
             armDataController.importFile(new File(default_file)); 
@@ -172,6 +177,23 @@ public class MainFxmlController implements Initializable {
                 Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
                 alert.initOwner(Remote.getStage());
                 alert.setHeaderText("Cannot Load Data File.");
+                alert.showAndWait();
+            });  
+        }
+        
+        String default_deparm_file = "example_deparm.dat";
+        try {
+            depArmDataController.importFile(new File(default_deparm_file)); 
+            List<String> list = depArmDataController.getAllItems();
+            for (String item : list) {
+                depPositionSelector.getItems().add(item);
+                depPositionEditor.getItems().add(item);
+            } 
+        } catch (IOException | FormatException ex) {
+            runAfterInitList.add((Runnable) () -> {
+                Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.initOwner(Remote.getStage());
+                alert.setHeaderText("Cannot Load Deployable arm Data File.");
                 alert.showAndWait();
             });  
         }
@@ -792,6 +814,106 @@ public class MainFxmlController implements Initializable {
     }
     
     
+        /**
+     * Event handler for when depPositionSaveButton is pressed.
+     */
+    public void depPositionSaveButtonPressed () {
+        String data = depPositionEditor.getValue();
+        try {
+            boolean changed = depArmDataController.editDataItem(data);
+            if (changed) {
+                depPositionSelector.getItems().clear();
+                depPositionEditor.getItems().clear();
+                List<String> list = depArmDataController.getAllItems();
+                for (String item : list) {
+                    depPositionSelector.getItems().add(item);
+                    depPositionEditor.getItems().add(item);
+                }
+            }
+            
+        } catch (IOException | FormatException ex) {
+            Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.initOwner(Remote.getStage());
+            alert.setHeaderText("Cannot Save.");
+            alert.showAndWait();
+        }
+    }
+    
+    
+        /**
+     * Event handler for when positionRemoveButton is pressed.
+     */
+    public void depPositionRemoveButtonPressed () {
+        String data = depPositionEditor.getValue();
+        try {
+            depArmDataController.removeDataItem(data);
+            depPositionSelector.getItems().clear();
+            depPositionEditor.getItems().clear();
+            List<String> list = depArmDataController.getAllItems();
+            for (String item : list) {
+                depPositionSelector.getItems().add(item);
+                depPositionEditor.getItems().add(item);
+            }
+        } catch (IOException | NotFoundException | BadDeleteException ex) {
+            Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+            alert.initOwner(Remote.getStage());
+            alert.setHeaderText("Cannot Delete Data.");
+            alert.showAndWait();
+        }
+        
+    }
+    
+    
+        /**
+     * Event handler for when positionSetButton is pressed.
+     */
+    public void depPositionSetButtonPressed () {
+        String value;
+        if ((value = depPositionSelector.getValue()) != null) {
+            try {
+                double[] angles = depArmDataController.parseDataDegrees(value);
+                boolean possible = depCameraController.moveByServoAngles(
+                        angles[0],angles[1],angles[2]);
+                if (!possible) {
+                    Alert alert = new Alert(AlertType.WARNING,
+                            "This arm setting is not possible with the current "
+                          + "angle limits. Disable limits to enable this "
+                          + "setting (not recommended).");
+                    alert.initOwner(Remote.getStage());
+                    alert.setHeaderText("Cannot Set Deployable Arm.");
+                    alert.show();
+                }
+                else {
+                    String top = String.format("%.1f", depCameraController.getTopAngle());
+                    String middle = String.format("%.1f", depCameraController.getMiddleAngle());
+                    String bottom = String.format("%.1f", depCameraController.getBottomAngle());
+                    depPositionEditor.getEditor().setText(":"+top+","+middle+","
+                                                 +bottom);
+                    double startX = depBottomLine.getStartX() + depBottomBall.getRadius();
+                    double endX = depBottomLine.getEndX() - depBottomBall.getRadius();
+                    double val = depCameraController.getBottomAngle();
+                    depBottomBall.setCenterX(((val+120)/240)*(endX-startX) + startX);
+                    startX = depMiddleLine.getStartX() + depMiddleBall.getRadius();
+                    endX = depMiddleLine.getEndX() - depMiddleBall.getRadius();
+                    val = depCameraController.getMiddleAngle();
+                    depMiddleBall.setCenterX(((val+120)/240)*(endX-startX) + startX);
+                    startX = depTopLine.getStartX() + depTopBall.getRadius();
+                    endX = depTopLine.getEndX() - depTopBall.getRadius();
+                    val = depCameraController.getTopAngle();
+                    depTopBall.setCenterX(((val+120)/240)*(endX-startX) + startX);
+                    
+                    
+                }
+            } catch (FormatException ex) {
+                Alert alert = new Alert(AlertType.ERROR, ex.getMessage());
+                alert.initOwner(Remote.getStage());
+                alert.setHeaderText("Cannot Set Deployable Arm.");
+                alert.showAndWait();
+            }
+        }
+    }
+    
+    
     /**
      * Event handler for when drop1PositionButton is pressed.
      */
@@ -903,6 +1025,7 @@ public class MainFxmlController implements Initializable {
             dataFileTextField.setText(filename);
             try {
                 armDataController.importFile(file);
+                armDataController.checkRoboticArmDefaultData();
                 
             } catch (IOException | FormatException ex) {
                 dataFileTextField.setText("");

@@ -80,12 +80,12 @@
                     <VBox alignment="center" spacing="5">
                         <ComboBox fx:id="depPositionEditor" editable="true"/>
                         <HBox alignment="center" spacing="5">
-                            <Button fx:id="depPositionSaveButton" text="Save" />
-                            <Button fx:id="depPositionRemoveButton" text="Remove" />
+                            <Button fx:id="depPositionSaveButton" onAction="#depPositionSaveButtonPressed" text="Save" />
+                            <Button fx:id="depPositionRemoveButton" onAction="#depPositionRemoveButtonPressed" text="Remove" />
                         </HBox>
                         <HBox alignment="center" spacing="5">
                             <ComboBox fx:id="depPositionSelector" promptText="Select Position" />
-                            <Button fx:id="depPositionSetButton" text="Set" />
+                            <Button fx:id="depPositionSetButton" onAction="#depPositionSetButtonPressed" text="Set" />
                         </HBox>
                     </VBox>
                     <Group>
