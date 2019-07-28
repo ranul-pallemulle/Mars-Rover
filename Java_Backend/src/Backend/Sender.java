@@ -26,13 +26,16 @@ public class Sender {
     int port;
     boolean SuccessInit;
     
-    public Sender(String _IP, int _port){
-        this.IP = _IP;
-        this.port = _port;
+    public Sender(){
+        this.IP = null;
+        this.port = 0;
         this.SuccessInit=false;
     }
     
-    public void initialise() throws UnknownHostException, IOException{//throws delcares exceptions, tried the clause and then catches
+    public void initialise(String _IP, int _port) throws UnknownHostException, IOException{//throws delcares exceptions, tried the clause and then catches
+        this.IP = _IP;
+        this.port = _port;
+        System.out.println("Connecting to "+IP);
         ClientSock = new Socket(IP,port);
         input = new BufferedReader(new InputStreamReader(ClientSock.getInputStream()));
         output = new DataOutputStream(ClientSock.getOutputStream());
@@ -104,6 +107,27 @@ public class Sender {
             Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);   
         }
     }
+     
+    public void startPiApp(String Application){
+        try{
+            String sendingstr = "START_" + Application;
+            System.out.println(sendingstr);
+            byte[] sendingByte= sendingstr.getBytes();
+            if(SuccessInit){
+                output.write(sendingByte);
+                System.out.println("Sent");
+                String response;
+                if((response = input.readLine())!=null) {
+                    System.out.println(response);
+                    System.out.println(this.IP);
+                }
+            }
+            
+        }
+        catch(IOException ex){
+            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);   
+        }
+    }   
     
     public void startPiApp(String Application, int port_num){
         try{
@@ -143,6 +167,24 @@ public class Sender {
         }
         catch(IOException ex){
             Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);   
+        }
+    }
+    
+    public void sendString(String command) {
+        try{
+            byte[] sendingByte = command.getBytes();
+            if(SuccessInit){
+                output.write(sendingByte);
+                System.out.println("Sent");
+                String response;
+                if((response = input.readLine())!=null) {
+                    System.out.println(response);
+                    System.out.println(this.IP);
+                }
+            }
+        }
+        catch(IOException ex){
+            Logger.getLogger(Sender.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     

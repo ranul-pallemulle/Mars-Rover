@@ -1,0 +1,119 @@
+/*
+ * Empty Stylesheet file.
+ */
+
+*{
+    -fx-theme-background-color: #FFFFFF;/*#edfbff;*/
+    -fx-theme-joy-color: #555555;/*#72b3ff;*/
+    -fx-theme-joy-hover-color: #777777;/*#afd4ff;*/
+    -fx-theme-joyback-color: #AAAAAA;/*#1984ff;*/
+    -fx-theme-label-color: #000000;/*#10427c;*/
+    -fx-theme-text-color: #000000;/*#10423c;*/
+    -fx-theme-button-color: #555555;/*#72b3ff;*/
+    -fx-theme-button-hover-color: #777777;/*#afd4ff;*/
+}
+
+.root{
+    -fx-background-color: -fx-theme-background-color;
+}
+
+#joyBackCircle{
+    -fx-fill: -fx-theme-joyback-color;
+    -fx-stroke: #000000;
+}
+
+#joyFrontCircle{
+    -fx-fill: -fx-theme-joy-color;
+    -fx-stroke: #000000;
+}
+
+#joyFrontCircle:hover{
+    -fx-fill: -fx-theme-joy-hover-color;
+}
+
+#sliderline{
+    -fx-stroke: #000000;
+}
+
+#sliderBall{
+    -fx-fill: -fx-theme-button-color;
+    -fx-stroke: #000000;
+}
+
+#sliderBall:hover{
+    -fx-fill: -fx-theme-button-hover-color;
+}
+
+#sliderBall:pressed{
+    -fx-stroke: -fx-theme-button-hover-color;
+}
+
+#sliderSnap{
+    -fx-fill: -fx-theme-button-color;
+    -fx-stroke: #000000;
+}
+
+#sliderSnap:hover{
+    -fx-fill: -fx-theme-button-hover-color;
+}
+
+#sliderSnap:pressed{
+    -fx-stroke: -fx-theme-button-hover-color;
+}
+
+#rover{
+    -fx-fill: #AAAAAA;
+    -fx-stroke: #000000;
+}
+
+#Armrange{
+    -fx-fill: #AAAAAA66;
+}
+
+#ground{
+    -fx-fill: #cc7722;
+}
+
+#groundline{
+    -fx-stroke: #000000;
+}
+
+
+#armJoint1{
+    -fx-fill: #ffaa55;
+    -fx-stroke: #000000;
+}
+
+#armJoint1:hover{
+    -fx-fill: #dd8833;
+}
+
+#armJoint2{
+    -fx-fill: #ffaa55;
+    -fx-stroke: #000000;
+}
+
+#armJoint2:hover{
+    -fx-fill: #dd8833;
+}
+
+#armJoint3{
+    -fx-fill: #ff8855;
+    -fx-stroke: #000000;
+}
+
+#armJoint3:hover{
+    -fx-fill: #dd8833;
+}
+
+#lineSeg1{
+    -fx-stroke: #dd9955;
+}
+
+#lineSeg2{
+    -fx-stroke: #dd9955;
+}
+
+#lineSeg3{
+    -fx-stroke: #dd9955;
+}

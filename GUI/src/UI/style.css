@@ -208,3 +208,15 @@ and open the template in the editor.
 #lineseg3{
     -fx-stroke: #dd9955;
 }
+
+#armseglim1{
+    -fx-fill: #ff0000;
+}
+
+#armseglim2{
+    -fx-fill: #ff0000;
+}
+
+#armseglim3{
+    -fx-fill: #ff0000;
+}
