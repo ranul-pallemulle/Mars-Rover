@@ -117,6 +117,7 @@ class WheelMotors(Resource):
             io.output(self.rightmotor_in1_pin, False)
             pwm = 0
         self.PCA9685_pwm.set_pwm(self.PWM_right, 0, pwm)
+        #print("Right wheel motors got pwm value: {}".format(pwm))
 
     def _setMotorLeft(self, power):
         """
@@ -144,6 +145,7 @@ class WheelMotors(Resource):
             io.output(self.leftmotor_in1_pin, False)
             pwm = 0
         self.PCA9685_pwm.set_pwm(self.PWM_left, 0, pwm)
+        #print("Left wheel motors got pwm value: {}".format(pwm))
 
 
 class ArmMotors(Resource):
@@ -205,8 +207,7 @@ class ArmMotors(Resource):
         self.angle_middle = values[2] + offset
         self.angle_bottom = values[3] + offset
 
-        dg.print("arm motors got values: {}, {}, {},{}".format(values[0], values[1], values[2],
-                                                               values[3]))
+        #dg.print("arm motors got values: {}, {}, {}, {}".format(values[0], values[1], values[2],values[3]))
 
         self._set_angle()
 
@@ -238,10 +239,10 @@ class ArmMotors(Resource):
         # if self.angle_bottom > bottom_lim:
         #     self.angle_bottom = bottom_lim
         #     dg.print('Bottom servo angle out of range, limit = {}'.format(bottom_lim))
-
-        self.servo_grab.angle = self.angle_grab
-        self.servo_middle.angle = self.angle_middle
+        
         self.servo_bottom.angle = self.angle_bottom
+        self.servo_middle.angle = self.angle_middle
         self.servo_top.angle = self.angle_top
+        self.servo_grab.angle = self.angle_grab
 
         time.sleep(0.03)

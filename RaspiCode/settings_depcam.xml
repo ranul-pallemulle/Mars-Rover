@@ -1,0 +1,37 @@
+<SETTINGS>
+
+  <MAIN_HOSTNAME> raspberrypi.local </MAIN_HOSTNAME>
+
+  <DIAGNOSTICS>
+    <STATE> Enabled </STATE>
+    <PORT> 5570 </PORT>
+  </DIAGNOSTICS>
+
+  <MOTORS NAME="DeployableCamera">
+    <MOTOR NAME="Servo1">
+      <PIN TYPE="Other"> 13 </PIN> <!--top-->
+      <LIMIT NAME="Upper"> 120 </LIMIT>
+      <LIMIT NAME="Lower"> -120 </LIMIT>
+    </MOTOR>
+    <MOTOR NAME="Servo2">
+      <PIN TYPE="Other"> 14 </PIN> <!--middle-->
+      <LIMIT NAME="Upper"> 120 </LIMIT>
+      <LIMIT NAME="Lower"> -120 </LIMIT>
+    </MOTOR>
+    <MOTOR NAME="Servo3">
+      <PIN TYPE="Other"> 15 </PIN>	<!--bottom-->
+      <LIMIT NAME="Upper"> 120 </LIMIT>
+      <LIMIT NAME="Lower"> -120 </LIMIT>
+    </MOTOR>
+  </MOTORS>
+
+  <OPMODES_DIRECTORIES>
+    deployable_camera/depcam.py
+  </OPMODES_DIRECTORIES>
+
+  <RESOURCES_DIRECTORIES>
+    resources/depcam_motors.py,
+    resources/depcam_ipcamera.py
+  </RESOURCES_DIRECTORIES>
+
+</SETTINGS>

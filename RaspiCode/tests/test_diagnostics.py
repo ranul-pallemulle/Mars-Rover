@@ -5,13 +5,14 @@ from coreutils.tcpsocket import TcpSocketError
 from collections import deque
 
 class TestDiagnostics(unittest.TestCase):
-
+    @patch('coreutils.diagnostics.Thread')
     @patch('coreutils.diagnostics.cfg')
-    def test_initialise_not_enabled(self, mock_cfg):
+    def test_initialise_not_enabled(self, mock_cfg, mock_thread):
         mock_cfg.overall_config.diagnostics_enabled.return_value = False
         Diagnostics.initialise()
         mock_cfg.overall_config.diagnostics_enabled.assert_called_with()
         mock_cfg.overall_config.diagnostics_port.assert_not_called()
+        mock_thread.assert_not_called()
 
     @patch('coreutils.diagnostics.Thread')
     @patch('coreutils.diagnostics.cfg')
@@ -43,8 +44,8 @@ class TestDiagnostics(unittest.TestCase):
         mock_socket.side_effect = TcpSocketError
         self.assertEqual(Diagnostics.state, DiagState.CLOSED)
         
-        with self.assertRaises(DiagnosticsError):
-            Diagnostics._make_socket_connection(5570)
+        # with self.assertRaises(DiagnosticsError):
+        Diagnostics._make_socket_connection(5570)
         self.assertEqual(Diagnostics.state, DiagState.CLOSED)            
 
     @patch('coreutils.diagnostics.TcpSocket')
@@ -97,5 +98,4 @@ class TestDiagnostics(unittest.TestCase):
         #self.assertEqual(len(Diagnostics.buf), 0)
         Diagnostics.socket.reply.assert_called_with("hi")
         self.assertEqual(Diagnostics.state, DiagState.CLOSED)
-        
         

@@ -1,0 +1,15 @@
+[Unit]
+Description=Mars Rover (pizero)
+After=network.target
+
+[Service]
+ExecStart=/bin/bash -u startup_script_pizero.sh
+WorkingDirectory=/home/pi/Mars-Rover/RaspiCode
+StandardOutput=inherit
+StandardError=inherit
+SyslogIdentifier=Mars Rover (pizero)
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target

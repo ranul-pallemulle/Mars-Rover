@@ -36,7 +36,11 @@ class TcpSocket:
         '''Block until a connection is made from outside.'''
         if self.sock is not None:
             inputs = [self.sock, self.disconn_listener]
-            readable,_,_ = select.select(inputs,[],[])
+            try:
+                readable,_,_ = select.select(inputs,[],[])
+            except OSError as e:
+                self.close()
+                raise TcpSocketError(str(e))
             if self.sock in readable:
                 try:
                     self.conn,_ = self.sock.accept()
@@ -56,7 +60,11 @@ class TcpSocket:
             # select() checks conn for data, and disconn_listener for
             # a disconnect request (sent through disconn_sender).
             inputs = [self.conn, self.disconn_listener]
-            readable,_,_ = select.select(inputs,[],[])
+            try:
+                readable,_,_ = select.select(inputs,[],[])
+            except OSError as e: # bad file descriptor
+                self.close()
+                raise TcpSocketError(str(e))
             if self.conn in readable:
                 try:
                     data = self.conn.recv(self.max_recv_bytes)
@@ -108,14 +116,25 @@ class TcpSocket:
             finally:
                 self.sock = None
         try:
-            self.disconn_listener.close()
-            self.disconn_sender.close()
+            if self.disconn_listener is not None:
+                self.disconn_listener.close()
+            if self.disconn_sender is not None:
+                self.disconn_sender.close()
         except socket.error:
             pass
+        finally:
+            self.disconn_listener = None
+            self.disconn_sender = None
 
     def unblock(self):
-        '''Force read() to return with None to indicate broken connection. Should not raise exceptions.'''
-        self.disconn_sender.sendall(str.encode('d'))
+        '''Force socket select.select() to return readable on disconn_listener 
+to prevent blocking on socket.recv() or socket.accept().'''
+        try:
+            self.disconn_sender.sendall(str.encode('d'))
+        except (OSError): # sockets might be closed (bad file descriptor)
+            self.close()
+        except AttributeError: # disconn_sender might be None
+            pass
 
     def set_max_recv_bytes(self, numbytes):
         '''Set maximum number of bytes to receive.'''
@@ -131,3 +150,6 @@ class TcpSocket:
             self.close()
             raise TcpSocketError('max_recv_bytes needs to be positive')
         self.max_recv_bytes = numbytes
+
+    def get_ip_address(self):
+        return self.conn.getsockname()

@@ -7,6 +7,7 @@ class TestConfigure(unittest.TestCase):
     def setUp(self):
         self.testconf = cfg.OverallConfiguration("RaspiCode/tests/testsettings.xml")
         self.testMotorConf = cfg.MotorConfiguration("RaspiCode/tests/testsettings.xml")
+        self.testCameraConf = cfg.CameraConfiguration("RaspiCode/tests/testsettings.xml")
         
     def test_make_searchstr_valid(self):
         req_list = ["{Motors}[nonexit]Fake.{Motor}[name]Left"]
@@ -88,3 +89,44 @@ class TestConfigure(unittest.TestCase):
     def test_resources_directories(self):
         resource = self.testconf.resources_directories()
         self.assertEqual(resource, ['resources/mock_motors.py'])
+
+    def test_camera_device(self):
+        device = self.testCameraConf.device()
+        self.assertTrue(isinstance(device,str))
+        self.assertEqual(device,'v4l2src')
+
+    def test_camera_capture_framerate(self):
+        framerate = self.testCameraConf.capture_framerate()
+        self.assertTrue(isinstance(framerate,int))
+        self.assertEqual(framerate, 60)
+
+    def test_camera_capture_frame_width(self):
+        frame_width = self.testCameraConf.capture_frame_width()
+        self.assertTrue(isinstance(frame_width,int))
+        self.assertEqual(frame_width, 200)
+
+    def test_camera_capture_frame_height(self):
+        frame_height = self.testCameraConf.capture_frame_height()
+        self.assertTrue(isinstance(frame_height,int))
+        self.assertEqual(frame_height, 150)
+
+    def test_camera_stream_port(self):
+        port = self.testCameraConf.stream_port()
+        self.assertTrue(isinstance(port, int))
+        self.assertEqual(port, 5564)
+
+    def test_camera_stream_framerate(self):
+        framerate = self.testCameraConf.stream_framerate()
+        self.assertTrue(isinstance(framerate, int))
+        self.assertEqual(framerate, 30)
+
+    def test_camera_stream_frame_width(self):
+        frame_width = self.testCameraConf.stream_frame_width()
+        self.assertTrue(isinstance(frame_width, int))
+        self.assertEqual(frame_width, 640)
+
+    def test_camera_stream_frame_height(self):
+        frame_height = self.testCameraConf.stream_frame_height()
+        self.assertTrue(isinstance(frame_height, int))
+        self.assertEqual(frame_height, 480)
+        
